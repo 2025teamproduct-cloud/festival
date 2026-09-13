@@ -10,6 +10,22 @@ const HINTS = [
     "ヒント2：数字の問題は、規則性（増え方）に注目してみましょう。"
 ];
 
+function showHintOnQuestion(card, index, message) {
+    const existing = card.querySelector('.hint-inline');
+    if (existing) {
+        existing.innerHTML = '<b>ヒント' + (index + 1) + '</b><br>' + message;
+        return;
+    }
+
+    const hint = document.createElement('div');
+    hint.className = 'hint-inline';
+    hint.innerHTML = '<b>ヒント' + (index + 1) + '</b><br>' + message;
+    const feedback = card.querySelector('.feedback');
+    if (feedback) {
+        feedback.insertAdjacentElement('afterend', hint);
+    }
+}
+
 // 正解データ（配列内のどれかに一致すればOK。全角/半角・大文字小文字・空白は自動で吸収されます）
 const QUESTIONS = [
     { answers: ["さ", "サ"] },
@@ -60,10 +76,9 @@ function tick() {
     HINT_TIMES.forEach((t, i) => {
         if (elapsed >= t && !shownHints.has(i)) {
             shownHints.add(i);
-            const div = document.createElement('div');
-            div.className = 'hint-card';
-            div.innerHTML = '<b>' + (i + 1) + '個目のヒント</b><br>' + HINTS[i];
-            document.getElementById('hintPanel').appendChild(div);
+            document.querySelectorAll('.question').forEach((card) => {
+                showHintOnQuestion(card, i, HINTS[i]);
+            });
         }
     });
 

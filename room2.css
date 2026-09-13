@@ -50,6 +50,68 @@ svg {
     color: var(--main-dark);
 }
 
+.timer-box {
+    background: var(--card);
+    border: 3px solid var(--main);
+    border-radius: 16px;
+    padding: 14px 12px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    margin-bottom: 18px;
+}
+
+.timer-box .label {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.timer-box .time {
+    font-size: clamp(1.9rem, 7vw, 2.6rem);
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: var(--main-dark);
+    font-variant-numeric: tabular-nums;
+}
+
+.time.warn {
+    color: #c40000;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    50% {
+        opacity: 0.3;
+    }
+}
+
+.hint-inline {
+    background: #fff8e1;
+    border: 2px solid var(--gold);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-top: 10px;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    animation: pop 0.4s ease;
+}
+
+.hint-inline b {
+    color: var(--main-dark);
+}
+
+@keyframes pop {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
 /* ===== 本体（3問） ===== */
 .question {
     background: var(--card);

@@ -97,23 +97,20 @@ svg {
     }
 }
 
-.hint-panel {
-    position: fixed;
-    right: 16px;
-    bottom: 16px;
-    max-width: min(280px, calc(100vw - 32px));
-    z-index: 20;
-}
-
-.hint-card {
+.hint-inline {
     background: #fff8e1;
     border: 2px solid var(--gold);
     border-radius: 12px;
     padding: 10px 14px;
-    margin-top: 8px;
+    margin-top: 10px;
     font-size: 0.85rem;
+    line-height: 1.6;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
     animation: pop 0.4s ease;
+}
+
+.hint-inline b {
+    color: var(--main-dark);
 }
 
 @keyframes pop {
