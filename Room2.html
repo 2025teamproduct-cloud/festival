@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第2の部屋 - なぞ解き脱出ゲーム</title>
+<link rel="stylesheet" href="room2.css">
+</head>
+<body>
+
+<div class="wrap">
+  <div class="header">
+    <h1>🔐 第2の部屋 ― なぞ解き</h1>
+  </div>
+
+  <div class="progress" id="progressText">正解数: 0 / 3</div>
+
+  <!-- ▼▼▼ 問題1〜3（本体）。文章と答えはここで編集してください ▼▼▼ -->
+  <div class="question" data-index="0">
+    <p class="qtext">問題1：この部屋に置かれた箱の中には、いくつのボールが入っていた？</p>
+    <div class="qrow">
+      <input type="text" placeholder="こたえを入力">
+      <button onclick="checkAnswer(0, this)">確認</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="question" data-index="1">
+    <p class="qtext">問題2：アルファベットで「C」の次の文字は？</p>
+    <div class="qrow">
+      <input type="text" placeholder="こたえを入力">
+      <button onclick="checkAnswer(1, this)">確認</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="question" data-index="2">
+    <p class="qtext">問題3：「文化祭」を英語に訳すと何でしょう？（カタカナでも可）</p>
+    <div class="qrow">
+      <input type="text" placeholder="こたえを入力">
+      <button onclick="checkAnswer(2, this)">確認</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+  <!-- ▲▲▲ 編集ここまで ▲▲▲ -->
+
+  <div id="clearBox">
+    <h2>🎉 全問正解！</h2>
+    <p>おめでとうございます！最後のページへ進みましょう。</p>
+    <a class="nextlink" href="complete.html">クリア画面へ →</a>
+  </div>
+</div>
+
+<!-- 合言葉オーバーレイ：本体の上に重ねて表示。正解でhiddenにする -->
+<div id="passwordOverlay">
+  <div class="lock-card">
+    <div class="icon">🔒</div>
+    <h2>合言葉を入力してください</h2>
+    <p>スタッフから教えられた合言葉を入力すると、部屋が開きます。</p>
+    <input type="text" id="pwInput" placeholder="合言葉">
+    <button onclick="checkPassword()">解錠する</button>
+    <div class="lock-feedback" id="pwFeedback"></div>
+  </div>
+</div>
+
+<script src="room2.js"></script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    background: linear-gradient(160deg, #2b1055, #7597de);
+    overflow: hidden;
+    position: relative;
+}
+
+.card {
+    position: relative;
+    z-index: 5;
+    background: #fff;
+    border-radius: 22px;
+    padding: 44px 34px;
+    text-align: center;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    animation: pop 0.6s ease;
+}
+
+@keyframes pop {
+    from {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.card .emoji {
+    font-size: 3.4rem;
+    margin-bottom: 6px;
+}
+
+.card h1 {
+    color: #7b2fd6;
+    margin: 0 0 10px;
+    font-size: 1.6rem;
+}
+
+.card p {
+    color: #444;
+    line-height: 1.7;
+    margin: 0;
+}
+
+.confetti {
+    position: absolute;
+    top: -10px;
+    width: 8px;
+    height: 14px;
+    opacity: 0.9;
+    animation: fall linear infinite;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(110vh) rotate(360deg);
+    }
+}

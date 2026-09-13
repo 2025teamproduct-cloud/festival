@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第1の部屋 - なぞ解き脱出ゲーム</title>
+    <link rel="stylesheet" href="room1.css">
+</head>
+
+<body>
+
+    <div id="redOverlay"></div>
+
+    <div class="wrap">
+        <div class="header">
+            <h1>🔍 第1の部屋 ― なぞ解き</h1>
+        </div>
+
+        <div class="timer-box">
+            <div class="label">残り時間</div>
+            <div class="time" id="timeDisplay">--:--</div>
+        </div>
+
+        <div class="progress" id="progressText">正解数: 0 / 3</div>
+
+        <!-- ▼▼▼ 問題1〜3。文章と答えはここで編集してください ▼▼▼ -->
+        <div class="question" data-index="0">
+            <p class="qtext">問題1：この会場の入口に置かれた看板に書かれた「合言葉」の最初の一文字は何でしょう？（ひらがなで回答）</p>
+            <div class="qrow">
+                <input type="text" placeholder="こたえを入力">
+                <button onclick="checkAnswer(0, this)">確認</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question" data-index="1">
+            <p class="qtext">問題2：3, 6, 9, 12, ? 　次に来る数字は？</p>
+            <div class="qrow">
+                <input type="text" placeholder="こたえを入力">
+                <button onclick="checkAnswer(1, this)">確認</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question" data-index="2">
+            <p class="qtext">問題3：「さくら」を逆から読むと？</p>
+            <div class="qrow">
+                <input type="text" placeholder="こたえを入力">
+                <button onclick="checkAnswer(2, this)">確認</button>
+            </div>
+            <div class="feedback"></div>
+        </div>
+        <!-- ▲▲▲ 編集ここまで ▲▲▲ -->
+
+        <div id="clearBox">
+            <h2>🎉 全問正解！</h2>
+            <p>スタッフにこの画面を見せて、次の部屋へ進んでください。</p>
+            <a class="nextlink" href="room2.html">次の部屋へ進む →</a>
+        </div>
+    </div>
+
+    <div class="hint-panel" id="hintPanel"></div>
+
+    <script src="room1.js"></script>
+</body>
+
+</html>

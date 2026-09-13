@@ -1,0 +1,247 @@
+:root {
+    --main: #ff6f3c;
+    --main-dark: #e2551f;
+    --gold: #ffb703;
+    --bg: #fdf6ec;
+    --card: #ffffff;
+    --text: #3a2c22;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    background: linear-gradient(160deg, #fdf6ec, #ffe9d6);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 20px;
+    position: relative;
+}
+
+/* 画面が徐々に赤くなる演出 */
+#redOverlay {
+    position: fixed;
+    inset: 0;
+    background: #c40000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1s linear;
+    z-index: 5;
+}
+
+.wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 10;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    font-size: 1.4rem;
+    margin: 0 0 6px;
+    color: var(--main-dark);
+}
+
+.timer-box {
+    background: var(--card);
+    border: 3px solid var(--main);
+    border-radius: 16px;
+    padding: 14px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    margin-bottom: 18px;
+}
+
+.timer-box .label {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.timer-box .time {
+    font-size: 2.6rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: var(--main-dark);
+    font-variant-numeric: tabular-nums;
+}
+
+.time.warn {
+    color: #c40000;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    50% {
+        opacity: 0.3;
+    }
+}
+
+.hint-panel {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    max-width: 280px;
+    z-index: 20;
+}
+
+.hint-card {
+    background: #fff8e1;
+    border: 2px solid var(--gold);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-top: 8px;
+    font-size: 0.85rem;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    animation: pop 0.4s ease;
+}
+
+@keyframes pop {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.hint-card b {
+    color: var(--main-dark);
+}
+
+.question {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 16px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+    border-left: 6px solid var(--main);
+}
+
+.question.solved {
+    border-left-color: #2e9e4f;
+    background: #f2fbf3;
+}
+
+.question p.qtext {
+    font-weight: bold;
+    margin: 0 0 10px;
+    line-height: 1.5;
+}
+
+.qrow {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.qrow input[type=text] {
+    flex: 1;
+    min-width: 150px;
+    padding: 10px;
+    font-size: 1rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+}
+
+.qrow input[type=text]:disabled {
+    background: #e9f7ec;
+    border-color: #2e9e4f;
+}
+
+.qrow button {
+    padding: 10px 18px;
+    background: var(--main);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.qrow button:hover {
+    background: var(--main-dark);
+}
+
+.feedback {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    min-height: 1.2em;
+}
+
+.feedback.ok {
+    color: #2e9e4f;
+}
+
+.feedback.ng {
+    color: #c40000;
+}
+
+.shake {
+    animation: shake 0.3s;
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-6px);
+    }
+
+    75% {
+        transform: translateX(6px);
+    }
+}
+
+#clearBox {
+    display: none;
+    background: #fff8e1;
+    border: 3px solid var(--gold);
+    border-radius: 16px;
+    padding: 22px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#clearBox h2 {
+    color: var(--main-dark);
+    margin-top: 0;
+}
+
+#clearBox a.nextlink {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 14px 26px;
+    background: var(--main-dark);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 1.05rem;
+}
+
+#clearBox a.nextlink:hover {
+    background: #b53f14;
+}
+
+.progress {
+    text-align: center;
+    margin: 10px 0 18px;
+    font-size: 0.9rem;
+    color: #777;
+}
