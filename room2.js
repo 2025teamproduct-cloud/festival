@@ -7,7 +7,7 @@ const PASSWORD_LIST = ["がくえんさい", "学園祭"];
 const QUESTIONS = [
     { answers: ["3", "3個", "三つ", "みっつ"] },
     { answers: ["D"] },
-    { answers: ["フェスティバル", "school festival", "スクールフェスティバル"] }
+    { answers: ["フェスティバル", "school festival", "festival", "スクールフェスティバル"] }
 ];
 
 /* ====================== 設定エリアここまで ====================== */
