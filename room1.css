@@ -11,14 +11,26 @@
     box-sizing: border-box;
 }
 
+html {
+    font-size: 16px;
+}
+
 body {
     margin: 0;
     font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
     background: linear-gradient(160deg, #fdf6ec, #ffe9d6);
     color: var(--text);
     min-height: 100vh;
-    padding: 20px;
+    padding: clamp(12px, 2.5vw, 20px);
     position: relative;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+img,
+svg {
+    max-width: 100%;
+    height: auto;
 }
 
 /* 画面が徐々に赤くなる演出 */
@@ -34,6 +46,7 @@ body {
 
 .wrap {
     max-width: 640px;
+    width: min(100%, 640px);
     margin: 0 auto;
     position: relative;
     z-index: 10;
@@ -45,7 +58,7 @@ body {
 }
 
 .header h1 {
-    font-size: 1.4rem;
+    font-size: clamp(1.25rem, 4.8vw, 1.6rem);
     margin: 0 0 6px;
     color: var(--main-dark);
 }
@@ -54,7 +67,7 @@ body {
     background: var(--card);
     border: 3px solid var(--main);
     border-radius: 16px;
-    padding: 14px;
+    padding: clamp(12px, 3vw, 14px);
     text-align: center;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
     margin-bottom: 18px;
@@ -66,7 +79,7 @@ body {
 }
 
 .timer-box .time {
-    font-size: 2.6rem;
+    font-size: clamp(1.9rem, 8vw, 2.6rem);
     font-weight: bold;
     letter-spacing: 2px;
     color: var(--main-dark);
@@ -88,7 +101,7 @@ body {
     position: fixed;
     right: 16px;
     bottom: 16px;
-    max-width: 280px;
+    max-width: min(280px, calc(100vw - 32px));
     z-index: 20;
 }
 
@@ -183,7 +196,7 @@ body {
 .question {
     background: var(--card);
     border-radius: 14px;
-    padding: 18px;
+    padding: clamp(14px, 4vw, 18px);
     margin-bottom: 16px;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
     border-left: 6px solid var(--main);
@@ -198,21 +211,25 @@ body {
     font-weight: bold;
     margin: 0 0 10px;
     line-height: 1.5;
+    font-size: clamp(0.96rem, 3.2vw, 1.05rem);
 }
 
 .qrow {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
+    align-items: stretch;
 }
 
 .qrow input[type=text] {
-    flex: 1;
-    min-width: 150px;
-    padding: 10px;
+    flex: 1 1 220px;
+    min-width: 0;
+    padding: 10px 12px;
     font-size: 1rem;
     border: 2px solid #ddd;
     border-radius: 8px;
+    width: 100%;
+    min-height: 44px;
 }
 
 .qrow input[type=text]:disabled {
@@ -228,6 +245,7 @@ body {
     border-radius: 8px;
     font-weight: bold;
     cursor: pointer;
+    min-height: 44px;
 }
 
 .qrow button:hover {
@@ -274,7 +292,7 @@ body {
     background: #fff8e1;
     border: 3px solid var(--gold);
     border-radius: 16px;
-    padding: 22px;
+    padding: clamp(18px, 5vw, 22px);
     text-align: center;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -282,6 +300,7 @@ body {
 #clearBox h2 {
     color: var(--main-dark);
     margin-top: 0;
+    font-size: clamp(1.2rem, 5vw, 1.6rem);
 }
 
 #clearBox a.nextlink {
@@ -293,7 +312,8 @@ body {
     text-decoration: none;
     border-radius: 10px;
     font-weight: bold;
-    font-size: 1.05rem;
+    font-size: clamp(0.95rem, 3vw, 1.05rem);
+    width: min(100%, 260px);
 }
 
 #clearBox a.nextlink:hover {
@@ -305,4 +325,51 @@ body {
     margin: 10px 0 18px;
     font-size: 0.9rem;
     color: #777;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 12px;
+    }
+
+    .wrap {
+        width: min(100%, 100%);
+    }
+
+    .qrow {
+        flex-direction: column;
+    }
+
+    .qrow input[type=text],
+    .qrow button {
+        width: 100%;
+    }
+
+    .hint-panel {
+        position: static;
+        max-width: 100%;
+        margin-top: 16px;
+        right: auto;
+        bottom: auto;
+    }
+}
+
+@media (max-width: 420px) {
+    .timer-box {
+        padding: 12px 10px;
+    }
+
+    .question,
+    #clearBox,
+    .start-card {
+        border-radius: 12px;
+    }
+
+    .qrow input[type=text],
+    .qrow button,
+    .lock-card input[type=text],
+    .lock-card button,
+    .start-card button {
+        font-size: 16px;
+    }
 }
