@@ -22,6 +22,7 @@ const QUESTIONS = [
 let elapsed = 0;
 let solvedCount = 0;
 let started = false;
+let timerId = null;
 const shownHints = new Set();
 const solved = new Set();
 
@@ -76,6 +77,9 @@ function startGame() {
     setTimeout(() => {
         document.getElementById('startOverlay').style.display = 'none';
     }, 450);
+    if (timerId === null) {
+        timerId = setInterval(tick, 1000);
+    }
     tick();
 }
 
