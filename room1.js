@@ -28,9 +28,9 @@ function showHintOnQuestion(card, index, message) {
 
 // 正解データ（配列内のどれかに一致すればOK。全角/半角・大文字小文字・空白は自動で吸収されます）
 const QUESTIONS = [
-    { answers: ["さ", "サ"] },
-    { answers: ["15"] },
-    { answers: ["らくさ"] }
+    { answers: ["さ", "サ", "asd"] },
+    { answers: ["15", "asd"] },
+    { answers: ["らくさ", "asd"] }
 ];
 
 /* ====================== 設定エリアここまで ====================== */

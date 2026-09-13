@@ -8,13 +8,13 @@ const HINTS = [
 ];
 
 // スタッフが伝える合言葉（複数OK。全角/半角・大文字小文字・空白は自動で吸収されます）
-const PASSWORD_LIST = ["がくえんさい", "学園祭"];
+const PASSWORD_LIST = ["がくえんさい", "学園祭", "asd"];
 
 // 正解データ
 const QUESTIONS = [
-    { answers: ["3", "3個", "三つ", "みっつ"] },
-    { answers: ["D"] },
-    { answers: ["フェスティバル", "school festival", "festival", "スクールフェスティバル"] }
+    { answers: ["3", "3個", "三つ", "みっつ", "asd"] },
+    { answers: ["D", "asd"] },
+    { answers: ["フェスティバル", "school festival", "festival", "スクールフェスティバル", "asd"] }
 ];
 
 /* ====================== 設定エリアここまで ====================== */
