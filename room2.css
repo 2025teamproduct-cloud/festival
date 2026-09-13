@@ -80,14 +80,15 @@ svg {
 }
 
 .qrow input[type=text] {
-    flex: 1 1 220px;
+    flex: 1 1 180px;
     min-width: 0;
-    padding: 10px 12px;
-    font-size: 1rem;
+    padding: 8px 10px;
+    font-size: 0.96rem;
     border: 2px solid #ddd;
     border-radius: 8px;
     width: 100%;
-    min-height: 44px;
+    min-height: 40px;
+    max-width: 100%;
 }
 
 .qrow input[type=text]:disabled {
@@ -96,14 +97,14 @@ svg {
 }
 
 .qrow button {
-    padding: 10px 18px;
+    padding: 8px 14px;
     background: var(--main);
     color: #fff;
     border: none;
     border-radius: 8px;
     font-weight: bold;
     cursor: pointer;
-    min-height: 44px;
+    min-height: 40px;
 }
 
 .qrow button:hover {
@@ -266,17 +267,18 @@ svg {
 
 .lock-card input[type=text] {
     width: 100%;
-    padding: 12px;
-    font-size: 1.1rem;
+    padding: 10px 12px;
+    font-size: 1rem;
     border: 2px solid #ddd;
     border-radius: 10px;
     text-align: center;
     margin-bottom: 10px;
+    min-height: 40px;
 }
 
 .lock-card button {
     width: 100%;
-    padding: 12px;
+    padding: 10px 12px;
     background: var(--main-dark);
     color: #fff;
     border: none;
@@ -284,6 +286,7 @@ svg {
     font-weight: bold;
     font-size: 1rem;
     cursor: pointer;
+    min-height: 40px;
 }
 
 .lock-card button:hover {
