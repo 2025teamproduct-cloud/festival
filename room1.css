@@ -119,6 +119,67 @@ body {
     color: var(--main-dark);
 }
 
+.start-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(23, 18, 14, 0.62);
+    backdrop-filter: blur(3px);
+    transition: opacity 0.45s ease, visibility 0.45s ease;
+}
+
+.start-overlay.hide {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.start-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 32px 28px;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+}
+
+.start-card .icon {
+    font-size: 2.4rem;
+    margin-bottom: 10px;
+}
+
+.start-card h2 {
+    margin: 0 0 8px;
+    color: var(--main-dark);
+    font-size: 1.4rem;
+}
+
+.start-card p {
+    margin: 0 0 18px;
+    line-height: 1.7;
+    color: #555;
+}
+
+.start-card button {
+    width: 100%;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 10px;
+    background: var(--main-dark);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.start-card button:hover {
+    background: #b53f14;
+}
+
 .question {
     background: var(--card);
     border-radius: 14px;

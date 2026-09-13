@@ -21,6 +21,7 @@ const QUESTIONS = [
 
 let elapsed = 0;
 let solvedCount = 0;
+let started = false;
 const shownHints = new Set();
 const solved = new Set();
 
@@ -39,6 +40,8 @@ function format(sec) {
 }
 
 function tick() {
+    if (!started) return;
+
     const remaining = TOTAL_TIME_SEC - elapsed;
     const disp = document.getElementById('timeDisplay');
     disp.textContent = format(remaining);
@@ -65,8 +68,26 @@ function tick() {
 
     elapsed++;
 }
-tick();
-setInterval(tick, 1000);
+
+function startGame() {
+    if (started) return;
+    started = true;
+    document.getElementById('startOverlay').classList.add('hide');
+    setTimeout(() => {
+        document.getElementById('startOverlay').style.display = 'none';
+    }, 450);
+    tick();
+}
+
+const startButton = document.getElementById('startButton');
+if (startButton) {
+    startButton.addEventListener('click', startGame);
+}
+
+const disp = document.getElementById('timeDisplay');
+if (disp) {
+    disp.textContent = format(TOTAL_TIME_SEC);
+}
 
 function checkAnswer(index, btn) {
     const row = btn.closest('.question');
