@@ -1,0 +1,26 @@
+const ADMIN_PASSWORD = 'festival-admin-2026';
+const ACCESS_KEY = 'festival-admin-access';
+
+function hasAdminAccess() {
+    return sessionStorage.getItem(ACCESS_KEY) === 'granted';
+}
+
+function requireAdminAccess(event) {
+    event.preventDefault();
+    if (hasAdminAccess()) {
+        window.location.href = event.currentTarget.href;
+        return;
+    }
+
+    const password = window.prompt('管理者パスワードを入力してください');
+    if (password === ADMIN_PASSWORD) {
+        sessionStorage.setItem(ACCESS_KEY, 'granted');
+        window.location.href = event.currentTarget.href;
+    } else if (password !== null) {
+        window.alert('パスワードが違います。');
+    }
+}
+
+document.querySelectorAll('[data-admin-link]').forEach((link) => {
+    link.addEventListener('click', requireAdminAccess);
+});

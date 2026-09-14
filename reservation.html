@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>参加予約 - 学園祭なぞ解き</title>
+    <link rel="stylesheet" href="reservation.css">
+</head>
+<body>
+    <main class="wrap">
+        <header class="hero">
+            <p class="eyebrow">FESTIVAL PUZZLE EVENT</p>
+            <h1>なぞ解き参加予約</h1>
+            <p>2人1組で参加できます。ご希望の回を選び、代表者と同行者のお名前を入力してください。</p>
+        </header>
+
+        <section class="panel" aria-labelledby="reservation-heading">
+            <h2 id="reservation-heading">予約を申し込む</h2>
+            <p class="note">各回の定員は5組（10名）です。満席になると選択できません。</p>
+            <form id="reservationForm">
+                <label for="slotId">参加する回</label>
+                <select id="slotId" required></select>
+                <div class="field-grid">
+                    <label>代表者名<input id="name" type="text" maxlength="80" autocomplete="name" required></label>
+                    <label>同行者名<input id="partnerName" type="text" maxlength="80" required></label>
+                </div>
+                <button class="primary-button" type="submit">予約を確定する</button>
+                <p id="formFeedback" class="feedback" role="status"></p>
+            </form>
+        </section>
+
+        <section id="numberPanel" class="panel result-panel" hidden aria-live="polite">
+            <p class="eyebrow">RESERVATION CONFIRMED</p>
+            <h2>予約が完了しました</h2>
+            <p>当日はこの整理番号と、予約時に入力した代表者名で本人確認を行います。</p>
+            <div class="number-box">
+                <span>整理番号</span>
+                <strong id="reservationNumber"></strong>
+            </div>
+            <p class="save-warning">この画面をスクリーンショットなどで写真に撮り、当日まで保存しておいてください。</p>
+        </section>
+
+        <section class="panel" aria-labelledby="verify-heading">
+            <h2 id="verify-heading">予約を確認する</h2>
+            <p class="note">整理番号と予約時の代表者名を入力してください。</p>
+            <form id="verifyForm">
+                <label>整理番号<input id="verifyNumber" type="text" placeholder="F-XXXXXXXX" required></label>
+                <label>予約時の代表者名<input id="verifyName" type="text" required></label>
+                <button class="secondary-button" type="submit">本人確認する</button>
+                <p id="verifyFeedback" class="feedback" role="status"></p>
+            </form>
+        </section>
+
+        <nav class="admin-nav" aria-label="管理者用リンク">
+            <a data-admin-link href="index.html">謎解きページへ</a>
+        </nav>
+    </main>
+    <script src="access.js"></script>
+    <script src="reservation.js"></script>
+</body>
+</html>

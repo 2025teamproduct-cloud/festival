@@ -50,6 +50,12 @@ svg {
     color: var(--main-dark);
 }
 
+.admin-link {
+    color: var(--main-dark);
+    font-size: 0.82rem;
+    font-weight: bold;
+}
+
 .timer-box {
     background: var(--card);
     border: 3px solid var(--main);
