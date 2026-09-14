@@ -8,7 +8,9 @@
     --warm: #e8a317;
 }
 
-* { box-sizing: border-box; }
+* {
+    box-sizing: border-box;
+}
 
 body {
     margin: 0;
@@ -16,46 +18,384 @@ body {
     padding: 28px 16px 52px;
     color: var(--ink);
     font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
-    background: linear-gradient(145deg, #eef7f3 0%, #fdf8ec 58%, #f7e7c7 100%);
+    background: linear-gradient(
+        145deg,
+        #eef7f3 0%,
+        #fdf8ec 58%,
+        #f7e7c7 100%
+    );
 }
 
-.wrap { width: min(100%, 680px); margin: 0 auto; }
-.hero { padding: 20px 4px 28px; }
-.eyebrow { margin: 0 0 8px; color: var(--accent); font-size: .75rem; font-weight: bold; letter-spacing: .12em; }
-h1 { margin: 0 0 12px; font-size: clamp(1.7rem, 6vw, 2.4rem); line-height: 1.2; }
-h2 { margin: 0 0 10px; font-size: clamp(1.2rem, 4vw, 1.5rem); }
-.hero p:last-child, .note { color: var(--muted); line-height: 1.7; }
-.panel { margin-bottom: 18px; padding: clamp(20px, 5vw, 30px); background: rgba(255, 253, 248, .92); border: 1px solid rgba(37, 49, 58, .1); border-radius: 14px; box-shadow: 0 8px 24px rgba(37, 49, 58, .08); }
-.note { margin: 0 0 20px; font-size: .92rem; }
-form { display: grid; gap: 14px; }
-label { display: grid; gap: 7px; font-weight: bold; font-size: .92rem; }
-input, select { width: 100%; min-height: 44px; padding: 10px 12px; color: var(--ink); background: #fff; border: 2px solid var(--line); border-radius: 8px; font: inherit; }
-input:focus, select:focus { outline: 3px solid rgba(15, 118, 110, .2); border-color: var(--accent); }
-.field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-button { min-height: 46px; padding: 10px 16px; border: 0; border-radius: 8px; font: inherit; font-weight: bold; cursor: pointer; }
-button:disabled { cursor: wait; opacity: .55; }
-.primary-button { color: #fff; background: var(--accent); }
-.primary-button:hover { background: var(--accent-dark); }
-.secondary-button { color: var(--accent-dark); background: #dcefea; }
-.feedback { min-height: 1.3em; margin: 0; font-size: .9rem; font-weight: bold; }
-.feedback.error { color: #b42318; }
-.feedback.success { color: var(--accent-dark); }
-.verified-reservation { margin-top: 18px; padding: 14px; color: var(--accent-dark); background: #e8f5ef; border-left: 4px solid var(--accent); line-height: 1.6; }
-.verified-reservation p { margin: 4px 0 0; }
-.participant-list { display: grid; gap: 18px; }
-.participant-group h3 { margin: 0 0 8px; color: var(--accent-dark); font-size: 1.05rem; }
-.participant-items { display: grid; gap: 8px; }
-.participant-item { display: flex; align-items: center; gap: 10px; padding: 11px 12px; font-weight: normal; background: #fff; border: 1px solid var(--line); border-radius: 8px; }
-.participant-item input { width: 20px; min-height: 20px; accent-color: var(--accent); }
-.result-panel { border: 2px solid var(--warm); }
-.number-box { display: grid; gap: 5px; margin: 20px 0 14px; padding: 16px; text-align: center; background: #fff8e1; border-radius: 10px; }
-.number-box span { color: var(--muted); font-size: .85rem; }
-.number-box strong { color: #8a5a00; font-size: clamp(1.8rem, 9vw, 2.7rem); letter-spacing: .08em; }
-.save-warning { margin: 0; color: #8a5a00; font-weight: bold; line-height: 1.7; }
-.admin-nav { text-align: center; padding-top: 8px; }
-.admin-nav a { color: var(--accent-dark); font-weight: bold; }
+.wrap {
+    width: min(100%, 680px);
+    margin: 0 auto;
+}
+
+.hero {
+    padding: 20px 4px 28px;
+}
+
+.eyebrow {
+    margin: 0 0 8px;
+    color: var(--accent);
+    font-size: .75rem;
+    font-weight: bold;
+    letter-spacing: .12em;
+}
+
+h1 {
+    margin: 0 0 12px;
+    font-size: clamp(1.7rem, 6vw, 2.4rem);
+    line-height: 1.2;
+}
+
+h2 {
+    margin: 0 0 10px;
+    font-size: clamp(1.2rem, 4vw, 1.5rem);
+}
+
+h3 {
+    line-height: 1.4;
+}
+
+.hero p:last-child,
+.note {
+    color: var(--muted);
+    line-height: 1.7;
+}
+
+.panel {
+    margin-bottom: 18px;
+    padding: clamp(20px, 5vw, 30px);
+    background: rgba(255, 253, 248, .92);
+    border: 1px solid rgba(37, 49, 58, .1);
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(37, 49, 58, .08);
+}
+
+.note {
+    margin: 0 0 20px;
+    font-size: .92rem;
+}
+
+form {
+    display: grid;
+    gap: 14px;
+}
+
+label {
+    display: grid;
+    gap: 7px;
+    font-weight: bold;
+    font-size: .92rem;
+}
+
+input,
+select {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    color: var(--ink);
+    background: #fff;
+    border: 2px solid var(--line);
+    border-radius: 8px;
+    font: inherit;
+}
+
+input:focus,
+select:focus {
+    outline: 3px solid rgba(15, 118, 110, .2);
+    border-color: var(--accent);
+}
+
+.field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+button {
+    min-height: 46px;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 8px;
+    font: inherit;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: wait;
+    opacity: .55;
+}
+
+.primary-button {
+    color: #fff;
+    background: var(--accent);
+}
+
+.primary-button:hover {
+    background: var(--accent-dark);
+}
+
+.secondary-button {
+    color: var(--accent-dark);
+    background: #dcefea;
+}
+
+.secondary-button:hover {
+    background: #cbe5de;
+}
+
+
+/* ========================================
+   1日目 / 2日目 切り替え
+   ======================================== */
+
+.day-switch {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin: 16px 0 12px;
+}
+
+.day-switch button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 64px;
+    padding: 10px 12px;
+    color: var(--accent-dark);
+    background: #dcefea;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    transition:
+        background-color .15s ease,
+        border-color .15s ease,
+        transform .15s ease;
+}
+
+.day-switch button span {
+    font-size: .82rem;
+    font-weight: normal;
+}
+
+.day-switch button:hover {
+    background: #cbe5de;
+}
+
+.day-switch button:active {
+    transform: scale(.98);
+}
+
+
+/* 選択中の日 */
+
+.day-switch button.active {
+    color: #fff;
+    background: var(--accent);
+    border-color: var(--accent-dark);
+    box-shadow: 0 4px 10px rgba(15, 118, 110, .18);
+}
+
+.day-switch button.active:hover {
+    background: var(--accent-dark);
+}
+
+
+/* 日付切り替え部分の説明 */
+
+#selectedDayLabel {
+    margin-bottom: 0;
+    text-align: center;
+    font-weight: bold;
+}
+
+
+/* ========================================
+   フィードバック
+   ======================================== */
+
+.feedback {
+    min-height: 1.3em;
+    margin: 0;
+    font-size: .9rem;
+    font-weight: bold;
+}
+
+.feedback.error {
+    color: #b42318;
+}
+
+.feedback.success {
+    color: var(--accent-dark);
+}
+
+
+/* ========================================
+   本人確認済み予約
+   ======================================== */
+
+.verified-reservation {
+    margin-top: 18px;
+    padding: 14px;
+    color: var(--accent-dark);
+    background: #e8f5ef;
+    border-left: 4px solid var(--accent);
+    line-height: 1.6;
+}
+
+.verified-reservation p {
+    margin: 4px 0 0;
+}
+
+
+/* ========================================
+   参加者一覧
+   ======================================== */
+
+.participant-list {
+    display: grid;
+    gap: 18px;
+}
+
+.participant-group {
+    margin: 0;
+}
+
+.participant-group h3 {
+    margin: 0 0 8px;
+    padding-bottom: 6px;
+    color: var(--accent-dark);
+    font-size: 1.05rem;
+    border-bottom: 2px solid var(--line);
+}
+
+.participant-items {
+    display: grid;
+    gap: 8px;
+}
+
+.participant-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 12px;
+    font-weight: normal;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.participant-item input {
+    width: 20px;
+    min-height: 20px;
+    margin: 0;
+    accent-color: var(--accent);
+    flex-shrink: 0;
+}
+
+
+/* ========================================
+   予約完了
+   ======================================== */
+
+.result-panel {
+    border: 2px solid var(--warm);
+}
+
+.number-box {
+    display: grid;
+    gap: 5px;
+    margin: 20px 0 14px;
+    padding: 16px;
+    text-align: center;
+    background: #fff8e1;
+    border-radius: 10px;
+}
+
+.number-box span {
+    color: var(--muted);
+    font-size: .85rem;
+}
+
+.number-box strong {
+    color: #8a5a00;
+    font-size: clamp(1.8rem, 9vw, 2.7rem);
+    letter-spacing: .08em;
+}
+
+.save-warning {
+    margin: 0;
+    color: #8a5a00;
+    font-weight: bold;
+    line-height: 1.7;
+}
+
+
+/* ========================================
+   管理者用リンク
+   ======================================== */
+
+.admin-nav {
+    text-align: center;
+    padding-top: 8px;
+}
+
+.admin-nav a {
+    color: var(--accent-dark);
+    font-weight: bold;
+}
+
+
+/* ========================================
+   スマートフォン
+   ======================================== */
 
 @media (max-width: 520px) {
-    body { padding: 16px 12px 40px; }
-    .field-grid { grid-template-columns: 1fr; }
+
+    body {
+        padding: 16px 12px 40px;
+    }
+
+    .field-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .day-switch {
+        gap: 8px;
+    }
+
+    .day-switch button {
+        min-height: 60px;
+        padding: 9px 8px;
+        font-size: .9rem;
+    }
+
+    .day-switch button span {
+        font-size: .75rem;
+    }
+
+    .participant-item {
+        align-items: flex-start;
+        line-height: 1.5;
+    }
+}
+
+
+/* ========================================
+   より小さいスマートフォン
+   ======================================== */
+
+@media (max-width: 360px) {
+
+    .day-switch {
+        grid-template-columns: 1fr;
+    }
+
+    .day-switch button {
+        min-height: 52px;
+    }
 }
