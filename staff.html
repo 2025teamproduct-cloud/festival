@@ -11,17 +11,24 @@
         <header class="hero">
             <p class="eyebrow">STAFF ONLY</p>
             <h1>予約確認</h1>
-            <p>来場者の整理番号と予約時の代表者名を照合してください。</p>
+            <p>整理番号と代表者名を照合し、本人確認が取れた組にチェックを入れてください。</p>
         </header>
 
         <section class="panel" aria-labelledby="verify-heading">
             <h2 id="verify-heading">本人確認</h2>
             <form id="verifyForm">
-                <label>整理番号<input id="verifyNumber" type="text" placeholder="F-XXXXXXXX" required></label>
+                <label>整理番号<select id="verifyNumber" required><option value="">読み込み中…</option></select></label>
                 <label>予約時の代表者名<input id="verifyName" type="text" autocomplete="name" required></label>
                 <button class="secondary-button" type="submit">予約を照合する</button>
                 <p id="verifyFeedback" class="feedback" role="status"></p>
             </form>
+            <div id="verifiedReservation" class="verified-reservation" hidden aria-live="polite"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="participants-heading">
+            <h2 id="participants-heading">時間帯別の参加者</h2>
+            <p class="note">本人確認が取れた組にチェックを入れると、状態が保存されます。</p>
+            <div id="participantList" class="participant-list" aria-live="polite"></div>
         </section>
 
     </main>

@@ -43,6 +43,10 @@ function createNumber() {
   return `F-${randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase()}`;
 }
 
+function sortReservations(first, second) {
+  return first.number.localeCompare(second.number, undefined, { numeric: true });
+}
+
 export default async function handler(req, res) {
   try {
     const db = getFirestoreDb();
@@ -55,7 +59,21 @@ export default async function handler(req, res) {
         snapshot.id,
         snapshot.exists ? snapshot.data().reservedCount || 0 : 0,
       ]));
-      return json(res, 200, { counts, capacity: MAX_TEAMS_PER_SLOT });
+      const reservations = req.query?.view === 'staff'
+        ? (await db.collection('reservations').get()).docs
+          .map((snapshot) => {
+            const reservation = snapshot.data();
+            return {
+              number: reservation.number,
+              slotId: reservation.slotId,
+              name: reservation.name,
+              partnerName: reservation.partnerName,
+              verified: reservation.verified === true,
+            };
+          })
+          .sort(sortReservations)
+        : undefined;
+      return json(res, 200, { counts, capacity: MAX_TEAMS_PER_SLOT, reservations });
     }
 
     if (req.method !== 'POST') {
@@ -70,7 +88,34 @@ export default async function handler(req, res) {
       if (!reservation || reservation.name !== name) {
         return json(res, 404, { message: '整理番号と予約時の名前が一致しません。' });
       }
-      return json(res, 200, { reservation: { number: reservation.number, slotId: reservation.slotId } });
+      await reservationSnapshot.ref.update({
+        verified: true,
+        verifiedAt: new Date().toISOString(),
+      });
+      return json(res, 200, {
+        reservation: {
+          number: reservation.number,
+          slotId: reservation.slotId,
+          name: reservation.name,
+          partnerName: reservation.partnerName,
+          verified: true,
+        },
+      });
+    }
+
+    if (req.body?.action === 'setVerified') {
+      const number = clean(req.body.number, 20).toUpperCase();
+      const verified = req.body.verified === true;
+      const reservationRef = db.collection('reservations').doc(number);
+      const reservationSnapshot = await reservationRef.get();
+      if (!reservationSnapshot.exists) {
+        return json(res, 404, { message: '整理番号が見つかりません。' });
+      }
+      await reservationRef.update({
+        verified,
+        verifiedAt: verified ? new Date().toISOString() : null,
+      });
+      return json(res, 200, { number, verified });
     }
 
     const slotId = clean(req.body?.slotId, 20);
@@ -85,6 +130,7 @@ export default async function handler(req, res) {
       slotId,
       name,
       partnerName,
+      verified: false,
       createdAt: new Date().toISOString(),
     };
     const slotRef = db.collection('slots').doc(slotId);

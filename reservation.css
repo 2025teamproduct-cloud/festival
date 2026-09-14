@@ -40,6 +40,13 @@ button:disabled { cursor: wait; opacity: .55; }
 .feedback { min-height: 1.3em; margin: 0; font-size: .9rem; font-weight: bold; }
 .feedback.error { color: #b42318; }
 .feedback.success { color: var(--accent-dark); }
+.verified-reservation { margin-top: 18px; padding: 14px; color: var(--accent-dark); background: #e8f5ef; border-left: 4px solid var(--accent); line-height: 1.6; }
+.verified-reservation p { margin: 4px 0 0; }
+.participant-list { display: grid; gap: 18px; }
+.participant-group h3 { margin: 0 0 8px; color: var(--accent-dark); font-size: 1.05rem; }
+.participant-items { display: grid; gap: 8px; }
+.participant-item { display: flex; align-items: center; gap: 10px; padding: 11px 12px; font-weight: normal; background: #fff; border: 1px solid var(--line); border-radius: 8px; }
+.participant-item input { width: 20px; min-height: 20px; accent-color: var(--accent); }
 .result-panel { border: 2px solid var(--warm); }
 .number-box { display: grid; gap: 5px; margin: 20px 0 14px; padding: 16px; text-align: center; background: #fff8e1; border-radius: 10px; }
 .number-box span { color: var(--muted); font-size: .85rem; }
