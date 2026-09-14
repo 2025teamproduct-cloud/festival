@@ -24,3 +24,7 @@ function requireAdminAccess(event) {
 document.querySelectorAll('[data-admin-link]').forEach((link) => {
     link.addEventListener('click', requireAdminAccess);
 });
+
+if (document.querySelector('[data-admin-page]') && !hasAdminAccess()) {
+    window.location.replace('reservation.html');
+}

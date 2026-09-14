@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>スタッフ用予約確認 - 学園祭なぞ解き</title>
+    <link rel="stylesheet" href="reservation.css">
+</head>
+<body data-admin-page>
+    <main class="wrap">
+        <header class="hero">
+            <p class="eyebrow">STAFF ONLY</p>
+            <h1>予約確認</h1>
+            <p>来場者の整理番号と予約時の代表者名を照合してください。</p>
+        </header>
+
+        <section class="panel" aria-labelledby="verify-heading">
+            <h2 id="verify-heading">本人確認</h2>
+            <form id="verifyForm">
+                <label>整理番号<input id="verifyNumber" type="text" placeholder="F-XXXXXXXX" required></label>
+                <label>予約時の代表者名<input id="verifyName" type="text" autocomplete="name" required></label>
+                <button class="secondary-button" type="submit">予約を照合する</button>
+                <p id="verifyFeedback" class="feedback" role="status"></p>
+            </form>
+        </section>
+
+        <nav class="admin-nav" aria-label="スタッフ用リンク">
+            <a href="reservation.html">予約ページへ戻る</a>
+        </nav>
+    </main>
+    <script src="access.js"></script>
+    <script src="staff.js"></script>
+</body>
+</html>
