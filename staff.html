@@ -6,32 +6,145 @@
     <title>スタッフ用予約確認 - 学園祭なぞ解き</title>
     <link rel="stylesheet" href="reservation.css">
 </head>
+
 <body data-admin-page>
     <main class="wrap">
+
         <header class="hero">
             <p class="eyebrow">STAFF ONLY</p>
+
             <h1>予約確認</h1>
-            <p>整理番号と代表者名を照合し、本人確認が取れた組にチェックを入れてください。</p>
+
+            <p>
+                整理番号と代表者名を照合し、本人確認が取れた組にチェックを入れてください。
+            </p>
         </header>
 
-        <section class="panel" aria-labelledby="verify-heading">
-            <h2 id="verify-heading">本人確認</h2>
-            <form id="verifyForm">
-                <label>整理番号<select id="verifyNumber" required><option value="">読み込み中…</option></select></label>
-                <label>予約時の代表者名<input id="verifyName" type="text" autocomplete="name" required></label>
-                <button class="secondary-button" type="submit">予約を照合する</button>
-                <p id="verifyFeedback" class="feedback" role="status"></p>
-            </form>
-            <div id="verifiedReservation" class="verified-reservation" hidden aria-live="polite"></div>
+
+        <!-- ========================================
+             追加：参加日の切り替え
+             ======================================== -->
+
+        <section class="panel" aria-labelledby="day-heading">
+
+            <h2 id="day-heading">参加日</h2>
+
+            <div class="day-switch" role="group" aria-label="参加日の切り替え">
+
+                <button
+                    id="day1Button"
+                    class="secondary-button"
+                    type="button"
+                    data-day="day1"
+                >
+                    1日目
+                    <span>11月21日</span>
+                </button>
+
+                <button
+                    id="day2Button"
+                    class="secondary-button"
+                    type="button"
+                    data-day="day2"
+                >
+                    2日目
+                    <span>11月22日</span>
+                </button>
+
+            </div>
+
+            <p id="selectedDayLabel" class="note">
+                1日目（11月21日）を表示中
+            </p>
+
         </section>
 
-        <section class="panel" aria-labelledby="participants-heading">
-            <h2 id="participants-heading">時間帯別の参加者</h2>
-            <p class="note">本人確認が取れた組にチェックを入れると、状態が保存されます。</p>
-            <div id="participantList" class="participant-list" aria-live="polite"></div>
+
+        <!-- ========================================
+             本人確認
+             ======================================== -->
+
+        <section class="panel" aria-labelledby="verify-heading">
+
+            <h2 id="verify-heading">本人確認</h2>
+
+            <form id="verifyForm">
+
+                <label>
+                    整理番号
+                    <select id="verifyNumber" required>
+                        <option value="">
+                            読み込み中…
+                        </option>
+                    </select>
+                </label>
+
+                <label>
+                    予約時の代表者名
+                    <input
+                        id="verifyName"
+                        type="text"
+                        autocomplete="name"
+                        required
+                    >
+                </label>
+
+                <button
+                    class="secondary-button"
+                    type="submit"
+                >
+                    予約を照合する
+                </button>
+
+                <p
+                    id="verifyFeedback"
+                    class="feedback"
+                    role="status"
+                ></p>
+
+            </form>
+
+            <div
+                id="verifiedReservation"
+                class="verified-reservation"
+                hidden
+                aria-live="polite"
+            ></div>
+
+        </section>
+
+
+        <!-- ========================================
+             時間帯別参加者
+             ======================================== -->
+
+        <section
+            class="panel"
+            aria-labelledby="participants-heading"
+        >
+
+            <h2 id="participants-heading">
+                時間帯別の参加者
+            </h2>
+
+            <p class="note">
+                本人確認が取れた組にチェックを入れると、状態が保存されます。
+            </p>
+
+            <p class="note">
+                ※終了した時間帯は表示されません。
+            </p>
+
+            <div
+                id="participantList"
+                class="participant-list"
+                aria-live="polite"
+            ></div>
+
         </section>
 
     </main>
+
     <script src="access.js"></script>
     <script src="staff.js"></script>
 </body>
