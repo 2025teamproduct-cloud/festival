@@ -33,6 +33,6 @@ if (document.querySelector('[data-admin-page]') && !hasAdminAccess()) {
         if (password !== null) {
             window.alert('パスワードが違います。');
         }
-        window.location.replace('reservation.html');
+        document.body.innerHTML = '<main class="wrap"><section class="panel"><h1>アクセスできません</h1><p>管理者パスワードが必要です。</p></section></main>';
     }
 }
