@@ -26,5 +26,13 @@ document.querySelectorAll('[data-admin-link]').forEach((link) => {
 });
 
 if (document.querySelector('[data-admin-page]') && !hasAdminAccess()) {
-    window.location.replace('reservation.html');
+    const password = window.prompt('管理者パスワードを入力してください');
+    if (password === ADMIN_PASSWORD) {
+        sessionStorage.setItem(ACCESS_KEY, 'granted');
+    } else {
+        if (password !== null) {
+            window.alert('パスワードが違います。');
+        }
+        window.location.replace('reservation.html');
+    }
 }
