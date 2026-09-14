@@ -1,10 +1,18 @@
-const slots = [
-    { id: '10:00', label: '第1回　10:00〜' },
-    { id: '11:00', label: '第2回　11:00〜' },
-    { id: '13:00', label: '第3回　13:00〜' },
-    { id: '14:00', label: '第4回　14:00〜' },
-    { id: '15:00', label: '第5回　15:00〜' }
-];
+const START_TIME_MINUTES = 10 * 60;
+const END_TIME_MINUTES = 15 * 60;
+const SLOT_INTERVAL_MINUTES = 10;
+const slots = Array.from(
+    { length: (END_TIME_MINUTES - START_TIME_MINUTES) / SLOT_INTERVAL_MINUTES + 1 },
+    (_, index) => {
+        const totalMinutes = START_TIME_MINUTES + index * SLOT_INTERVAL_MINUTES;
+        const hours = String(Math.floor(totalMinutes / 60)).padStart(2, '0');
+        const minutes = String(totalMinutes % 60).padStart(2, '0');
+        return {
+            id: `${hours}:${minutes}`,
+            label: `${index + 1}回目　${hours}:${minutes}〜`
+        };
+    }
+);
 const capacity = 5;
 const slotSelect = document.getElementById('slotId');
 const reservationForm = document.getElementById('reservationForm');

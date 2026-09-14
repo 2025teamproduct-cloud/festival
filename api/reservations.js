@@ -1,16 +1,34 @@
-import { Redis } from '@upstash/redis';
+import { cert, getApps, initializeApp } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
 import { randomUUID } from 'node:crypto';
 
 const MAX_TEAMS_PER_SLOT = 5;
-const RESERVATION_KEY = 'festival:reservations:v1';
-const LOCK_KEY = 'festival:reservations:lock';
-const SLOTS = new Set(['10:00', '11:00', '13:00', '14:00', '15:00']);
-
-function getRedis() {
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-    throw new Error('Upstash Redis environment variables are not configured');
+const START_TIME_MINUTES = 10 * 60;
+const END_TIME_MINUTES = 15 * 60;
+const SLOT_INTERVAL_MINUTES = 10;
+const SLOTS = new Set(Array.from(
+  { length: (END_TIME_MINUTES - START_TIME_MINUTES) / SLOT_INTERVAL_MINUTES + 1 },
+  (_, index) => {
+    const totalMinutes = START_TIME_MINUTES + index * SLOT_INTERVAL_MINUTES;
+    return `${String(Math.floor(totalMinutes / 60)).padStart(2, '0')}:${String(totalMinutes % 60).padStart(2, '0')}`;
   }
-  return Redis.fromEnv();
+));
+
+function getFirestoreDb() {
+  if (!getApps().length) {
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !privateKey) {
+      throw new Error('Firebase Admin environment variables are not configured');
+    }
+    initializeApp({
+      credential: cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey,
+      }),
+    });
+  }
+  return getFirestore();
 }
 
 function json(res, status, body) {
@@ -27,13 +45,15 @@ function createNumber() {
 
 export default async function handler(req, res) {
   try {
-    const redis = getRedis();
-    const reservations = (await redis.get(RESERVATION_KEY)) || [];
+    const db = getFirestoreDb();
 
     if (req.method === 'GET') {
-      const counts = Object.fromEntries([...SLOTS].map((slot) => [
-        slot,
-        reservations.filter((reservation) => reservation.slotId === slot).length,
+      const slotSnapshots = await Promise.all([...SLOTS].map((slot) =>
+        db.collection('slots').doc(slot).get()
+      ));
+      const counts = Object.fromEntries(slotSnapshots.map((snapshot) => [
+        snapshot.id,
+        snapshot.exists ? snapshot.data().reservedCount || 0 : 0,
       ]));
       return json(res, 200, { counts, capacity: MAX_TEAMS_PER_SLOT });
     }
@@ -45,8 +65,9 @@ export default async function handler(req, res) {
     if (req.body?.action === 'verify') {
       const number = clean(req.body.number, 20).toUpperCase();
       const name = clean(req.body.name, 80);
-      const reservation = reservations.find((item) => item.number === number && item.name === name);
-      if (!reservation) {
+      const reservationSnapshot = await db.collection('reservations').doc(number).get();
+      const reservation = reservationSnapshot.exists ? reservationSnapshot.data() : null;
+      if (!reservation || reservation.name !== name) {
         return json(res, 404, { message: '整理番号と予約時の名前が一致しません。' });
       }
       return json(res, 200, { reservation: { number: reservation.number, slotId: reservation.slotId } });
@@ -59,32 +80,37 @@ export default async function handler(req, res) {
       return json(res, 400, { message: '参加枠、代表者名、同行者名を入力してください。' });
     }
 
-    const lockToken = randomUUID();
-    const locked = await redis.set(LOCK_KEY, lockToken, { nx: true, ex: 5 });
-    if (!locked) {
-      return json(res, 409, { message: '予約処理が集中しています。少し待って再度お試しください。' });
-    }
+    const reservation = {
+      number: createNumber(),
+      slotId,
+      name,
+      partnerName,
+      createdAt: new Date().toISOString(),
+    };
+    const slotRef = db.collection('slots').doc(slotId);
+    const reservationRef = db.collection('reservations').doc(reservation.number);
 
-    try {
-      const latest = (await redis.get(RESERVATION_KEY)) || [];
-      const slotReservations = latest.filter((reservation) => reservation.slotId === slotId);
-      if (slotReservations.length >= MAX_TEAMS_PER_SLOT) {
-        return json(res, 409, { message: 'この回は満席です。別の回を選択してください。' });
+    await db.runTransaction(async (transaction) => {
+      const slotSnapshot = await transaction.get(slotRef);
+      const reservedCount = slotSnapshot.exists ? slotSnapshot.data().reservedCount || 0 : 0;
+      if (reservedCount >= MAX_TEAMS_PER_SLOT) {
+        const error = new Error('この回は満席です。別の回を選択してください。');
+        error.code = 'FULL';
+        throw error;
       }
-
-      const reservation = {
-        number: createNumber(),
+      transaction.set(slotRef, {
         slotId,
-        name,
-        partnerName,
-        createdAt: new Date().toISOString(),
-      };
-      await redis.set(RESERVATION_KEY, [...latest, reservation]);
-      return json(res, 201, { reservation });
-    } finally {
-      await redis.del(LOCK_KEY);
-    }
+        capacity: MAX_TEAMS_PER_SLOT,
+        reservedCount: reservedCount + 1,
+      }, { merge: true });
+      transaction.create(reservationRef, reservation);
+    });
+
+    return json(res, 201, { reservation });
   } catch (error) {
+    if (error.code === 'FULL') {
+      return json(res, 409, { message: error.message });
+    }
     console.error(error);
     return json(res, 500, { message: '予約システムに接続できません。管理者にご確認ください。' });
   }

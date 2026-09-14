@@ -12,12 +12,20 @@
 
 ## 予約機能を使うための設定
 
-予約データはブラウザではなく Upstash Redis に保存します。Vercel プロジェクトに次の環境変数を登録してデプロイしてください。
+予約データはブラウザではなく Firebase Firestore に保存します。API は Firebase Admin SDK 経由でFirestoreへ接続するため、Vercel プロジェクトに次の環境変数を登録してデプロイしてください。
 
-- `UPSTASH_REDIS_REST_URL`
-- `UPSTASH_REDIS_REST_TOKEN`
+- `FIREBASE_PROJECT_ID`（例: `reservation-c9c37`）
+- `FIREBASE_CLIENT_EMAIL`
+- `FIREBASE_PRIVATE_KEY`
 
-依存パッケージは `npm install` でインストールします。予約枠は `reservation.js` と `api/reservations.js` の両方にある回（現在は10:00、11:00、13:00、14:00、15:00）を一致させて変更してください。各回の上限はサーバー側で5組です。
+Firestoreには次の2コレクションを使用します。`slots/{slotId}` は回ごとの定員と予約数、`reservations/{整理番号}` は予約情報を保存します。`slots` のドキュメントは予約時に自動作成されます。
+
+- `slots/10:00` など: `slotId`, `capacity`, `reservedCount`
+- `reservations/F-XXXXXXXX`: `number`, `slotId`, `name`, `partnerName`, `createdAt`
+
+Firestore Rulesは、クライアントから直接読み書きさせないため、提示された `allow read, write: if false;` のままで構いません。サービスアカウントの秘密鍵は Firebase Console の「プロジェクトの設定」→「サービス アカウント」→「新しい秘密鍵の生成」から取得し、`FIREBASE_PRIVATE_KEY` に登録します。秘密鍵内の改行はVercelの環境変数では `\n` として保持してください。
+
+依存パッケージは `npm install` でインストールします。予約枠は `reservation.js` と `api/reservations.js` の開始時刻・終了時刻・間隔を一致させて変更してください。現在は10:00〜15:00を10分間隔で設定しています。各回の上限はサーバー側で5組です。
 
 管理者用リンクのパスワードは `access.js` の `ADMIN_PASSWORD` を本番用の値に変更してください。予約完了後に表示される整理番号は、予約時の代表者名と組み合わせて本人確認に使います。
 
