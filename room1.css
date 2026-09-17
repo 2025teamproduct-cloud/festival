@@ -70,6 +70,11 @@ svg {
     font-weight: bold;
 }
 
+/* 問題エリア全体（この上にbook-overlayが重なる） */
+.game-content {
+    position: relative;
+}
+
 .timer-box {
     background: var(--card);
     border: 3px solid var(--main);
@@ -136,27 +141,24 @@ svg {
     color: var(--main-dark);
 }
 
-/* ============ 本の演出まわり ============ */
+/* ============ 本の演出まわり（問題エリアの上に重なる） ============ */
 
-.start-overlay {
-    position: fixed;
+.book-overlay {
+    position: absolute;
     inset: 0;
-    z-index: 100;
+    z-index: 40;
+    display: flex;
     overflow: hidden;
+    border-radius: 16px;
     background: #2b1c12;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+    perspective: 2200px;
     transition: opacity 0.5s ease;
 }
 
-.start-overlay.fade-out {
+.book-overlay.fade-out {
     opacity: 0;
     pointer-events: none;
-}
-
-.book {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    perspective: 2200px;
 }
 
 /* 左半分：空白ページ */
@@ -542,6 +544,10 @@ svg {
         right: auto;
         bottom: auto;
     }
+
+    .book-overlay {
+        border-radius: 12px;
+    }
 }
 
 @media (max-width: 420px) {
@@ -554,14 +560,6 @@ svg {
     .qrow input[type=text],
     .qrow button {
         font-size: 16px;
-    }
-
-    .book-right {
-        width: 55%;
-    }
-
-    .book-page-left {
-        width: 45%;
     }
 
     .cover-content h2 {

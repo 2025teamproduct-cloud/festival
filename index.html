@@ -11,37 +11,6 @@
 
 <body>
 
-    <div id="startOverlay" class="start-overlay">
-        <div class="book">
-            <div class="book-page-left">
-                <div class="page-lines"></div>
-            </div>
-            <div class="book-right" id="bookRight">
-                <div class="page-lines-right"></div>
-
-                <div class="flip-page paper" style="transition-delay:870ms;"></div>
-                <div class="flip-page paper" style="transition-delay:780ms;"></div>
-                <div class="flip-page paper" style="transition-delay:690ms;"></div>
-                <div class="flip-page paper" style="transition-delay:600ms;"></div>
-                <div class="flip-page paper" style="transition-delay:510ms;"></div>
-                <div class="flip-page paper" style="transition-delay:420ms;"></div>
-                <div class="flip-page paper" style="transition-delay:330ms;"></div>
-                <div class="flip-page paper" style="transition-delay:240ms;"></div>
-                <div class="flip-page paper" style="transition-delay:150ms;"></div>
-
-                <div class="flip-page cover" style="transition-delay:0ms;">
-                    <div class="cover-content">
-                        <div class="icon">⏱️</div>
-                        <h2>ゲーム開始前の確認</h2>
-                        <p>開始ボタンを押すと、タイマーが動き出します。<br>準備ができたら開始してください。</p>
-                        <button id="startButton" type="button">開始する</button>
-                    </div>
-                    <div class="cover-shine"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div id="redOverlay"></div>
 
     <div class="wrap">
@@ -50,47 +19,81 @@
             <a class="admin-link" data-admin-link href="reservation.html">予約ページへ戻る（管理者）</a>
         </div>
 
-        <div class="status-bar">
-            <div class="timer-box">
-                <div class="label">残り時間</div>
-                <div class="time" id="timeDisplay">--:--</div>
-            </div>
-            <div class="progress" id="progressText">正解数: 0 / 3</div>
-        </div>
+        <div class="game-content" id="gameContent">
 
-        <!-- ▼▼▼ 問題1〜3。文章と答えはここで編集してください ▼▼▼ -->
-        <div class="question" data-index="0">
-            <p class="qtext">問題1：この会場の入口に置かれた看板に書かれた「合言葉」の最初の一文字は何でしょう？（ひらがなで回答）</p>
-            <div class="qrow">
-                <input type="text" placeholder="こたえを入力">
-                <button onclick="checkAnswer(0, this)">確認</button>
+            <div class="status-bar">
+                <div class="timer-box">
+                    <div class="label">残り時間</div>
+                    <div class="time" id="timeDisplay">--:--</div>
+                </div>
+                <div class="progress" id="progressText">正解数: 0 / 3</div>
             </div>
-            <div class="feedback"></div>
-        </div>
 
-        <div class="question" data-index="1">
-            <p class="qtext">問題2：3, 6, 9, 12, ? 　次に来る数字は？</p>
-            <div class="qrow">
-                <input type="text" placeholder="こたえを入力">
-                <button onclick="checkAnswer(1, this)">確認</button>
+            <!-- ▼▼▼ 問題1〜3。文章と答えはここで編集してください ▼▼▼ -->
+            <div class="question" data-index="0">
+                <p class="qtext">問題1：この会場の入口に置かれた看板に書かれた「合言葉」の最初の一文字は何でしょう？（ひらがなで回答）</p>
+                <div class="qrow">
+                    <input type="text" placeholder="こたえを入力">
+                    <button onclick="checkAnswer(0, this)">確認</button>
+                </div>
+                <div class="feedback"></div>
             </div>
-            <div class="feedback"></div>
-        </div>
 
-        <div class="question" data-index="2">
-            <p class="qtext">問題3：「さくら」を逆から読むと？</p>
-            <div class="qrow">
-                <input type="text" placeholder="こたえを入力">
-                <button onclick="checkAnswer(2, this)">確認</button>
+            <div class="question" data-index="1">
+                <p class="qtext">問題2：3, 6, 9, 12, ? 　次に来る数字は？</p>
+                <div class="qrow">
+                    <input type="text" placeholder="こたえを入力">
+                    <button onclick="checkAnswer(1, this)">確認</button>
+                </div>
+                <div class="feedback"></div>
             </div>
-            <div class="feedback"></div>
-        </div>
-        <!-- ▲▲▲ 編集ここまで ▲▲▲ -->
 
-        <div id="clearBox">
-            <h2>🎉 全問正解！</h2>
-            <p>スタッフにこの画面を見せて、次の部屋へ進んでください。</p>
-            <a class="nextlink" href="room2.html">次の部屋へ進む →</a>
+            <div class="question" data-index="2">
+                <p class="qtext">問題3：「さくら」を逆から読むと？</p>
+                <div class="qrow">
+                    <input type="text" placeholder="こたえを入力">
+                    <button onclick="checkAnswer(2, this)">確認</button>
+                </div>
+                <div class="feedback"></div>
+            </div>
+            <!-- ▲▲▲ 編集ここまで ▲▲▲ -->
+
+            <div id="clearBox">
+                <h2>🎉 全問正解！</h2>
+                <p>スタッフにこの画面を見せて、次の部屋へ進んでください。</p>
+                <a class="nextlink" href="room2.html">次の部屋へ進む →</a>
+            </div>
+
+            <!-- 問題の上に重なる「本」の演出 -->
+            <div class="book-overlay" id="bookOverlay">
+                <div class="book-page-left">
+                    <div class="page-lines"></div>
+                </div>
+                <div class="book-right" id="bookRight">
+                    <div class="page-lines-right"></div>
+
+                    <div class="flip-page paper" style="transition-delay:870ms;"></div>
+                    <div class="flip-page paper" style="transition-delay:780ms;"></div>
+                    <div class="flip-page paper" style="transition-delay:690ms;"></div>
+                    <div class="flip-page paper" style="transition-delay:600ms;"></div>
+                    <div class="flip-page paper" style="transition-delay:510ms;"></div>
+                    <div class="flip-page paper" style="transition-delay:420ms;"></div>
+                    <div class="flip-page paper" style="transition-delay:330ms;"></div>
+                    <div class="flip-page paper" style="transition-delay:240ms;"></div>
+                    <div class="flip-page paper" style="transition-delay:150ms;"></div>
+
+                    <div class="flip-page cover" style="transition-delay:0ms;">
+                        <div class="cover-content">
+                            <div class="icon">⏱️</div>
+                            <h2>ゲーム開始前の確認</h2>
+                            <p>開始ボタンを押すと、タイマーが動き出します。<br>準備ができたら開始してください。</p>
+                            <button id="startButton" type="button">開始する</button>
+                        </div>
+                        <div class="cover-shine"></div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 

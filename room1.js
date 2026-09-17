@@ -90,7 +90,7 @@ function startGame() {
     if (started) return;
     started = true;
 
-    const overlay = document.getElementById('startOverlay');
+    const overlay = document.getElementById('bookOverlay');
     const bookRight = document.getElementById('bookRight');
 
     // 表紙→紙9枚が連続してめくれる演出
