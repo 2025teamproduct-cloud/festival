@@ -178,16 +178,55 @@ svg {
     opacity: 0.6;
 }
 
-/* 右半分：表紙（開く部分） */
-.book-cover {
-    position: absolute;
-    top: 0;
-    right: 0;
+/* 右半分：複数ページが重なった土台 */
+.book-right {
+    position: relative;
     width: 50%;
     height: 100%;
+    background: linear-gradient(135deg, #fdf8ef, #f3ead9);
+    box-shadow: inset 10px 0 30px rgba(0, 0, 0, 0.12);
+}
+
+.page-lines-right {
+    position: absolute;
+    inset: 10%;
+    background-image: repeating-linear-gradient(to bottom,
+            transparent,
+            transparent 28px,
+            rgba(58, 44, 34, 0.08) 29px);
+    opacity: 0.6;
+}
+
+/* 1枚1枚のページ（紙・表紙共通） */
+.flip-page {
+    position: absolute;
+    inset: 0;
     transform-origin: left center;
-    transform-style: preserve-3d;
     backface-visibility: hidden;
+    transform: rotateY(0deg);
+    transition: transform 0.45s cubic-bezier(0.62, 0, 0.3, 1);
+}
+
+/* 中の紙ページ */
+.flip-page.paper {
+    background: linear-gradient(135deg, #fdf8ef, #f1e6d2);
+    border-left: 1px solid rgba(58, 44, 34, 0.15);
+    box-shadow: inset -4px 0 10px rgba(0, 0, 0, 0.06);
+}
+
+.flip-page.paper::before {
+    content: "";
+    position: absolute;
+    inset: 12% 10%;
+    background-image: repeating-linear-gradient(to bottom,
+            transparent,
+            transparent 26px,
+            rgba(58, 44, 34, 0.06) 27px);
+}
+
+/* 一番上：表紙ページ */
+.flip-page.cover {
+    transition-duration: 0.8s;
     background:
         radial-gradient(circle at 30% 20%, rgba(255, 183, 3, 0.15), transparent 55%),
         linear-gradient(155deg, #7a4322, #4a2712 60%, #351a0c);
@@ -199,11 +238,10 @@ svg {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 1.05s cubic-bezier(0.62, 0, 0.3, 1);
-    will-change: transform;
 }
 
-.book-cover.open {
+/* 開始時：全ページが左に開く */
+.book-right.open .flip-page {
     transform: rotateY(-165deg);
 }
 
@@ -401,20 +439,100 @@ svg {
 
 @media (max-width: 600px) {
     body {
-        padding: 12px;
+        padding: 8px;
+    }
+
+    .header {
+        margin-bottom: 8px;
+    }
+
+    .header h1 {
+        font-size: 1.05rem;
+        margin-bottom: 2px;
+    }
+
+    .admin-link {
+        font-size: 0.72rem;
+    }
+
+    /* タイマー＋進捗を1本の固定バーに */
+    .status-bar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        background: rgba(253, 246, 236, 0.92);
+        backdrop-filter: blur(6px);
+        padding: 6px 10px;
+        border-radius: 12px;
+        border: 2px solid var(--main);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 10px;
+    }
+
+    .timer-box {
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 0;
+        margin-bottom: 0;
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        text-align: left;
+    }
+
+    .timer-box .label {
+        font-size: 0.68rem;
+    }
+
+    .timer-box .time {
+        font-size: 1.3rem;
+        letter-spacing: 1px;
+    }
+
+    .progress {
+        margin: 0;
+        font-size: 0.75rem;
+        white-space: nowrap;
     }
 
     .wrap {
-        width: min(100%, 100%);
+        width: 100%;
+    }
+
+    .question {
+        padding: 10px 12px;
+        margin-bottom: 10px;
+        border-radius: 10px;
+    }
+
+    .question p.qtext {
+        margin-bottom: 8px;
+    }
+
+    .hint-inline {
+        padding: 8px 10px;
+        margin-top: 8px;
+        font-size: 0.8rem;
     }
 
     .qrow {
         flex-direction: column;
+        gap: 6px;
     }
 
     .qrow input[type=text],
     .qrow button {
         width: 100%;
+        min-height: 38px;
+    }
+
+    #clearBox {
+        padding: 16px;
     }
 
     .hint-panel {
@@ -424,40 +542,33 @@ svg {
         right: auto;
         bottom: auto;
     }
+}
+
+@media (max-width: 420px) {
+
+    .question,
+    #clearBox {
+        border-radius: 10px;
+    }
+
+    .qrow input[type=text],
+    .qrow button {
+        font-size: 16px;
+    }
+
+    .book-right {
+        width: 55%;
+    }
 
     .book-page-left {
         width: 45%;
     }
 
-    .book-cover {
-        width: 55%;
-    }
-
     .cover-content h2 {
-        font-size: 1.15rem;
+        font-size: 1.1rem;
     }
 
     .cover-content p {
-        font-size: 0.85rem;
-    }
-}
-
-@media (max-width: 420px) {
-    .timer-box {
-        padding: 12px 10px;
-    }
-
-    .question,
-    #clearBox,
-    .start-card {
-        border-radius: 12px;
-    }
-
-    .qrow input[type=text],
-    .qrow button,
-    .lock-card input[type=text],
-    .lock-card button,
-    .start-card button {
-        font-size: 16px;
+        font-size: 0.82rem;
     }
 }

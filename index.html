@@ -16,14 +16,28 @@
             <div class="book-page-left">
                 <div class="page-lines"></div>
             </div>
-            <div class="book-cover" id="bookCover">
-                <div class="cover-content">
-                    <div class="icon">⏱️</div>
-                    <h2>ゲーム開始前の確認</h2>
-                    <p>開始ボタンを押すと、タイマーが動き出します。<br>準備ができたら開始してください。</p>
-                    <button id="startButton" type="button">開始する</button>
+            <div class="book-right" id="bookRight">
+                <div class="page-lines-right"></div>
+
+                <div class="flip-page paper" style="transition-delay:870ms;"></div>
+                <div class="flip-page paper" style="transition-delay:780ms;"></div>
+                <div class="flip-page paper" style="transition-delay:690ms;"></div>
+                <div class="flip-page paper" style="transition-delay:600ms;"></div>
+                <div class="flip-page paper" style="transition-delay:510ms;"></div>
+                <div class="flip-page paper" style="transition-delay:420ms;"></div>
+                <div class="flip-page paper" style="transition-delay:330ms;"></div>
+                <div class="flip-page paper" style="transition-delay:240ms;"></div>
+                <div class="flip-page paper" style="transition-delay:150ms;"></div>
+
+                <div class="flip-page cover" style="transition-delay:0ms;">
+                    <div class="cover-content">
+                        <div class="icon">⏱️</div>
+                        <h2>ゲーム開始前の確認</h2>
+                        <p>開始ボタンを押すと、タイマーが動き出します。<br>準備ができたら開始してください。</p>
+                        <button id="startButton" type="button">開始する</button>
+                    </div>
+                    <div class="cover-shine"></div>
                 </div>
-                <div class="cover-shine"></div>
             </div>
         </div>
     </div>
@@ -36,12 +50,13 @@
             <a class="admin-link" data-admin-link href="reservation.html">予約ページへ戻る（管理者）</a>
         </div>
 
-        <div class="timer-box">
-            <div class="label">残り時間</div>
-            <div class="time" id="timeDisplay">--:--</div>
+        <div class="status-bar">
+            <div class="timer-box">
+                <div class="label">残り時間</div>
+                <div class="time" id="timeDisplay">--:--</div>
+            </div>
+            <div class="progress" id="progressText">正解数: 0 / 3</div>
         </div>
-
-        <div class="progress" id="progressText">正解数: 0 / 3</div>
 
         <!-- ▼▼▼ 問題1〜3。文章と答えはここで編集してください ▼▼▼ -->
         <div class="question" data-index="0">

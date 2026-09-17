@@ -91,19 +91,19 @@ function startGame() {
     started = true;
 
     const overlay = document.getElementById('startOverlay');
-    const cover = document.getElementById('bookCover');
+    const bookRight = document.getElementById('bookRight');
 
-    // 表紙が本のように開くアニメーション
-    cover.classList.add('open');
+    // 表紙→紙9枚が連続してめくれる演出
+    bookRight.classList.add('open');
 
-    // 表紙が開き終わるタイミングで、オーバーレイ全体をフェードアウト
+    // 全ページがめくれ終わるタイミングでオーバーレイをフェードアウト
     setTimeout(() => {
         overlay.classList.add('fade-out');
-    }, 950);
+    }, 1350);
 
     setTimeout(() => {
         overlay.style.display = 'none';
-    }, 1450);
+    }, 1850);
 
     if (timerId === null) {
         timerId = setInterval(tick, 1000);
