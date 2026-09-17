@@ -89,10 +89,22 @@ function tick() {
 function startGame() {
     if (started) return;
     started = true;
-    document.getElementById('startOverlay').classList.add('hide');
+
+    const overlay = document.getElementById('startOverlay');
+    const cover = document.getElementById('bookCover');
+
+    // 表紙が本のように開くアニメーション
+    cover.classList.add('open');
+
+    // 表紙が開き終わるタイミングで、オーバーレイ全体をフェードアウト
     setTimeout(() => {
-        document.getElementById('startOverlay').style.display = 'none';
-    }, 450);
+        overlay.classList.add('fade-out');
+    }, 950);
+
+    setTimeout(() => {
+        overlay.style.display = 'none';
+    }, 1450);
+
     if (timerId === null) {
         timerId = setInterval(tick, 1000);
     }
