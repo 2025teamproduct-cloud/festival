@@ -36,6 +36,10 @@ const QUESTIONS = [
 
 /* ====================== 設定エリアここまで ====================== */
 
+// 本のページがめくれ終わってから、問題文を見せ始めるまでの待ち時間（ms）
+// 表紙(0.8s)＋一番奥の紙(遅延870ms＋0.45s)が終わる頃に合わせています
+const REVEAL_DELAY_MS = 1300;
+
 let elapsed = 0;
 let solvedCount = 0;
 let started = false;
@@ -90,16 +94,16 @@ function startGame() {
     if (started) return;
     started = true;
 
-    const overlay = document.getElementById('bookOverlay');
     const bookRight = document.getElementById('bookRight');
+    const rightPageContent = document.getElementById('rightPageContent');
 
     // 表紙→紙9枚が連続してめくれる演出
     bookRight.classList.add('open');
 
-    // 全ページがめくれ終わったら、フェードなしで即座に本を消す
+    // ページがめくれ終わるタイミングで、問題文を右側からじわっと見せる
     setTimeout(() => {
-        overlay.style.display = 'none';
-    }, 950);
+        rightPageContent.classList.add('revealed');
+    }, REVEAL_DELAY_MS);
 
     if (timerId === null) {
         timerId = setInterval(tick, 1000);

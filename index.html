@@ -21,57 +21,66 @@
 
         <div class="game-content" id="gameContent">
 
-            <div class="status-bar">
-                <div class="timer-box">
-                    <div class="label">残り時間</div>
-                    <div class="time" id="timeDisplay">--:--</div>
-                </div>
-                <div class="progress" id="progressText">正解数: 0 / 3</div>
-            </div>
+            <div class="book-frame" id="bookFrame">
 
-            <!-- ▼▼▼ 問題1〜3。文章と答えはここで編集してください ▼▼▼ -->
-            <div class="question" data-index="0">
-                <p class="qtext">問題1：この会場の入口に置かれた看板に書かれた「合言葉」の最初の一文字は何でしょう？（ひらがなで回答）</p>
-                <div class="qrow">
-                    <input type="text" placeholder="こたえを入力">
-                    <button onclick="checkAnswer(0, this)">確認</button>
-                </div>
-                <div class="feedback"></div>
-            </div>
-
-            <div class="question" data-index="1">
-                <p class="qtext">問題2：3, 6, 9, 12, ? 　次に来る数字は？</p>
-                <div class="qrow">
-                    <input type="text" placeholder="こたえを入力">
-                    <button onclick="checkAnswer(1, this)">確認</button>
-                </div>
-                <div class="feedback"></div>
-            </div>
-
-            <div class="question" data-index="2">
-                <p class="qtext">問題3：「さくら」を逆から読むと？</p>
-                <div class="qrow">
-                    <input type="text" placeholder="こたえを入力">
-                    <button onclick="checkAnswer(2, this)">確認</button>
-                </div>
-                <div class="feedback"></div>
-            </div>
-            <!-- ▲▲▲ 編集ここまで ▲▲▲ -->
-
-            <div id="clearBox">
-                <h2>🎉 全問正解！</h2>
-                <p>スタッフにこの画面を見せて、次の部屋へ進んでください。</p>
-                <a class="nextlink" href="room2.html">次の部屋へ進む →</a>
-            </div>
-
-            <!-- 問題の上に重なる「本」の演出 -->
-            <div class="book-overlay" id="bookOverlay">
+                <!-- 左ページ：残り時間・進捗（最初から見えているページ） -->
                 <div class="book-page-left">
                     <div class="page-lines"></div>
+                    <div class="left-page-content">
+                        <div class="status-bar">
+                            <div class="timer-box">
+                                <div class="label">残り時間</div>
+                                <div class="time" id="timeDisplay">--:--</div>
+                            </div>
+                            <div class="progress" id="progressText">正解数: 0 / 3</div>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- 右ページ：問題（本を開くと書かれているページ） -->
                 <div class="book-right" id="bookRight">
                     <div class="page-lines-right"></div>
 
+                    <div class="right-page-content" id="rightPageContent">
+
+                        <!-- ▼▼▼ 問題1〜3。文章と答えはここで編集してください ▼▼▼ -->
+                        <div class="question" data-index="0">
+                            <p class="qtext">問題1：この会場の入口に置かれた看板に書かれた「合言葉」の最初の一文字は何でしょう？（ひらがなで回答）</p>
+                            <div class="qrow">
+                                <input type="text" placeholder="こたえを入力">
+                                <button onclick="checkAnswer(0, this)">確認</button>
+                            </div>
+                            <div class="feedback"></div>
+                        </div>
+
+                        <div class="question" data-index="1">
+                            <p class="qtext">問題2：3, 6, 9, 12, ? 　次に来る数字は？</p>
+                            <div class="qrow">
+                                <input type="text" placeholder="こたえを入力">
+                                <button onclick="checkAnswer(1, this)">確認</button>
+                            </div>
+                            <div class="feedback"></div>
+                        </div>
+
+                        <div class="question" data-index="2">
+                            <p class="qtext">問題3：「さくら」を逆から読むと？</p>
+                            <div class="qrow">
+                                <input type="text" placeholder="こたえを入力">
+                                <button onclick="checkAnswer(2, this)">確認</button>
+                            </div>
+                            <div class="feedback"></div>
+                        </div>
+                        <!-- ▲▲▲ 編集ここまで ▲▲▲ -->
+
+                        <div id="clearBox">
+                            <h2>🎉 全問正解！</h2>
+                            <p>スタッフにこの画面を見せて、次の部屋へ進んでください。</p>
+                            <a class="nextlink" href="room2.html">次の部屋へ進む →</a>
+                        </div>
+
+                    </div>
+
+                    <!-- ここから上に重なる「本」の演出。開くとrightPageContentが見える -->
                     <div class="flip-page paper" style="transition-delay:870ms;"></div>
                     <div class="flip-page paper" style="transition-delay:780ms;"></div>
                     <div class="flip-page paper" style="transition-delay:690ms;"></div>
@@ -92,6 +101,7 @@
                         <div class="cover-shine"></div>
                     </div>
                 </div>
+
             </div>
 
         </div>
