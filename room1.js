@@ -96,14 +96,10 @@ function startGame() {
     // 表紙→紙9枚が連続してめくれる演出
     bookRight.classList.add('open');
 
-    // 全ページがめくれ終わるタイミングでオーバーレイをフェードアウト
-    setTimeout(() => {
-        overlay.classList.add('fade-out');
-    }, 1350);
-
+    // 全ページがめくれ終わったら、フェードなしで即座に本を消す
     setTimeout(() => {
         overlay.style.display = 'none';
-    }, 1850);
+    }, 950);
 
     if (timerId === null) {
         timerId = setInterval(tick, 1000);
