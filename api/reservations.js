@@ -1,3 +1,4 @@
+//  /api/reservations.js
 import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { randomUUID } from 'node:crypto';
@@ -226,6 +227,11 @@ function clean(value, maxLength) {
 }
 
 
+function normalizeReservationNumber(value) {
+  return clean(value, 20).toUpperCase();
+}
+
+
 // ========================================
 // 整理番号作成
 // ========================================
@@ -246,7 +252,10 @@ function sortReservations(first, second) {
   return first.number.localeCompare(
     second.number,
     undefined,
-    { numeric: true }
+    {
+      numeric: true,
+      sensitivity: 'base',
+    }
   );
 }
 
@@ -467,10 +476,9 @@ export default async function handler(req, res) {
     if (req.body?.action === 'verify') {
 
       const number =
-        clean(
-          req.body.number,
-          20
-        ).toUpperCase();
+        normalizeReservationNumber(
+          req.body.number
+        );
 
       const name =
         clean(
@@ -551,10 +559,9 @@ export default async function handler(req, res) {
     ) {
 
       const number =
-        clean(
-          req.body.number,
-          20
-        ).toUpperCase();
+        normalizeReservationNumber(
+          req.body.number
+        );
 
       const verified =
         req.body.verified === true;

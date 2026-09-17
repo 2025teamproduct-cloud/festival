@@ -1,3 +1,4 @@
+//  /complete.js
 const colors = ['#ff6f3c', '#ffb703', '#3c7bff', '#2e9e4f', '#ff3c8e'];
 for (let i = 0; i < 60; i++) {
     const c = document.createElement('div');

@@ -1,3 +1,4 @@
+//  /staff.js
 const verifyForm = document.getElementById('verifyForm');
 const verifyNumber = document.getElementById('verifyNumber');
 const verifyName = document.getElementById('verifyName');
@@ -9,6 +10,11 @@ const day2Button = document.getElementById('day2Button');
 const selectedDayLabel = document.getElementById('selectedDayLabel');
 
 let reservations = [];
+
+
+function normalizeReservationNumber(value) {
+    return value.trim().toUpperCase();
+}
 
 
 // ========================================
@@ -47,7 +53,10 @@ function sortReservations(first, second) {
     return first.number.localeCompare(
         second.number,
         undefined,
-        { numeric: true }
+        {
+            numeric: true,
+            sensitivity: 'base',
+        }
     );
 }
 
@@ -538,8 +547,11 @@ verifyForm.addEventListener(
             const reservation =
                 reservations.find(
                     (item) =>
-                        item.number ===
-                        data.reservation.number
+                        normalizeReservationNumber(
+                            item.number
+                        ) === normalizeReservationNumber(
+                            data.reservation.number
+                        )
                 );
 
             if (reservation) {
