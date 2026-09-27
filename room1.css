@@ -6,6 +6,11 @@
     --bg: #fdf6ec;
     --card: #ffffff;
     --text: #3a2c22;
+
+    /* 古紙グラデーション用カラー（内側が薄く、外側に向かって濃くなる） */
+    --paper-1: #FFFDE8;
+    --paper-2: #F39800;
+    --paper-3: #C07700;
 }
 
 * {
@@ -32,17 +37,6 @@ img,
 svg {
     max-width: 100%;
     height: auto;
-}
-
-/* 画面が徐々に赤くなる演出 */
-#redOverlay {
-    position: fixed;
-    inset: 0;
-    background: #c40000;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 1s linear;
-    z-index: 5;
 }
 
 .wrap {
@@ -75,70 +69,11 @@ svg {
     position: relative;
 }
 
-.timer-box {
-    background: var(--card);
-    border: 3px solid var(--main);
-    border-radius: 16px;
-    padding: clamp(12px, 3vw, 14px);
+.progress {
     text-align: center;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-    margin-bottom: 18px;
-}
-
-.timer-box .label {
-    font-size: 0.85rem;
-    color: #888;
-}
-
-.timer-box .time {
-    font-size: clamp(1.9rem, 8vw, 2.6rem);
-    font-weight: bold;
-    letter-spacing: 2px;
-    color: var(--main-dark);
-    font-variant-numeric: tabular-nums;
-}
-
-.time.warn {
-    color: #c40000;
-    animation: blink 1s infinite;
-}
-
-@keyframes blink {
-    50% {
-        opacity: 0.3;
-    }
-}
-
-.hint-inline {
-    background: #fff8e1;
-    border: 2px solid var(--gold);
-    border-radius: 12px;
-    padding: 10px 14px;
-    margin-top: 10px;
-    font-size: 0.85rem;
-    line-height: 1.6;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
-    animation: pop 0.4s ease;
-}
-
-.hint-inline b {
-    color: var(--main-dark);
-}
-
-@keyframes pop {
-    from {
-        transform: scale(0.8);
-        opacity: 0;
-    }
-
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-.hint-card b {
-    color: var(--main-dark);
+    margin: 0 0 12px;
+    font-size: 0.9rem;
+    color: #777;
 }
 
 /* ============ 本まわり（ここが常設のゲーム画面になる） ============ */
@@ -158,23 +93,30 @@ svg {
         inset 0 0 0 2px rgba(255, 183, 3, 0.08);
 }
 
-/* 左半分：残り時間・進捗ページ（常時表示） */
+/* ---- 古紙グラデーション ----
+   左ページ：とじ側（右端）が薄く、外側（左端）に向かって濃くなる
+   右ページ：とじ側（左端）が薄く、外側（右端）に向かって濃くなる           */
+
+/* 左半分：問題文ページ（常時表示） */
 .book-page-left {
     position: relative;
     width: 50%;
-    background: linear-gradient(135deg, #fdf8ef, #f3ead9);
-    box-shadow: inset -10px 0 30px rgba(0, 0, 0, 0.12);
+    background:
+        radial-gradient(ellipse at 25% 30%, rgba(150, 90, 10, 0.10), transparent 55%),
+        radial-gradient(ellipse at 75% 70%, rgba(150, 90, 10, 0.08), transparent 50%),
+        linear-gradient(to left, var(--paper-1) 0%, var(--paper-2) 55%, var(--paper-3) 100%);
+    box-shadow: inset -10px 0 30px rgba(0, 0, 0, 0.15);
 }
 
+/* 経年のシミ（罫線ではなく古紙の斑を表現） */
 .page-lines {
     position: absolute;
-    inset: 10%;
+    inset: 0;
     z-index: 0;
-    background-image: repeating-linear-gradient(to bottom,
-            transparent,
-            transparent 28px,
-            rgba(58, 44, 34, 0.08) 29px);
-    opacity: 0.6;
+    background-image:
+        radial-gradient(circle at 30% 20%, rgba(120, 60, 0, 0.10), transparent 40%),
+        radial-gradient(circle at 70% 80%, rgba(120, 60, 0, 0.08), transparent 45%),
+        radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.12), transparent 35%);
 }
 
 .left-page-content {
@@ -188,30 +130,38 @@ svg {
     justify-content: center;
 }
 
-.left-page-content .status-bar {
-    width: 100%;
+.left-page-content .qtext {
+    font-family: "Yu Mincho", "Hiragino Mincho ProN", serif;
+    font-weight: bold;
+    line-height: 1.8;
+    font-size: clamp(1rem, 3.6vw, 1.15rem);
+    color: #2b1c12;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+    margin: 0;
 }
 
-/* 右半分：問題を1ページずつめくって見せるエリア */
+/* 右半分：解答欄を1ページずつめくって見せるエリア */
 .book-right {
     position: relative;
     width: 50%;
-    background: linear-gradient(135deg, #fdf8ef, #f3ead9);
-    box-shadow: inset 10px 0 30px rgba(0, 0, 0, 0.12);
+    background:
+        radial-gradient(ellipse at 75% 30%, rgba(150, 90, 10, 0.10), transparent 55%),
+        radial-gradient(ellipse at 25% 70%, rgba(150, 90, 10, 0.08), transparent 50%),
+        linear-gradient(to right, var(--paper-1) 0%, var(--paper-2) 55%, var(--paper-3) 100%);
+    box-shadow: inset 10px 0 30px rgba(0, 0, 0, 0.15);
 }
 
 .page-lines-right {
     position: absolute;
-    inset: 10%;
+    inset: 0;
     z-index: 0;
-    background-image: repeating-linear-gradient(to bottom,
-            transparent,
-            transparent 28px,
-            rgba(58, 44, 34, 0.08) 29px);
-    opacity: 0.6;
+    background-image:
+        radial-gradient(circle at 70% 20%, rgba(120, 60, 0, 0.10), transparent 40%),
+        radial-gradient(circle at 30% 80%, rgba(120, 60, 0, 0.08), transparent 45%),
+        radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.12), transparent 35%);
 }
 
-/* ============ ページ（表紙／問題／クリア）とめくり演出 ============ */
+/* ============ ページ（表紙／解答欄／クリア）とめくり演出 ============ */
 
 /* 本の中の1枚1枚のページ。すべて同じ位置に重なっており、
    .flipped が付いたページだけが回転してめくれ、下のページが見える */
@@ -231,24 +181,17 @@ svg {
     pointer-events: none;
 }
 
-/* 紙質の見た目（問題ページ・クリアページ共通） */
+/* 紙質の見た目（解答欄ページ・クリアページ共通。とじ側＝左端が薄く外側が濃い） */
 .flip-page.paper {
-    background: linear-gradient(135deg, #fdf8ef, #f1e6d2);
+    background:
+        radial-gradient(circle at 80% 25%, rgba(120, 60, 0, 0.10), transparent 40%),
+        radial-gradient(circle at 30% 75%, rgba(120, 60, 0, 0.08), transparent 45%),
+        linear-gradient(to right, var(--paper-1) 0%, var(--paper-2) 55%, var(--paper-3) 100%);
     border-left: 1px solid rgba(58, 44, 34, 0.15);
-    box-shadow: inset -4px 0 10px rgba(0, 0, 0, 0.06);
+    box-shadow: inset -4px 0 10px rgba(0, 0, 0, 0.08);
 }
 
-.flip-page.paper::before {
-    content: "";
-    position: absolute;
-    inset: 12% 10%;
-    background-image: repeating-linear-gradient(to bottom,
-            transparent,
-            transparent 26px,
-            rgba(58, 44, 34, 0.06) 27px);
-}
-
-/* 問題・クリア文言を入れる内側の箱（余白とレイアウトを担当） */
+/* 解答欄・クリア文言を入れる内側の箱（余白とレイアウトを担当） */
 .content-page .page-inner {
     position: relative;
     z-index: 1;
@@ -260,7 +203,7 @@ svg {
     overflow-y: auto;
 }
 
-/* 本の中の問題は「紙に書かれている」見た目に寄せる */
+/* 本の中の解答欄は「紙の上に書き込む」見た目に寄せる */
 .book-right .question {
     background: transparent;
     border-left: none;
@@ -271,17 +214,12 @@ svg {
     margin-bottom: 0;
 }
 
-.book-right .question p.qtext {
-    font-family: "Yu Mincho", "Hiragino Mincho ProN", serif;
-    color: #2b1c12;
-}
-
 .book-right .question.solved {
     background: transparent;
 }
 
 .book-right #clearBox {
-    background: rgba(255, 183, 3, 0.14);
+    background: rgba(255, 255, 255, 0.35);
 }
 
 /* 一番上：表紙ページ */
@@ -357,27 +295,6 @@ svg {
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
 }
 
-.question {
-    background: var(--card);
-    border-radius: 14px;
-    padding: clamp(14px, 4vw, 18px);
-    margin-bottom: 16px;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-    border-left: 6px solid var(--main);
-}
-
-.question.solved {
-    border-left-color: #2e9e4f;
-    background: #f2fbf3;
-}
-
-.question p.qtext {
-    font-weight: bold;
-    margin: 0 0 10px;
-    line-height: 1.5;
-    font-size: clamp(0.96rem, 3.2vw, 1.05rem);
-}
-
 .qrow {
     display: flex;
     gap: 8px;
@@ -386,19 +303,19 @@ svg {
 }
 
 .qrow input[type=text] {
-    /* flex: 1 1 180px; */
     min-width: 0;
     padding: 8px 10px;
     font-size: 0.96rem;
-    border: 2px solid #ddd;
+    border: 2px solid rgba(58, 44, 34, 0.35);
     border-radius: 8px;
     width: 100%;
     min-height: 40px;
     max-width: 100%;
+    background: rgba(255, 255, 255, 0.55);
 }
 
 .qrow input[type=text]:disabled {
-    background: #e9f7ec;
+    background: rgba(233, 247, 236, 0.85);
     border-color: #2e9e4f;
 }
 
@@ -484,14 +401,7 @@ svg {
     background: #b53f14;
 }
 
-.progress {
-    text-align: center;
-    margin: 10px 0 18px;
-    font-size: 0.9rem;
-    color: #777;
-}
-
-/* 700px以下：見開き2ページだと問題文が狭すぎるので上下積みに切り替え */
+/* 700px以下：見開き2ページだと解答欄が狭すぎるので上下積みに切り替え */
 @media (max-width: 700px) {
     .book-frame {
         flex-direction: column;
@@ -504,12 +414,12 @@ svg {
     }
 
     .book-page-left {
-        box-shadow: inset 0 -10px 20px rgba(0, 0, 0, 0.10);
+        box-shadow: inset 0 -10px 20px rgba(0, 0, 0, 0.15);
     }
 
     .book-right {
-        box-shadow: inset 0 10px 20px rgba(0, 0, 0, 0.10);
-        min-height: 360px;
+        box-shadow: inset 0 10px 20px rgba(0, 0, 0, 0.15);
+        min-height: 300px;
     }
 
     .left-page-content {
@@ -536,58 +446,8 @@ svg {
         font-size: 0.72rem;
     }
 
-    /* タイマー＋進捗を1本の横並びバーに（本の中に入ったのでsticky指定は外す） */
-    .status-bar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        background: rgba(253, 246, 236, 0.92);
-        padding: 6px 10px;
-        border-radius: 12px;
-        border: 2px solid var(--main);
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .timer-box {
-        border: none;
-        border-radius: 0;
-        box-shadow: none;
-        padding: 0;
-        margin-bottom: 0;
-        display: flex;
-        align-items: baseline;
-        gap: 6px;
-        text-align: left;
-    }
-
-    .timer-box .label {
-        font-size: 0.68rem;
-    }
-
-    .timer-box .time {
-        font-size: 1.3rem;
-        letter-spacing: 1px;
-    }
-
-    .progress {
-        margin: 0;
-        font-size: 0.75rem;
-        white-space: nowrap;
-    }
-
     .wrap {
         width: 100%;
-    }
-
-    .question p.qtext {
-        margin-bottom: 8px;
-    }
-
-    .hint-inline {
-        padding: 8px 10px;
-        margin-top: 8px;
-        font-size: 0.8rem;
     }
 
     .qrow {
@@ -603,14 +463,6 @@ svg {
 
     #clearBox {
         padding: 16px;
-    }
-
-    .hint-panel {
-        position: static;
-        max-width: 100%;
-        margin-top: 16px;
-        right: auto;
-        bottom: auto;
     }
 
     .book-frame {

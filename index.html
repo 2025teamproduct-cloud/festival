@@ -11,8 +11,6 @@
 
 <body>
 
-    <div id="redOverlay"></div>
-
     <div class="wrap">
         <div class="header">
             <h1>🔍 第1の部屋 ― なぞ解き</h1>
@@ -21,27 +19,23 @@
 
         <div class="game-content" id="gameContent">
 
+            <div class="progress" id="progressText">正解数: 0 / 3</div>
+
             <div class="book-frame" id="bookFrame">
 
-                <!-- 左ページ：残り時間・進捗（常に表示） -->
+                <!-- 左ページ：現在の問題文（ページがめくれるたびに内容が切り替わる） -->
                 <div class="book-page-left">
                     <div class="page-lines"></div>
                     <div class="left-page-content">
-                        <div class="status-bar">
-                            <div class="timer-box">
-                                <div class="label">残り時間</div>
-                                <div class="time" id="timeDisplay">--:--</div>
-                            </div>
-                            <div class="progress" id="progressText">正解数: 0 / 3</div>
-                        </div>
+                        <p class="qtext" id="leftQuestionText">開始ボタンを押すと、ここに問題が表示されます。</p>
                     </div>
                 </div>
 
-                <!-- 右ページ：問題を1ページずつめくって見せる -->
+                <!-- 右ページ：解答欄を1ページずつめくって見せる -->
                 <div class="book-right" id="bookRight">
                     <div class="page-lines-right"></div>
 
-                    <!-- 一番下：クリアページ（問題3のページがめくれると見える） -->
+                    <!-- 一番下：クリアページ（問題3の解答ページがめくれると見える） -->
                     <div class="flip-page paper content-page" data-page="clear">
                         <div class="page-inner">
                             <div id="clearBox">
@@ -52,60 +46,51 @@
                         </div>
                     </div>
 
-                    <!-- 問題3ページ（問題2のページがめくれると見える） -->
+                    <!-- 問題3：解答欄ページ -->
                     <div class="flip-page paper content-page" data-page="q3">
                         <div class="page-inner">
-                            <!-- ▼▼▼ 問題3。文章と答えはここで編集してください ▼▼▼ -->
                             <div class="question" data-index="2">
-                                <p class="qtext">問題3：「さくら」を逆から読むと？</p>
                                 <div class="qrow">
                                     <input type="text" placeholder="こたえを入力">
                                     <button onclick="checkAnswer(2, this)">確認</button>
                                 </div>
                                 <div class="feedback"></div>
                             </div>
-                            <!-- ▲▲▲ 編集ここまで ▲▲▲ -->
                         </div>
                     </div>
 
-                    <!-- 問題2ページ（問題1のページがめくれると見える） -->
+                    <!-- 問題2：解答欄ページ -->
                     <div class="flip-page paper content-page" data-page="q2">
                         <div class="page-inner">
-                            <!-- ▼▼▼ 問題2。文章と答えはここで編集してください ▼▼▼ -->
                             <div class="question" data-index="1">
-                                <p class="qtext">問題2：3, 6, 9, 12, ? 　次に来る数字は？</p>
                                 <div class="qrow">
                                     <input type="text" placeholder="こたえを入力">
                                     <button onclick="checkAnswer(1, this)">確認</button>
                                 </div>
                                 <div class="feedback"></div>
                             </div>
-                            <!-- ▲▲▲ 編集ここまで ▲▲▲ -->
                         </div>
                     </div>
 
-                    <!-- 問題1ページ（表紙をめくると最初に見えるページ） -->
+                    <!-- 問題1：解答欄ページ（表紙をめくると最初に見えるページ） -->
                     <div class="flip-page paper content-page" data-page="q1">
                         <div class="page-inner">
-                            <!-- ▼▼▼ 問題1。文章と答えはここで編集してください ▼▼▼ -->
                             <div class="question" data-index="0">
-                                <p class="qtext">問題1：この会場の入口に置かれた看板に書かれた「合言葉」の最初の一文字は何でしょう？（ひらがなで回答）</p>
                                 <div class="qrow">
                                     <input type="text" placeholder="こたえを入力">
                                     <button onclick="checkAnswer(0, this)">確認</button>
                                 </div>
                                 <div class="feedback"></div>
                             </div>
-                            <!-- ▲▲▲ 編集ここまで ▲▲▲ -->
                         </div>
                     </div>
 
                     <!-- 表紙 -->
                     <div class="flip-page cover" data-page="cover">
                         <div class="cover-content">
-                            <div class="icon">⏱️</div>
+                            <div class="icon">📖</div>
                             <h2>ゲーム開始前の確認</h2>
-                            <p>開始ボタンを押すと、タイマーが動き出します。<br>準備ができたら開始してください。</p>
+                            <p>開始ボタンを押すと、左のページに問題が表示されます。<br>準備ができたら開始してください。</p>
                             <button id="startButton" type="button">開始する</button>
                         </div>
                         <div class="cover-shine"></div>

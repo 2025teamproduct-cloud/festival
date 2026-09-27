@@ -1,38 +1,26 @@
 //  /room1.js
 /* ====================== ここから設定エリア ====================== */
 
-// 制限時間（秒）。例: 15分 = 15*60
-const TOTAL_TIME_SEC = 10 * 60;
-
-// ヒントを出す「経過時間」（秒）。例: 4分, 6分
-const HINT_TIMES = [4 * 60, 6 * 60];
-const HINTS = [
-    "ヒント1：問題文をもう一度よく読んでみましょう。会場のどこかに手がかりがあります。",
-    "ヒント2：数字の問題は、規則性（増え方）に注目してみましょう。"
-];
-
-function showHintOnQuestion(card, index, message) {
-    const existing = card.querySelector('.hint-inline');
-    if (existing) {
-        existing.innerHTML = '<b>ヒント' + (index + 1) + '</b><br>' + message;
-        return;
-    }
-
-    const hint = document.createElement('div');
-    hint.className = 'hint-inline';
-    hint.innerHTML = '<b>ヒント' + (index + 1) + '</b><br>' + message;
-    const feedback = card.querySelector('.feedback');
-    if (feedback) {
-        feedback.insertAdjacentElement('afterend', hint);
-    }
-}
-
-// 正解データ（配列内のどれかに一致すればOK。全角/半角・大文字小文字・空白は自動で吸収されます）
+// 問題文と正解データ
+// text: 左ページに表示される問題文
+// answers: 配列内のどれかに一致すればOK（全角/半角・大文字小文字・空白は自動で吸収されます）
 const QUESTIONS = [
-    { answers: ["さ", "サ", "asd"] },
-    { answers: ["15", "asd"] },
-    { answers: ["らくさ", "asd"] }
+    {
+        text: "問題1：この会場の入口に置かれた看板に書かれた「合言葉」の最初の一文字は何でしょう？（ひらがなで回答）",
+        answers: ["さ", "サ", "asd"]
+    },
+    {
+        text: "問題2：3, 6, 9, 12, ? 　次に来る数字は？",
+        answers: ["15", "asd"]
+    },
+    {
+        text: "問題3：「さくら」を逆から読むと？",
+        answers: ["らくさ", "asd"]
+    }
 ];
+
+// 全問正解したときに左ページへ表示する文言
+const CLEAR_TEXT = "🎉 全問正解！ スタッフにこの画面を見せて、次の部屋へ進んでください。";
 
 // 問題番号(0始まり)に正解したときにめくる「今のページ」のdata-page名。
 // そのページがめくれると、下に重なっている次のページ（次の問題 or クリア画面）が見えます。
@@ -44,11 +32,7 @@ const FLIP_DELAY_MS = 500;
 
 /* ====================== 設定エリアここまで ====================== */
 
-let elapsed = 0;
 let solvedCount = 0;
-let started = false;
-let timerId = null;
-const shownHints = new Set();
 const solved = new Set();
 
 function normalize(s) {
@@ -56,42 +40,6 @@ function normalize(s) {
         .toLowerCase()
         .replace(/\s+/g, '')
         .replace(/[Ａ-Ｚａ-ｚ０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0));
-}
-
-function format(sec) {
-    sec = Math.max(0, sec);
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
-}
-
-function tick() {
-    if (!started) return;
-
-    const remaining = TOTAL_TIME_SEC - elapsed;
-    const disp = document.getElementById('timeDisplay');
-    disp.textContent = format(remaining);
-    disp.classList.toggle('warn', remaining <= 60 && remaining > 0);
-    if (remaining <= 0) {
-        disp.textContent = "TIME UP";
-        disp.classList.add('warn');
-    }
-
-    // 画面を徐々に赤く
-    const ratio = Math.min(elapsed / TOTAL_TIME_SEC, 1);
-    document.getElementById('redOverlay').style.opacity = (ratio * 0.45).toFixed(2);
-
-    // ヒント表示
-    HINT_TIMES.forEach((t, i) => {
-        if (elapsed >= t && !shownHints.has(i)) {
-            shownHints.add(i);
-            document.querySelectorAll('.question').forEach((card) => {
-                showHintOnQuestion(card, i, HINTS[i]);
-            });
-        }
-    });
-
-    elapsed++;
 }
 
 // data-page属性で指定した1枚のページだけをめくる
@@ -102,27 +50,23 @@ function flipPage(pageName) {
     }
 }
 
-function startGame() {
-    if (started) return;
-    started = true;
-
-    // 表紙をめくって問題1ページを見せる
-    flipPage('cover');
-
-    if (timerId === null) {
-        timerId = setInterval(tick, 1000);
+// 左ページの問題文を書き換える
+function setLeftText(text) {
+    const el = document.getElementById('leftQuestionText');
+    if (el) {
+        el.textContent = text;
     }
-    tick();
+}
+
+function startGame() {
+    // 表紙をめくって問題1の解答ページを見せる
+    flipPage('cover');
+    setLeftText(QUESTIONS[0].text);
 }
 
 const startButton = document.getElementById('startButton');
 if (startButton) {
-    startButton.addEventListener('click', startGame);
-}
-
-const disp = document.getElementById('timeDisplay');
-if (disp) {
-    disp.textContent = format(TOTAL_TIME_SEC);
+    startButton.addEventListener('click', startGame, { once: true });
 }
 
 function checkAnswer(index, btn) {
@@ -149,10 +93,12 @@ function checkAnswer(index, btn) {
                 flipPage(PAGE_ORDER[index]);
 
                 if (solvedCount === QUESTIONS.length) {
-                    // クリアページが見えたところへスクロール
+                    setLeftText(CLEAR_TEXT);
                     setTimeout(() => {
                         document.getElementById('clearBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }, 650);
+                } else {
+                    setLeftText(QUESTIONS[index + 1].text);
                 }
             }, FLIP_DELAY_MS);
         }
