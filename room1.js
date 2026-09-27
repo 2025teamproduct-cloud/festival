@@ -34,11 +34,15 @@ const QUESTIONS = [
     { answers: ["らくさ", "asd"] }
 ];
 
-/* ====================== 設定エリアここまで ====================== */
+// 問題番号(0始まり)に正解したときにめくる「今のページ」のdata-page名。
+// そのページがめくれると、下に重なっている次のページ（次の問題 or クリア画面）が見えます。
+// 問題を増減する場合は、index.html側のページ枚数とあわせてここも編集してください。
+const PAGE_ORDER = ['q1', 'q2', 'q3'];
 
-// 本のページがめくれ終わってから、問題文を見せ始めるまでの待ち時間（ms）
-// 表紙(0.8s)＋一番奥の紙(遅延870ms＋0.45s)が終わる頃に合わせています
-const REVEAL_DELAY_MS = 1300;
+// 正解してからページがめくれ始めるまでの間（ms）。「正解！」を一瞬見せてからめくる。
+const FLIP_DELAY_MS = 500;
+
+/* ====================== 設定エリアここまで ====================== */
 
 let elapsed = 0;
 let solvedCount = 0;
@@ -90,20 +94,20 @@ function tick() {
     elapsed++;
 }
 
+// data-page属性で指定した1枚のページだけをめくる
+function flipPage(pageName) {
+    const page = document.querySelector('.flip-page[data-page="' + pageName + '"]');
+    if (page) {
+        page.classList.add('flipped');
+    }
+}
+
 function startGame() {
     if (started) return;
     started = true;
 
-    const bookRight = document.getElementById('bookRight');
-    const rightPageContent = document.getElementById('rightPageContent');
-
-    // 表紙→紙9枚が連続してめくれる演出
-    bookRight.classList.add('open');
-
-    // ページがめくれ終わるタイミングで、問題文を右側からじわっと見せる
-    setTimeout(() => {
-        rightPageContent.classList.add('revealed');
-    }, REVEAL_DELAY_MS);
+    // 表紙をめくって問題1ページを見せる
+    flipPage('cover');
 
     if (timerId === null) {
         timerId = setInterval(tick, 1000);
@@ -134,14 +138,23 @@ function checkAnswer(index, btn) {
         input.disabled = true;
         btn.disabled = true;
         row.classList.add('solved');
+
         if (!solved.has(index)) {
             solved.add(index);
             solvedCount++;
             document.getElementById('progressText').textContent = '正解数: ' + solvedCount + ' / ' + QUESTIONS.length;
-        }
-        if (solvedCount === QUESTIONS.length) {
-            document.getElementById('clearBox').style.display = 'block';
-            document.getElementById('clearBox').scrollIntoView({ behavior: 'smooth' });
+
+            // 少し「正解！」を見せてから、そのページをめくって次を見せる
+            setTimeout(() => {
+                flipPage(PAGE_ORDER[index]);
+
+                if (solvedCount === QUESTIONS.length) {
+                    // クリアページが見えたところへスクロール
+                    setTimeout(() => {
+                        document.getElementById('clearBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 650);
+                }
+            }, FLIP_DELAY_MS);
         }
     } else {
         feedback.textContent = '不正解…もう一度考えてみよう';

@@ -143,8 +143,6 @@ svg {
 
 /* ============ 本まわり（ここが常設のゲーム画面になる） ============ */
 
-/* 本の外枠（以前は overlay として問題の上に一時的に重なっていたが、
-   今は本自体が問題を収める常設のコンテナ） */
 .book-frame {
     position: relative;
     display: flex;
@@ -153,14 +151,14 @@ svg {
     border: 6px solid #1c1108;
     background: #2b1c12;
     perspective: 2200px;
-    min-height: 520px;
+    min-height: 480px;
     margin-bottom: 16px;
     box-shadow:
         0 12px 30px rgba(0, 0, 0, 0.28),
         inset 0 0 0 2px rgba(255, 183, 3, 0.08);
 }
 
-/* 左半分：残り時間・進捗ページ */
+/* 左半分：残り時間・進捗ページ（常時表示） */
 .book-page-left {
     position: relative;
     width: 50%;
@@ -194,7 +192,7 @@ svg {
     width: 100%;
 }
 
-/* 右半分：問題が書かれているページ */
+/* 右半分：問題を1ページずつめくって見せるエリア */
 .book-right {
     position: relative;
     width: 50%;
@@ -213,51 +211,10 @@ svg {
     opacity: 0.6;
 }
 
-/* 問題文の本体。ページがめくれ終わったタイミングで
-   右端から左へ向かって「見えてくる」演出（clip-pathで右側から開示） */
-.right-page-content {
-    position: relative;
-    z-index: 1;
-    padding: clamp(18px, 5vw, 30px);
-    clip-path: inset(0 0 0 100%);
-    transition: clip-path 0.9s ease;
-}
+/* ============ ページ（表紙／問題／クリア）とめくり演出 ============ */
 
-.right-page-content.revealed {
-    clip-path: inset(0 0 0 0%);
-}
-
-/* 本の中の問題は「紙に書かれている」見た目に寄せる */
-.book-right .question {
-    background: transparent;
-    border-left: none;
-    border-bottom: 1px dashed rgba(58, 44, 34, 0.25);
-    border-radius: 0;
-    box-shadow: none;
-    padding: clamp(10px, 3vw, 14px) 0;
-    margin-bottom: 4px;
-}
-
-.book-right .question:last-of-type {
-    border-bottom: none;
-}
-
-.book-right .question p.qtext {
-    font-family: "Yu Mincho", "Hiragino Mincho ProN", serif;
-    color: #2b1c12;
-}
-
-.book-right .question.solved {
-    background: rgba(46, 158, 79, 0.08);
-}
-
-.book-right #clearBox {
-    background: rgba(255, 183, 3, 0.14);
-}
-
-/* ============ ページめくり（本を開く）演出 ============ */
-
-/* 1枚1枚のページ（紙・表紙共通）。right-page-content の上に重ねて隠す */
+/* 本の中の1枚1枚のページ。すべて同じ位置に重なっており、
+   .flipped が付いたページだけが回転してめくれ、下のページが見える */
 .flip-page {
     position: absolute;
     inset: 0;
@@ -265,10 +222,16 @@ svg {
     transform-origin: left center;
     backface-visibility: hidden;
     transform: rotateY(0deg);
-    transition: transform 0.45s cubic-bezier(0.62, 0, 0.3, 1);
+    transition: transform 0.6s cubic-bezier(0.62, 0, 0.3, 1);
 }
 
-/* 中の紙ページ */
+/* めくり終わったページはクリックを奪わないようにする */
+.flip-page.flipped {
+    transform: rotateY(-165deg);
+    pointer-events: none;
+}
+
+/* 紙質の見た目（問題ページ・クリアページ共通） */
 .flip-page.paper {
     background: linear-gradient(135deg, #fdf8ef, #f1e6d2);
     border-left: 1px solid rgba(58, 44, 34, 0.15);
@@ -285,6 +248,42 @@ svg {
             rgba(58, 44, 34, 0.06) 27px);
 }
 
+/* 問題・クリア文言を入れる内側の箱（余白とレイアウトを担当） */
+.content-page .page-inner {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    padding: clamp(18px, 5vw, 28px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow-y: auto;
+}
+
+/* 本の中の問題は「紙に書かれている」見た目に寄せる */
+.book-right .question {
+    background: transparent;
+    border-left: none;
+    border-bottom: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    margin-bottom: 0;
+}
+
+.book-right .question p.qtext {
+    font-family: "Yu Mincho", "Hiragino Mincho ProN", serif;
+    color: #2b1c12;
+}
+
+.book-right .question.solved {
+    background: transparent;
+}
+
+.book-right #clearBox {
+    background: rgba(255, 183, 3, 0.14);
+}
+
 /* 一番上：表紙ページ */
 .flip-page.cover {
     transition-duration: 0.8s;
@@ -299,16 +298,6 @@ svg {
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-/* 開始時：全ページが左に開く */
-.book-right.open .flip-page {
-    transform: rotateY(-165deg);
-}
-
-/* めくり終わったページはクリックを奪わないようにする */
-.book-right.open .flip-page {
-    pointer-events: none;
 }
 
 .cover-shine {
@@ -464,7 +453,6 @@ svg {
 }
 
 #clearBox {
-    display: none;
     background: #fff8e1;
     border: 3px solid var(--gold);
     border-radius: 16px;
@@ -521,6 +509,7 @@ svg {
 
     .book-right {
         box-shadow: inset 0 10px 20px rgba(0, 0, 0, 0.10);
+        min-height: 360px;
     }
 
     .left-page-content {
@@ -591,12 +580,6 @@ svg {
         width: 100%;
     }
 
-    .question {
-        padding: 10px 12px;
-        margin-bottom: 10px;
-        border-radius: 10px;
-    }
-
     .question p.qtext {
         margin-bottom: 8px;
     }
@@ -637,7 +620,6 @@ svg {
 
 @media (max-width: 420px) {
 
-    .question,
     #clearBox {
         border-radius: 10px;
     }
