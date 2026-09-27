@@ -30,11 +30,6 @@ const PAGE_ORDER = ['q1', 'q2', 'q3'];
 // 正解してからページがめくれ始めるまでの間（ms）。「正解！」を一瞬見せてからめくる。
 const FLIP_DELAY_MS = 500;
 
-// ページがめくれる演出そのものの所要時間（ms）。room1.cssの .flip-page の
-// transition時間（0.6s）と合わせてください。これより早く次の問題文を出すと、
-// 右ページがめくれ切る前に左の問題文だけ先に変わってしまいます。
-const FLIP_DURATION_MS = 600;
-
 /* ====================== 設定エリアここまで ====================== */
 
 let solvedCount = 0;
@@ -97,15 +92,14 @@ function checkAnswer(index, btn) {
             setTimeout(() => {
                 flipPage(PAGE_ORDER[index]);
 
-                // ページが完全にめくれ終わってから、左の問題文を次の内容に切り替える
-                setTimeout(() => {
-                    if (solvedCount === QUESTIONS.length) {
-                        setLeftText(CLEAR_TEXT);
+                if (solvedCount === QUESTIONS.length) {
+                    setLeftText(CLEAR_TEXT);
+                    setTimeout(() => {
                         document.getElementById('clearBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    } else {
-                        setLeftText(QUESTIONS[index + 1].text);
-                    }
-                }, FLIP_DURATION_MS);
+                    }, 650);
+                } else {
+                    setLeftText(QUESTIONS[index + 1].text);
+                }
             }, FLIP_DELAY_MS);
         }
     } else {
