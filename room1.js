@@ -1,211 +1,319 @@
+/* =========================================
+   問題データ
+========================================= */
+
 const QUESTIONS = [
+
     {
-        text: "問題1：この会場の入口に置かれた看板に書かれた「合言葉」の最初の一文字は何でしょう？（ひらがなで回答）",
-        answers: ["さ", "サ", "asd"]
+        text:
+            "問題1：この会場の入口に置かれた看板に書かれた「合言葉」の最初の一文字は何でしょう？（ひらがなで回答）",
+
+        answers: [
+            "さ",
+            "サ",
+            "asd"
+        ]
     },
+
     {
-        text: "問題2：3, 6, 9, 12, ?　次に来る数字は？",
-        answers: ["15", "asd"]
+        text:
+            "問題2：3, 6, 9, 12, ?　次に来る数字は？",
+
+        answers: [
+            "15",
+            "asd"
+        ]
     },
+
     {
-        text: "問題3：「さくら」を逆から読むと？",
-        answers: ["らくさ", "asd"]
+        text:
+            "問題3：「さくら」を逆から読むと？",
+
+        answers: [
+            "らくさ",
+            "asd"
+        ]
     }
+
 ];
+
+
+/* =========================================
+   クリア時の文章
+========================================= */
 
 const CLEAR_TEXT =
     "🎉 全問正解！ スタッフにこの画面を見せて、次の部屋へ進んでください。";
 
-const PAGE_ORDER = ["q1", "q2", "q3"];
+
+/* =========================================
+   ページ順
+========================================= */
+
+const PAGE_ORDER = [
+    "q1",
+    "q2",
+    "q3"
+];
+
+
+/* =========================================
+   アニメーション時間
+========================================= */
 
 const FLIP_DELAY_MS = 500;
+
 const FLIP_DURATION_MS = 600;
 
-// 表紙が開き終わるまでの時間
 const COVER_OPEN_DURATION_MS = 1100;
 
+
+/* =========================================
+   状態
+========================================= */
+
 let gameStarted = false;
+
 let currentQuestion = 0;
 
 
-/* =========================
-   共通処理
-========================= */
+/* =========================================
+   入力文字を正規化
+========================================= */
 
 function normalize(value) {
-    return value.trim().toLowerCase();
+
+    return value
+        .trim()
+        .toLowerCase();
+
 }
 
 
-function setLeftText(text) {
-    const questionText = document.getElementById("leftQuestionText");
+/* =========================================
+   左ページの問題文を変更
+========================================= */
 
-    if (!questionText) return;
+function setLeftText(text) {
+
+    const questionText =
+        document.getElementById("leftQuestionText");
+
+    if (!questionText) {
+        return;
+    }
 
     questionText.textContent = text;
 }
 
 
-/* =========================
-   ゲーム開始
-========================= */
+/* =========================================
+   表紙を開いてゲーム開始
+========================================= */
 
 function startGame() {
-    if (gameStarted) return;
+
+    if (gameStarted) {
+        return;
+    }
 
     gameStarted = true;
 
-    const bookFrame = document.getElementById("bookFrame");
-    const cover = document.querySelector(".flip-page.cover");
 
-    if (!bookFrame || !cover) return;
+    const bookFrame =
+        document.getElementById("bookFrame");
+
+    const cover =
+        document.querySelector(".flip-page.cover");
+
+
+    if (!bookFrame || !cover) {
+        return;
+    }
 
 
     /*
-     * ここで本体を表示する。
-     *
-     * ただし問題文はまだ表示しない。
-     * 表紙が開き終わるまで空欄にしておく。
-     */
+        ★重要
+
+        先に本体を表示する。
+
+        cover のアニメーションが終わるまで
+        待ってはいけない。
+
+        これによって、
+        「表紙を開いている途中で
+        本全体が一瞬消える」
+        問題を防ぐ。
+    */
+
     bookFrame.classList.remove("pre-start");
+
     bookFrame.classList.add("started");
 
-    setLeftText("");
+
+    /*
+        最初の問題をすぐ表示
+    */
+
+    currentQuestion = 0;
+
+    setLeftText(
+        QUESTIONS[currentQuestion].text
+    );
 
 
     /*
-     * 表紙を開く。
-     *
-     * CSS側の .cover-opening に
-     * 表紙を右ページ上で開くアニメーションを設定。
-     */
+        表紙を開く
+    */
+
     cover.classList.add("cover-opening");
 
 
     /*
-     * 表紙のアニメーション終了後に
-     * 初めて問題1を表示する。
-     *
-     * 重要：
-     * 本全体を非表示にはしない。
-     * 表紙だけを非表示にする。
-     */
+        表紙のアニメーション終了後、
+
+        「本を非表示」にするのではなく、
+        表紙だけを非表示にする。
+
+        本体はそのまま表示し続ける。
+    */
+
     setTimeout(() => {
+
         cover.style.visibility = "hidden";
 
-        currentQuestion = 0;
-
-        setLeftText(
-            QUESTIONS[currentQuestion].text
-        );
     }, COVER_OPEN_DURATION_MS);
+
 }
 
 
-/* =========================
-   問題ページをめくる
-========================= */
+/* =========================================
+   ページをめくる
+========================================= */
 
 function flipPage(pageElement, callback) {
+
     if (!pageElement) {
-        if (callback) callback();
-        return;
-    }
-
-
-    /*
-     * アニメーション状態を一度リセット。
-     * 連続操作時にもCSSアニメーションを
-     * 正しく再生できるようにする。
-     */
-    pageElement.classList.remove("flipped");
-
-    void pageElement.offsetWidth;
-
-
-    /*
-     * CSS側のページめくりアニメーションを開始。
-     */
-    pageElement.classList.add("flipped");
-
-
-    /*
-     * ページめくり終了後の処理。
-     */
-    setTimeout(() => {
-        pageElement.style.visibility = "hidden";
 
         if (callback) {
             callback();
         }
+
+        return;
+    }
+
+
+    pageElement.classList.remove("flipping");
+
+
+    /*
+        ブラウザに再計算させてから
+        アニメーションを開始する。
+    */
+
+    void pageElement.offsetWidth;
+
+
+    pageElement.classList.add("flipping");
+
+
+    setTimeout(() => {
+
+        pageElement.style.visibility = "hidden";
+
+        pageElement.classList.remove("flipping");
+
+
+        if (callback) {
+            callback();
+        }
+
     }, FLIP_DURATION_MS);
+
 }
 
 
-/* =========================
-   次の問題
-========================= */
+/* =========================================
+   問題を次へ
+========================================= */
 
 function nextQuestion() {
+
     currentQuestion++;
 
 
     /*
-     * 全問終了
-     */
+        全問終了
+    */
+
     if (currentQuestion >= QUESTIONS.length) {
+
         setLeftText(CLEAR_TEXT);
+
         return;
     }
 
 
     /*
-     * ページめくりが少し進んでから
-     * 次の問題を表示する。
-     */
+        次の問題を左ページに表示
+    */
+
     setTimeout(() => {
+
         setLeftText(
             QUESTIONS[currentQuestion].text
         );
+
     }, FLIP_DELAY_MS);
+
 }
 
 
-/* =========================
-   回答チェック
-========================= */
+/* =========================================
+   回答処理
+========================================= */
 
 function checkAnswer() {
-    if (!gameStarted) return;
+
+    if (!gameStarted) {
+        return;
+    }
 
 
-    /*
-     * 現在入力可能な回答欄を取得。
-     */
-    const input = document.querySelector(
-        ".answer-area input:not([disabled])"
-    );
-
-    if (!input) return;
+    const input =
+        document.querySelector(
+            ".answer-area input:not([disabled])"
+        );
 
 
-    const answer = normalize(input.value);
-
-    if (!answer) return;
-
-
-    const question = QUESTIONS[currentQuestion];
-
-    if (!question) return;
+    if (!input) {
+        return;
+    }
 
 
-    /*
-     * 正解判定
-     */
-    const correct = question.answers.some(
-        correctAnswer =>
-            normalize(correctAnswer) === answer
-    );
+    const answer =
+        normalize(input.value);
+
+
+    if (!answer) {
+        return;
+    }
+
+
+    const question =
+        QUESTIONS[currentQuestion];
+
+
+    if (!question) {
+        return;
+    }
+
+
+    const correct =
+        question.answers.some(
+            correctAnswer =>
+                normalize(correctAnswer) === answer
+        );
 
 
     const resultMessage =
@@ -213,12 +321,16 @@ function checkAnswer() {
 
 
     /*
-     * 不正解
-     */
+        不正解
+    */
+
     if (!correct) {
+
         if (resultMessage) {
+
             resultMessage.textContent =
                 "答えが違います。もう一度考えてみてください。";
+
         }
 
         input.value = "";
@@ -228,114 +340,139 @@ function checkAnswer() {
 
 
     /*
-     * 正解
-     */
+        正解
+    */
+
     if (resultMessage) {
-        resultMessage.textContent = "正解!";
+
+        resultMessage.textContent =
+            "正解！";
+
     }
+
 
     input.disabled = true;
 
 
     /*
-     * 現在の問題ページを取得。
-     *
-     * q1 → q2 → q3
-     */
-    const currentPage = document.querySelector(
-        `.content-page[data-page="q${currentQuestion + 1}"]`
-    );
+        現在の問題ページ
+    */
+
+    const currentPage =
+        document.querySelector(
+            `.content-page[data-page="q${currentQuestion + 1}"]`
+        );
 
 
     /*
-     * ページをめくり終わった後に
-     * 次の問題を表示。
-     */
-    flipPage(currentPage, () => {
-        nextQuestion();
-    });
+        問題ページをめくる
+    */
+
+    flipPage(
+        currentPage,
+        () => {
+
+            nextQuestion();
+
+        }
+    );
+
 }
 
 
-/* =========================
-   Enterキー対応
-========================= */
+/* =========================================
+   Enterキーで回答
+========================================= */
 
 function setupEnterKey() {
-    document.addEventListener("keydown", event => {
-        if (event.key !== "Enter") return;
+
+    document.addEventListener(
+        "keydown",
+        event => {
+
+            if (event.key !== "Enter") {
+                return;
+            }
 
 
-        const activeElement =
-            document.activeElement;
+            const activeElement =
+                document.activeElement;
 
 
-        /*
-         * 回答欄にフォーカスしているときだけ
-         * Enterで回答する。
-         */
-        if (
-            activeElement &&
-            activeElement.matches(
-                ".answer-area input"
-            )
-        ) {
-            checkAnswer();
+            if (
+                activeElement &&
+                activeElement.matches(
+                    ".answer-area input"
+                )
+            ) {
+
+                checkAnswer();
+
+            }
+
         }
-    });
+    );
+
 }
 
 
-/* =========================
+/* =========================================
    イベント設定
-========================= */
+========================================= */
 
 function setupEvents() {
 
-    /*
-     * 開始ボタン
-     */
     const startButton =
         document.getElementById("startButton");
 
+
     if (startButton) {
+
         startButton.addEventListener(
             "click",
             startGame
         );
+
     }
 
 
     /*
-     * 回答ボタン
-     */
+        回答ボタン
+
+        現在のHTML構成に合わせて
+        3つすべてにイベントを設定。
+    */
+
     const answerButtons =
         document.querySelectorAll(
             ".answer-area button"
         );
 
+
     answerButtons.forEach(button => {
+
         button.addEventListener(
             "click",
             checkAnswer
         );
+
     });
 
 
-    /*
-     * Enterキー
-     */
     setupEnterKey();
+
 }
 
 
-/* =========================
+/* =========================================
    初期化
-========================= */
+========================================= */
 
 document.addEventListener(
     "DOMContentLoaded",
     () => {
+
         setupEvents();
+
     }
 );
