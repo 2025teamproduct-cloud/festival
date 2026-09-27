@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,29 +12,18 @@
 
 <body>
 
-    <main class="room-container">
+    <div class="wrap">
 
-        <h1 class="room-title">ROOM 1</h1>
+        <header class="header">
+            <h1>ROOM 1</h1>
+        </header>
 
-        <div class="game-area">
 
-            <!--
-                本全体
+        <main class="game-content">
 
-                開始前：
-                .pre-start が付いているため、
-                左ページ・右ページは非表示。
-                表紙だけが右半分に表示される。
-
-                開始後：
-                .started が付いて、
-                左右のページが表示される。
-            -->
             <div class="book-frame pre-start" id="bookFrame">
 
-                <!-- =========================
-                     左ページ
-                ========================== -->
+                <!-- 左ページ -->
                 <div class="book-page-left">
 
                     <div class="page-lines"></div>
@@ -42,83 +32,53 @@
                         <p
                             class="qtext"
                             id="leftQuestionText"
-                        >
-                            開始ボタンを押すと、ここに問題が表示されます。
-                        </p>
+                        ></p>
                     </div>
 
                 </div>
 
 
-                <!-- =========================
-                     右ページ
-                ========================== -->
-                <div
-                    class="book-right"
-                    id="bookRight"
-                >
+                <!-- 右ページ -->
+                <div class="book-right" id="bookRight">
 
                     <div class="page-lines-right"></div>
 
 
-                    <!-- 全問正解ページ -->
+                    <!-- 問題1 -->
                     <div
                         class="flip-page paper content-page"
-                        data-page="clear"
+                        data-page="q1"
                     >
-                        <div class="page-content">
 
-                            <h2>クリア</h2>
+                        <div class="page-inner">
 
-                            <p>
-                                🎉 全問正解！
-                            </p>
+                            <h2>問題1</h2>
 
                             <p>
-                                スタッフにこの画面を見せて、<br>
-                                次の部屋へ進んでください。
-                            </p>
-
-                        </div>
-                    </div>
-
-
-                    <!-- 問題3 -->
-                    <div
-                        class="flip-page paper content-page"
-                        data-page="q3"
-                    >
-                        <div class="page-content">
-
-                            <span class="page-number">
-                                3
-                            </span>
-
-                            <h2>問題 3</h2>
-
-                            <p>
-                                「さくら」を逆から読むと？
+                                この会場の入口に置かれた看板に書かれた
+                                「合言葉」の最初の一文字は何でしょう？
                             </p>
 
                             <div class="answer-area">
 
                                 <input
                                     type="text"
-                                    id="answerInput"
-                                    autocomplete="off"
-                                    placeholder="答えを入力"
+                                    placeholder="ひらがなで入力"
                                 >
 
-                                <button
-                                    type="button"
-                                    id="answerButton"
-                                >
+                                <button type="button">
                                     回答する
                                 </button>
 
                             </div>
 
+                            <p
+                                id="resultMessage"
+                                class="feedback"
+                            ></p>
+
                         </div>
+
                     </div>
 
 
@@ -127,13 +87,10 @@
                         class="flip-page paper content-page"
                         data-page="q2"
                     >
-                        <div class="page-content">
 
-                            <span class="page-number">
-                                2
-                            </span>
+                        <div class="page-inner">
 
-                            <h2>問題 2</h2>
+                            <h2>問題2</h2>
 
                             <p>
                                 3, 6, 9, 12, ?<br>
@@ -144,75 +101,78 @@
 
                                 <input
                                     type="text"
-                                    id="answerInput2"
-                                    autocomplete="off"
-                                    placeholder="答えを入力"
+                                    placeholder="数字を入力"
                                 >
 
-                                <button
-                                    type="button"
-                                    id="answerButton2"
-                                >
+                                <button type="button">
                                     回答する
                                 </button>
 
                             </div>
 
                         </div>
+
                     </div>
 
 
-                    <!-- 問題1 -->
+                    <!-- 問題3 -->
                     <div
                         class="flip-page paper content-page"
-                        data-page="q1"
+                        data-page="q3"
                     >
-                        <div class="page-content">
 
-                            <span class="page-number">
-                                1
-                            </span>
+                        <div class="page-inner">
 
-                            <h2>問題 1</h2>
+                            <h2>問題3</h2>
 
                             <p>
-                                この会場の入口に置かれた看板に書かれた
-                                「合言葉」の最初の一文字は何でしょう？
-                                <br>
-                                （ひらがなで回答）
+                                「さくら」を逆から読むと？
                             </p>
 
                             <div class="answer-area">
 
                                 <input
                                     type="text"
-                                    id="answerInput1"
-                                    autocomplete="off"
                                     placeholder="答えを入力"
                                 >
 
-                                <button
-                                    type="button"
-                                    id="answerButton1"
-                                >
+                                <button type="button">
                                     回答する
                                 </button>
 
                             </div>
 
                         </div>
+
+                    </div>
+
+
+                    <!-- クリア -->
+                    <div
+                        class="flip-page paper content-page"
+                        data-page="clear"
+                    >
+
+                        <div class="page-inner">
+
+                            <h2>クリア</h2>
+
+                            <p>
+                                全問正解！
+                            </p>
+
+                        </div>
+
                     </div>
 
                 </div>
 
 
-                <!-- =========================
-                     表紙
-                     
-                     重要：
-                     本全体ではなく右半分だけを覆う。
-                     開始前はここだけ表示される。
-                ========================== -->
+                <!--
+                    表紙
+
+                    初期状態では右半分だけを覆う。
+                -->
                 <div
                     class="flip-page cover"
                     data-page="cover"
@@ -229,7 +189,7 @@
                         </h2>
 
                         <p>
-                            開始ボタンを押すと、<br>
+                            開始ボタンを押すと、
                             左のページに問題が表示されます。<br>
                             準備ができたら開始してください。
                         </p>
@@ -249,20 +209,13 @@
 
             </div>
 
-        </div>
+        </main>
 
-
-        <!-- 回答結果 -->
-        <p
-            id="resultMessage"
-            class="result-message"
-            aria-live="polite"
-        ></p>
-
-    </main>
+    </div>
 
 
     <script src="room1.js"></script>
 
 </body>
+
 </html>

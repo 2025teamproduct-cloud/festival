@@ -1,124 +1,60 @@
-/* =========================================
-   問題データ
-========================================= */
-
 const QUESTIONS = [
-
     {
-        text:
-            "問題1：この会場の入口に置かれた看板に書かれた「合言葉」の最初の一文字は何でしょう？（ひらがなで回答）",
-
-        answers: [
-            "さ",
-            "サ",
-            "asd"
-        ]
+        text: "問題1：この会場の入口に置かれた看板に書かれた「合言葉」の最初の一文字は何でしょう？（ひらがなで回答）",
+        answers: ["さ", "サ", "asd"]
     },
-
     {
-        text:
-            "問題2：3, 6, 9, 12, ?　次に来る数字は？",
-
-        answers: [
-            "15",
-            "asd"
-        ]
+        text: "問題2：3, 6, 9, 12, ?　次に来る数字は？",
+        answers: ["15", "asd"]
     },
-
     {
-        text:
-            "問題3：「さくら」を逆から読むと？",
-
-        answers: [
-            "らくさ",
-            "asd"
-        ]
+        text: "問題3：「さくら」を逆から読むと？",
+        answers: ["らくさ", "asd"]
     }
-
 ];
-
-
-/* =========================================
-   クリア時の文章
-========================================= */
 
 const CLEAR_TEXT =
     "🎉 全問正解！ スタッフにこの画面を見せて、次の部屋へ進んでください。";
 
-
-/* =========================================
-   ページ順
-========================================= */
-
-const PAGE_ORDER = [
-    "q1",
-    "q2",
-    "q3"
-];
-
-
-/* =========================================
-   アニメーション時間
-========================================= */
+const PAGE_ORDER = ["q1", "q2", "q3"];
 
 const FLIP_DELAY_MS = 500;
-
 const FLIP_DURATION_MS = 600;
 
 const COVER_OPEN_DURATION_MS = 1100;
 
-
-/* =========================================
-   状態
-========================================= */
-
 let gameStarted = false;
-
 let currentQuestion = 0;
 
 
-/* =========================================
-   入力文字を正規化
-========================================= */
+/* =========================
+   共通
+========================= */
 
 function normalize(value) {
-
-    return value
-        .trim()
-        .toLowerCase();
-
+    return value.trim().toLowerCase();
 }
 
 
-/* =========================================
-   左ページの問題文を変更
-========================================= */
-
 function setLeftText(text) {
-
     const questionText =
         document.getElementById("leftQuestionText");
 
-    if (!questionText) {
-        return;
-    }
+    if (!questionText) return;
 
     questionText.textContent = text;
 }
 
 
-/* =========================================
-   表紙を開いてゲーム開始
-========================================= */
+/* =========================
+   ゲーム開始
+========================= */
 
 function startGame() {
 
-    if (gameStarted) {
-        return;
-    }
+    if (gameStarted) return;
 
     gameStarted = true;
-
 
     const bookFrame =
         document.getElementById("bookFrame");
@@ -126,70 +62,51 @@ function startGame() {
     const cover =
         document.querySelector(".flip-page.cover");
 
-
-    if (!bookFrame || !cover) {
-        return;
-    }
+    if (!bookFrame || !cover) return;
 
 
     /*
-        ★重要
+        開始した瞬間に本体を表示。
 
-        先に本体を表示する。
-
-        cover のアニメーションが終わるまで
-        待ってはいけない。
-
-        これによって、
-        「表紙を開いている途中で
-        本全体が一瞬消える」
-        問題を防ぐ。
+        ただし問題文はまだ表示しない。
     */
-
     bookFrame.classList.remove("pre-start");
-
     bookFrame.classList.add("started");
 
-
-    /*
-        最初の問題をすぐ表示
-    */
-
-    currentQuestion = 0;
-
-    setLeftText(
-        QUESTIONS[currentQuestion].text
-    );
+    setLeftText("");
 
 
     /*
-        表紙を開く
+        表紙を開く。
     */
-
     cover.classList.add("cover-opening");
 
 
     /*
-        表紙のアニメーション終了後、
-
-        「本を非表示」にするのではなく、
-        表紙だけを非表示にする。
-
-        本体はそのまま表示し続ける。
+        表紙が完全に開き終わってから
+        問題1を表示する。
     */
-
     setTimeout(() => {
 
+        /*
+            本体ではなく表紙だけを隠す。
+        */
         cover.style.visibility = "hidden";
 
-    }, COVER_OPEN_DURATION_MS);
 
+        currentQuestion = 0;
+
+        setLeftText(
+            QUESTIONS[currentQuestion].text
+        );
+
+    }, COVER_OPEN_DURATION_MS);
 }
 
 
-/* =========================================
-   ページをめくる
-========================================= */
+/* =========================
+   ページめくり
+========================= */
 
 function flipPage(pageElement, callback) {
 
@@ -203,39 +120,28 @@ function flipPage(pageElement, callback) {
     }
 
 
-    pageElement.classList.remove("flipping");
-
-
-    /*
-        ブラウザに再計算させてから
-        アニメーションを開始する。
-    */
+    pageElement.classList.remove("flipped");
 
     void pageElement.offsetWidth;
 
-
-    pageElement.classList.add("flipping");
+    pageElement.classList.add("flipped");
 
 
     setTimeout(() => {
 
         pageElement.style.visibility = "hidden";
 
-        pageElement.classList.remove("flipping");
-
-
         if (callback) {
             callback();
         }
 
     }, FLIP_DURATION_MS);
-
 }
 
 
-/* =========================================
-   問題を次へ
-========================================= */
+/* =========================
+   次の問題
+========================= */
 
 function nextQuestion() {
 
@@ -243,9 +149,8 @@ function nextQuestion() {
 
 
     /*
-        全問終了
+        全問正解
     */
-
     if (currentQuestion >= QUESTIONS.length) {
 
         setLeftText(CLEAR_TEXT);
@@ -255,9 +160,8 @@ function nextQuestion() {
 
 
     /*
-        次の問題を左ページに表示
+        ページめくり後に次の問題を表示。
     */
-
     setTimeout(() => {
 
         setLeftText(
@@ -265,48 +169,34 @@ function nextQuestion() {
         );
 
     }, FLIP_DELAY_MS);
-
 }
 
 
-/* =========================================
-   回答処理
-========================================= */
+/* =========================
+   回答チェック
+========================= */
 
 function checkAnswer() {
 
-    if (!gameStarted) {
-        return;
-    }
+    if (!gameStarted) return;
 
 
-    const input =
-        document.querySelector(
-            ".answer-area input:not([disabled])"
-        );
+    const input = document.querySelector(
+        ".answer-area input:not([disabled])"
+    );
+
+    if (!input) return;
 
 
-    if (!input) {
-        return;
-    }
+    const answer = normalize(input.value);
 
-
-    const answer =
-        normalize(input.value);
-
-
-    if (!answer) {
-        return;
-    }
+    if (!answer) return;
 
 
     const question =
         QUESTIONS[currentQuestion];
 
-
-    if (!question) {
-        return;
-    }
+    if (!question) return;
 
 
     const correct =
@@ -323,14 +213,12 @@ function checkAnswer() {
     /*
         不正解
     */
-
     if (!correct) {
 
         if (resultMessage) {
 
             resultMessage.textContent =
                 "答えが違います。もう一度考えてみてください。";
-
         }
 
         input.value = "";
@@ -342,12 +230,8 @@ function checkAnswer() {
     /*
         正解
     */
-
     if (resultMessage) {
-
-        resultMessage.textContent =
-            "正解！";
-
+        resultMessage.textContent = "正解!";
     }
 
 
@@ -357,7 +241,6 @@ function checkAnswer() {
     /*
         現在の問題ページ
     */
-
     const currentPage =
         document.querySelector(
             `.content-page[data-page="q${currentQuestion + 1}"]`
@@ -365,24 +248,17 @@ function checkAnswer() {
 
 
     /*
-        問題ページをめくる
+        ページをめくってから次の問題へ。
     */
-
-    flipPage(
-        currentPage,
-        () => {
-
-            nextQuestion();
-
-        }
-    );
-
+    flipPage(currentPage, () => {
+        nextQuestion();
+    });
 }
 
 
-/* =========================================
-   Enterキーで回答
-========================================= */
+/* =========================
+   Enterキー
+========================= */
 
 function setupEnterKey() {
 
@@ -407,18 +283,15 @@ function setupEnterKey() {
             ) {
 
                 checkAnswer();
-
             }
-
         }
     );
-
 }
 
 
-/* =========================================
+/* =========================
    イベント設定
-========================================= */
+========================= */
 
 function setupEvents() {
 
@@ -432,16 +305,8 @@ function setupEvents() {
             "click",
             startGame
         );
-
     }
 
-
-    /*
-        回答ボタン
-
-        現在のHTML構成に合わせて
-        3つすべてにイベントを設定。
-    */
 
     const answerButtons =
         document.querySelectorAll(
@@ -455,18 +320,16 @@ function setupEvents() {
             "click",
             checkAnswer
         );
-
     });
 
 
     setupEnterKey();
-
 }
 
 
-/* =========================================
+/* =========================
    初期化
-========================================= */
+========================= */
 
 document.addEventListener(
     "DOMContentLoaded",
