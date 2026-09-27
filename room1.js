@@ -59,8 +59,13 @@ function setLeftText(text) {
 }
 
 function startGame() {
-    // 表紙をめくって問題1の解答ページを見せる
-    flipPage('cover');
+    const bookFrame = document.getElementById('bookFrame');
+    if (bookFrame) {
+        bookFrame.classList.add('opened');
+    }
+
+    // 左ページを表示してから、右側の表紙をめくる
+    requestAnimationFrame(() => flipPage('cover'));
     setLeftText(QUESTIONS[0].text);
 }
 
