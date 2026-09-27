@@ -23,19 +23,22 @@
 
             <div class="book-frame pre-start" id="bookFrame">
 
-                <!-- 左ページ：現在の問題文（ページがめくれるたびに内容が切り替わる） -->
+                <!-- 左ページ：ゲーム開始後に表示 -->
                 <div class="book-page-left">
                     <div class="page-lines"></div>
+
                     <div class="left-page-content">
-                        <p class="qtext" id="leftQuestionText">開始ボタンを押すと、ここに問題が表示されます。</p>
+                        <p class="qtext" id="leftQuestionText">
+                            開始ボタンを押すと、ここに問題が表示されます。
+                        </p>
                     </div>
                 </div>
 
-                <!-- 右ページ：解答欄を1ページずつめくって見せる -->
+                <!-- 右ページ：ゲーム開始後に表示 -->
                 <div class="book-right" id="bookRight">
                     <div class="page-lines-right"></div>
 
-                    <!-- 一番下：クリアページ（問題3の解答ページがめくれると見える） -->
+                    <!-- 一番下：クリアページ -->
                     <div class="flip-page paper content-page" data-page="clear">
                         <div class="page-inner">
                             <div id="clearBox">
@@ -54,6 +57,7 @@
                                     <input type="text" placeholder="こたえを入力">
                                     <button onclick="checkAnswer(2, this)">確認</button>
                                 </div>
+
                                 <div class="feedback"></div>
                             </div>
                         </div>
@@ -67,12 +71,13 @@
                                     <input type="text" placeholder="こたえを入力">
                                     <button onclick="checkAnswer(1, this)">確認</button>
                                 </div>
+
                                 <div class="feedback"></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 問題1：解答欄ページ（表紙をめくると最初に見えるページ） -->
+                    <!-- 問題1：解答欄ページ -->
                     <div class="flip-page paper content-page" data-page="q1">
                         <div class="page-inner">
                             <div class="question" data-index="0">
@@ -80,6 +85,7 @@
                                     <input type="text" placeholder="こたえを入力">
                                     <button onclick="checkAnswer(0, this)">確認</button>
                                 </div>
+
                                 <div class="feedback"></div>
                             </div>
                         </div>
@@ -87,15 +93,37 @@
 
                 </div>
 
-                <!-- 表紙：開始前は右側に小さく表示し、開始時に開いて見開きへ移行する -->
+                <!--
+                    表紙
+
+                    開始前：
+                    ・右側に小さく表示
+                    ・本の中身は表示しない
+
+                    開始ボタン押下後：
+                    ・表紙が大きくなる
+                    ・そのまま左へ開く
+                    ・アニメーション終了後に本部分を表示
+                -->
                 <div class="flip-page cover" data-page="cover">
+
                     <div class="cover-content">
                         <div class="icon">📖</div>
+
                         <h2>表紙</h2>
-                        <p>準備ができたら<br>開始してください。</p>
-                        <button id="startButton" type="button">開始する</button>
+
+                        <p>
+                            準備ができたら<br>
+                            開始してください。
+                        </p>
+
+                        <button id="startButton" type="button">
+                            開始する
+                        </button>
                     </div>
+
                     <div class="cover-shine"></div>
+
                 </div>
 
             </div>
@@ -105,6 +133,7 @@
 
     <script src="room1.js"></script>
     <script src="access.js"></script>
+
 </body>
 
 </html>
