@@ -147,7 +147,8 @@ svg {
     background:
         radial-gradient(ellipse at 75% 30%, rgba(150, 90, 10, 0.10), transparent 55%),
         radial-gradient(ellipse at 25% 70%, rgba(150, 90, 10, 0.08), transparent 50%),
-        radial-gradient(ellipse at center, var(--paper-1) 0%, var(--paper-1) 62%, var(--paper-2) 86%, var(--paper-3) 100%);
+        /* 右ページのFFFDE8の中心を左へずらす */
+        radial-gradient(ellipse at 35% 50%, var(--paper-1) 0%, var(--paper-1) 62%, var(--paper-2) 86%, var(--paper-3) 100%);
     box-shadow: inset 10px 0 30px rgba(0, 0, 0, 0.15);
 }
 
@@ -186,7 +187,8 @@ svg {
     background:
         radial-gradient(circle at 80% 25%, rgba(120, 60, 0, 0.10), transparent 40%),
         radial-gradient(circle at 30% 75%, rgba(120, 60, 0, 0.08), transparent 45%),
-        radial-gradient(ellipse at center, var(--paper-1) 0%, var(--paper-1) 62%, var(--paper-2) 86%, var(--paper-3) 100%);
+        /* 右ページの解答用紙もFFFDE8の中心を左へずらす */
+        radial-gradient(ellipse at 35% 50%, var(--paper-1) 0%, var(--paper-1) 62%, var(--paper-2) 86%, var(--paper-3) 100%);
     border-left: 1px solid rgba(58, 44, 34, 0.15);
     box-shadow: inset -4px 0 10px rgba(0, 0, 0, 0.08);
 }
