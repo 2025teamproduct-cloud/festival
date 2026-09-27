@@ -21,7 +21,7 @@
 
             <div class="progress" id="progressText">正解数: 0 / 3</div>
 
-            <div class="book-frame" id="bookFrame">
+            <div class="book-frame pre-start" id="bookFrame">
 
                 <!-- 左ページ：現在の問題文（ページがめくれるたびに内容が切り替わる） -->
                 <div class="book-page-left">
@@ -87,12 +87,12 @@
 
                 </div>
 
-                <!-- 表紙：開始前は本全体を覆い、開始後に見開きを見せる -->
+                <!-- 表紙：開始前は右側に小さく表示し、開始時に開いて見開きへ移行する -->
                 <div class="flip-page cover" data-page="cover">
                     <div class="cover-content">
                         <div class="icon">📖</div>
-                        <h2>ゲーム開始前の確認</h2>
-                        <p>開始ボタンを押すと、左のページに問題が表示されます。<br>準備ができたら開始してください。</p>
+                        <h2>表紙</h2>
+                        <p>準備ができたら<br>開始してください。</p>
                         <button id="startButton" type="button">開始する</button>
                     </div>
                     <div class="cover-shine"></div>

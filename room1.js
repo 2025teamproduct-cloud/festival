@@ -63,10 +63,31 @@ function setLeftText(text) {
     }
 }
 
+const COVER_OPEN_DURATION_MS = 1100;
+
+let gameStarted = false;
+
 function startGame() {
-    // 表紙をめくって問題1の解答ページを見せる
-    flipPage('cover');
-    setLeftText(QUESTIONS[0].text);
+    if (gameStarted) return;
+    gameStarted = true;
+
+    const bookFrame = document.getElementById('bookFrame');
+    const cover = document.querySelector('.flip-page.cover');
+
+    if (!bookFrame || !cover) return;
+
+    // まずは「右側の小さな表紙」を開くアニメーションにする。
+    // アニメーション中は左ページの問題文をまだ表示しない。
+    cover.classList.add('cover-opening');
+
+    setTimeout(() => {
+        // 表紙が開き終わったら、通常の見開き状態へ。
+        bookFrame.classList.remove('pre-start');
+        cover.style.visibility = 'hidden';
+
+        // ここで初めて問題1を表示する。
+        setLeftText(QUESTIONS[0].text);
+    }, COVER_OPEN_DURATION_MS);
 }
 
 const startButton = document.getElementById('startButton');
