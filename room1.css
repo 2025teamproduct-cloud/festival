@@ -93,7 +93,7 @@ svg {
         inset 0 0 0 2px rgba(255, 183, 3, 0.08);
 }
 
-/* ---- 古紙グラデーション ----
+/* ---- 古紙グラデーション（円形／楕円形）----
    左ページ：とじ側（右端）が薄く、外側（左端）に向かって濃くなる
    右ページ：とじ側（左端）が薄く、外側（右端）に向かって濃くなる           */
 
@@ -147,6 +147,8 @@ svg {
 .book-right {
     position: relative;
     width: 50%;
+    /* 中の.flip-pageは.book-rightの子なので、3D効果にはここにもperspectiveが必要 */
+    perspective: 2200px;
     background:
         radial-gradient(ellipse at 75% 30%, rgba(150, 90, 10, 0.10), transparent 55%),
         radial-gradient(ellipse at 25% 70%, rgba(150, 90, 10, 0.08), transparent 50%),
