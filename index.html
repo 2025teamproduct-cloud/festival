@@ -5,121 +5,297 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>第1の部屋 - なぞ解き脱出ゲーム</title>
+
     <link rel="stylesheet" href="room1.css">
 </head>
 
 <body>
 
     <div class="wrap">
+
         <div class="header">
-            <h1>🔍 第1の部屋 ― なぞ解き</h1>
-            <a class="admin-link" data-admin-link href="reservation.html">予約ページへ戻る（管理者）</a>
+
+            <h1>
+                🔍 第1の部屋 ― なぞ解き
+            </h1>
+
+            <a
+                class="admin-link"
+                data-admin-link
+                href="reservation.html"
+            >
+                予約ページへ戻る（管理者）
+            </a>
+
         </div>
 
-        <div class="game-content" id="gameContent">
 
-            <div class="progress" id="progressText">正解数: 0 / 3</div>
+        <div
+            class="game-content"
+            id="gameContent"
+        >
 
-            <div class="book-frame pre-start" id="bookFrame">
+            <div
+                class="progress"
+                id="progressText"
+            >
+                正解数: 0 / 3
+            </div>
 
-                <!-- 左ページ：ゲーム開始後に表示 -->
+
+            <!--
+                本全体
+
+                開始前：
+                ・本の中身は非表示
+                ・表紙だけ表示
+
+                開始後：
+                ・本の中身を表示
+                ・表紙がその上でめくれる
+            -->
+            <div
+                class="book-frame pre-start"
+                id="bookFrame"
+            >
+
+
+                <!-- =================================================
+                     左ページ
+                     ================================================= -->
+
                 <div class="book-page-left">
+
                     <div class="page-lines"></div>
 
                     <div class="left-page-content">
-                        <p class="qtext" id="leftQuestionText">
+
+                        <p
+                            class="qtext"
+                            id="leftQuestionText"
+                        >
                             開始ボタンを押すと、ここに問題が表示されます。
                         </p>
+
                     </div>
+
                 </div>
 
-                <!-- 右ページ：ゲーム開始後に表示 -->
-                <div class="book-right" id="bookRight">
+
+                <!-- =================================================
+                     右ページ
+                     ================================================= -->
+
+                <div
+                    class="book-right"
+                    id="bookRight"
+                >
+
                     <div class="page-lines-right"></div>
 
-                    <!-- 一番下：クリアページ -->
-                    <div class="flip-page paper content-page" data-page="clear">
+
+                    <!-- =============================================
+                         一番下：クリアページ
+                         ============================================= -->
+
+                    <div
+                        class="flip-page paper content-page"
+                        data-page="clear"
+                    >
+
                         <div class="page-inner">
+
                             <div id="clearBox">
-                                <h2>🎉 全問正解！</h2>
-                                <p>スタッフにこの画面を見せて、次の部屋へ進んでください。</p>
-                                <a class="nextlink" href="room2.html">次の部屋へ進む →</a>
+
+                                <h2>
+                                    🎉 全問正解！
+                                </h2>
+
+                                <p>
+                                    スタッフにこの画面を見せて、
+                                    次の部屋へ進んでください。
+                                </p>
+
+                                <a
+                                    class="nextlink"
+                                    href="room2.html"
+                                >
+                                    次の部屋へ進む →
+                                </a>
+
                             </div>
+
                         </div>
+
                     </div>
 
-                    <!-- 問題3：解答欄ページ -->
-                    <div class="flip-page paper content-page" data-page="q3">
+
+                    <!-- =============================================
+                         問題3
+                         ============================================= -->
+
+                    <div
+                        class="flip-page paper content-page"
+                        data-page="q3"
+                    >
+
                         <div class="page-inner">
-                            <div class="question" data-index="2">
+
+                            <div
+                                class="question"
+                                data-index="2"
+                            >
+
                                 <div class="qrow">
-                                    <input type="text" placeholder="こたえを入力">
-                                    <button onclick="checkAnswer(2, this)">確認</button>
+
+                                    <input
+                                        type="text"
+                                        placeholder="こたえを入力"
+                                    >
+
+                                    <button
+                                        onclick="checkAnswer(2, this)"
+                                    >
+                                        確認
+                                    </button>
+
                                 </div>
 
                                 <div class="feedback"></div>
+
                             </div>
+
                         </div>
+
                     </div>
 
-                    <!-- 問題2：解答欄ページ -->
-                    <div class="flip-page paper content-page" data-page="q2">
+
+                    <!-- =============================================
+                         問題2
+                         ============================================= -->
+
+                    <div
+                        class="flip-page paper content-page"
+                        data-page="q2"
+                    >
+
                         <div class="page-inner">
-                            <div class="question" data-index="1">
+
+                            <div
+                                class="question"
+                                data-index="1"
+                            >
+
                                 <div class="qrow">
-                                    <input type="text" placeholder="こたえを入力">
-                                    <button onclick="checkAnswer(1, this)">確認</button>
+
+                                    <input
+                                        type="text"
+                                        placeholder="こたえを入力"
+                                    >
+
+                                    <button
+                                        onclick="checkAnswer(1, this)"
+                                    >
+                                        確認
+                                    </button>
+
                                 </div>
 
                                 <div class="feedback"></div>
+
                             </div>
+
                         </div>
+
                     </div>
 
-                    <!-- 問題1：解答欄ページ -->
-                    <div class="flip-page paper content-page" data-page="q1">
+
+                    <!-- =============================================
+                         問題1
+
+                         表紙をめくった後、
+                         最初に見える解答ページ
+                         ============================================= -->
+
+                    <div
+                        class="flip-page paper content-page"
+                        data-page="q1"
+                    >
+
                         <div class="page-inner">
-                            <div class="question" data-index="0">
+
+                            <div
+                                class="question"
+                                data-index="0"
+                            >
+
                                 <div class="qrow">
-                                    <input type="text" placeholder="こたえを入力">
-                                    <button onclick="checkAnswer(0, this)">確認</button>
+
+                                    <input
+                                        type="text"
+                                        placeholder="こたえを入力"
+                                    >
+
+                                    <button
+                                        onclick="checkAnswer(0, this)"
+                                    >
+                                        確認
+                                    </button>
+
                                 </div>
 
                                 <div class="feedback"></div>
+
                             </div>
+
                         </div>
+
                     </div>
 
                 </div>
 
-                <!--
-                    表紙
 
-                    開始前：
-                    ・右側に小さく表示
-                    ・本の中身は表示しない
+                <!-- =================================================
+                     表紙
 
-                    開始ボタン押下後：
-                    ・表紙が大きくなる
-                    ・そのまま左へ開く
-                    ・アニメーション終了後に本部分を表示
-                -->
-                <div class="flip-page cover" data-page="cover">
+                     開始前：
+                     右側に小さく表示
+
+                     開始後：
+                     拡大せず、そのままめくる
+                     ================================================= -->
+
+                <div
+                    class="flip-page cover"
+                    data-page="cover"
+                >
 
                     <div class="cover-content">
-                        <div class="icon">📖</div>
 
-                        <h2>表紙</h2>
+                        <div class="icon">
+                            📖
+                        </div>
+
+                        <h2>
+                            ゲーム開始前の確認
+                        </h2>
 
                         <p>
-                            準備ができたら<br>
-                            開始してください。
+                            開始ボタンを押すと、
+                            左のページに問題が表示されます。
+                            <br>
+                            準備ができたら開始してください。
                         </p>
 
-                        <button id="startButton" type="button">
+                        <button
+                            id="startButton"
+                            type="button"
+                        >
                             開始する
                         </button>
+
                     </div>
 
                     <div class="cover-shine"></div>
@@ -129,9 +305,12 @@
             </div>
 
         </div>
+
     </div>
 
+
     <script src="room1.js"></script>
+
     <script src="access.js"></script>
 
 </body>
