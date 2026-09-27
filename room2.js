@@ -30,6 +30,7 @@ function checkPassword() {
     const val = normalize(input.value);
     const ok = PASSWORD_LIST.some(p => normalize(p) === val);
     if (ok) {
+        setLeftText(QUESTIONS[0].text);
         document.getElementById('passwordOverlay').classList.add('hide');
         setTimeout(() => {
             document.getElementById('passwordOverlay').style.display = 'none';
@@ -57,16 +58,6 @@ function setLeftText(text) {
     if (el) {
         el.textContent = text;
     }
-}
-
-function startGame() {
-    flipPage('cover');
-    setLeftText(QUESTIONS[0].text);
-}
-
-const startButton = document.getElementById('startButton');
-if (startButton) {
-    startButton.addEventListener('click', startGame, { once: true });
 }
 
 function checkAnswer(index, btn) {
