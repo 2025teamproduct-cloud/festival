@@ -3,266 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Room 1</title>
-
     <link rel="stylesheet" href="room1.css">
 </head>
-
 <body>
 
-    <main class="room-container">
+<div class="wrap">
+    <header class="header">
+        <h1>Room 1</h1>
+        <a class="admin-link" href="/">管理画面へ</a>
+    </header>
 
-        <h1 class="room-title">ROOM 1</h1>
+    <main class="game-content">
+        <div class="progress" id="progress">問題に挑戦しよう</div>
 
-        <div class="game-area">
+        <div class="book-frame pre-start" id="bookFrame">
 
-            <!--
-                本全体
+            <section class="book-page-left">
+                <div class="page-lines"></div>
+                <div class="left-page-content">
+                    <p class="qtext" id="leftQuestionText"></p>
+                </div>
+            </section>
 
-                開始前：
-                .pre-start が付いているため、
-                左ページ・右ページは非表示。
-                表紙だけが右半分に表示される。
+            <section class="book-right" id="bookRight">
+                <div class="page-lines-right"></div>
 
-                開始後：
-                .started が付いて、
-                左右のページが表示される。
-            -->
-            <div class="book-frame pre-start" id="bookFrame">
-
-                <!-- =========================
-                     左ページ
-                ========================== -->
-                <div class="book-page-left">
-
-                    <div class="page-lines"></div>
-
-                    <div class="left-page-content">
-                        <p
-                            class="qtext"
-                            id="leftQuestionText"
-                        >
-                            開始ボタンを押すと、ここに問題が表示されます。
-                        </p>
+                <div class="flip-page paper content-page" data-page="q1">
+                    <div class="page-inner">
+                        <div class="question">
+                            <div class="qrow">
+                                <input type="text" autocomplete="off" aria-label="問題1の答え">
+                                <button type="button">回答する</button>
+                            </div>
+                            <div class="feedback" aria-live="polite"></div>
+                        </div>
                     </div>
-
                 </div>
 
-
-                <!-- =========================
-                     右ページ
-                ========================== -->
-                <div
-                    class="book-right"
-                    id="bookRight"
-                >
-
-                    <div class="page-lines-right"></div>
-
-
-                    <!-- 全問正解ページ -->
-                    <div
-                        class="flip-page paper content-page"
-                        data-page="clear"
-                    >
-                        <div class="page-content">
-
-                            <h2>クリア</h2>
-
-                            <p>
-                                🎉 全問正解！
-                            </p>
-
-                            <p>
-                                スタッフにこの画面を見せて、<br>
-                                次の部屋へ進んでください。
-                            </p>
-
-                        </div>
-                    </div>
-
-
-                    <!-- 問題3 -->
-                    <div
-                        class="flip-page paper content-page"
-                        data-page="q3"
-                    >
-                        <div class="page-content">
-
-                            <span class="page-number">
-                                3
-                            </span>
-
-                            <h2>問題 3</h2>
-
-                            <p>
-                                「さくら」を逆から読むと？
-                            </p>
-
-                            <div class="answer-area">
-
-                                <input
-                                    type="text"
-                                    id="answerInput"
-                                    autocomplete="off"
-                                    placeholder="答えを入力"
-                                >
-
-                                <button
-                                    type="button"
-                                    id="answerButton"
-                                >
-                                    回答する
-                                </button>
-
+                <div class="flip-page paper content-page" data-page="q2">
+                    <div class="page-inner">
+                        <div class="question">
+                            <div class="qrow">
+                                <input type="text" autocomplete="off" aria-label="問題2の答え">
+                                <button type="button">回答する</button>
                             </div>
-
+                            <div class="feedback" aria-live="polite"></div>
                         </div>
                     </div>
-
-
-                    <!-- 問題2 -->
-                    <div
-                        class="flip-page paper content-page"
-                        data-page="q2"
-                    >
-                        <div class="page-content">
-
-                            <span class="page-number">
-                                2
-                            </span>
-
-                            <h2>問題 2</h2>
-
-                            <p>
-                                3, 6, 9, 12, ?<br>
-                                次に来る数字は？
-                            </p>
-
-                            <div class="answer-area">
-
-                                <input
-                                    type="text"
-                                    id="answerInput2"
-                                    autocomplete="off"
-                                    placeholder="答えを入力"
-                                >
-
-                                <button
-                                    type="button"
-                                    id="answerButton2"
-                                >
-                                    回答する
-                                </button>
-
-                            </div>
-
-                        </div>
-                    </div>
-
-
-                    <!-- 問題1 -->
-                    <div
-                        class="flip-page paper content-page"
-                        data-page="q1"
-                    >
-                        <div class="page-content">
-
-                            <span class="page-number">
-                                1
-                            </span>
-
-                            <h2>問題 1</h2>
-
-                            <p>
-                                この会場の入口に置かれた看板に書かれた
-                                「合言葉」の最初の一文字は何でしょう？
-                                <br>
-                                （ひらがなで回答）
-                            </p>
-
-                            <div class="answer-area">
-
-                                <input
-                                    type="text"
-                                    id="answerInput1"
-                                    autocomplete="off"
-                                    placeholder="答えを入力"
-                                >
-
-                                <button
-                                    type="button"
-                                    id="answerButton1"
-                                >
-                                    回答する
-                                </button>
-
-                            </div>
-
-                        </div>
-                    </div>
-
                 </div>
 
-
-                <!-- =========================
-                     表紙
-                     
-                     重要：
-                     本全体ではなく右半分だけを覆う。
-                     開始前はここだけ表示される。
-                ========================== -->
-                <div
-                    class="flip-page cover"
-                    data-page="cover"
-                >
-
-                    <div class="cover-content">
-
-                        <div class="icon">
-                            📖
+                <div class="flip-page paper content-page" data-page="q3">
+                    <div class="page-inner">
+                        <div class="question">
+                            <div class="qrow">
+                                <input type="text" autocomplete="off" aria-label="問題3の答え">
+                                <button type="button">回答する</button>
+                            </div>
+                            <div class="feedback" aria-live="polite"></div>
                         </div>
-
-                        <h2>
-                            ゲーム開始前の確認
-                        </h2>
-
-                        <p>
-                            開始ボタンを押すと、<br>
-                            左のページに問題が表示されます。<br>
-                            準備ができたら開始してください。
-                        </p>
-
-                        <button
-                            id="startButton"
-                            type="button"
-                        >
-                            開始する
-                        </button>
-
                     </div>
-
-                    <div class="cover-shine"></div>
-
                 </div>
 
+                <div class="flip-page paper content-page" data-page="clear">
+                    <div class="page-inner">
+                        <div id="clearBox">
+                            <h2>全問正解！</h2>
+                            <p>スタッフにこの画面を見せて、次の部屋へ進んでください。</p>
+                            <a class="nextlink" href="/room2.html">次の部屋へ</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="flip-page cover" data-page="cover">
+                <div class="cover-content">
+                    <div class="icon">📖</div>
+                    <h2>ゲーム開始前の確認</h2>
+                    <p>開始ボタンを押すと、本が開いて問題が表示されます。<br>準備ができたら開始してください。</p>
+                    <button id="startButton" type="button">開始する</button>
+                </div>
+                <div class="cover-shine"></div>
             </div>
 
         </div>
-
-
-        <!-- 回答結果 -->
-        <p
-            id="resultMessage"
-            class="result-message"
-            aria-live="polite"
-        ></p>
-
     </main>
+</div>
 
-
-    <script src="room1.js"></script>
-
+<script src="room1.js"></script>
 </body>
 </html>
