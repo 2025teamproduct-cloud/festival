@@ -60,21 +60,13 @@ function setLeftText(text) {
 
 function startGame() {
     const bookFrame = document.getElementById('bookFrame');
-    const cover = document.querySelector('.flip-page[data-page="cover"]');
     if (bookFrame) {
         bookFrame.classList.add('opened');
     }
 
-    // 表紙が左端までめくれた後に、左ページの問題文を表示する
-    if (cover) {
-        cover.addEventListener('transitionend', event => {
-            if (event.propertyName === 'transform') {
-                setLeftText(QUESTIONS[0].text);
-            }
-        }, { once: true });
-    }
-
+    // 左ページを表示してから、右側の表紙をめくる
     requestAnimationFrame(() => flipPage('cover'));
+    setLeftText(QUESTIONS[0].text);
 }
 
 const startButton = document.getElementById('startButton');
