@@ -57,68 +57,6 @@ svg {
     font-weight: bold;
 }
 
-.timer-box {
-    background: var(--card);
-    border: 3px solid var(--main);
-    border-radius: 16px;
-    padding: 14px 12px;
-    text-align: center;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-    margin-bottom: 18px;
-}
-
-.timer-box .label {
-    font-size: 0.85rem;
-    color: #888;
-}
-
-.timer-box .time {
-    font-size: clamp(1.9rem, 7vw, 2.6rem);
-    font-weight: bold;
-    letter-spacing: 2px;
-    color: var(--main-dark);
-    font-variant-numeric: tabular-nums;
-}
-
-.time.warn {
-    color: #c40000;
-    animation: blink 1s infinite;
-}
-
-@keyframes blink {
-    50% {
-        opacity: 0.3;
-    }
-}
-
-.hint-inline {
-    background: #fff8e1;
-    border: 2px solid var(--gold);
-    border-radius: 12px;
-    padding: 10px 14px;
-    margin-top: 10px;
-    font-size: 0.85rem;
-    line-height: 1.6;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
-    animation: pop 0.4s ease;
-}
-
-.hint-inline b {
-    color: var(--main-dark);
-}
-
-@keyframes pop {
-    from {
-        transform: scale(0.8);
-        opacity: 0;
-    }
-
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
 /* ===== 本体（3問） ===== */
 .question {
     background: var(--card);
@@ -368,4 +306,252 @@ svg {
     font-weight: bold;
     color: #c40000;
     min-height: 1.2em;
+}
+
+/* ===== room1と共通の本・ページデザイン ===== */
+:root {
+    --main: #ff6f3c;
+    --main-dark: #e2551f;
+    --bg: #fdf6ec;
+    --text: #3a2c22;
+    --paper-1: #FFFDE8;
+    --paper-2: #F39800;
+    --paper-3: #C07700;
+}
+
+body {
+    background: linear-gradient(160deg, #fdf6ec, #ffe9d6);
+    color: var(--text);
+}
+
+.wrap {
+    max-width: 700px;
+    width: min(100%, 700px);
+}
+
+.header h1,
+.admin-link {
+    color: var(--main-dark);
+}
+
+.game-content {
+    position: relative;
+}
+
+.progress {
+    margin: 0 0 12px;
+}
+
+.book-frame {
+    position: relative;
+    display: flex;
+    overflow: hidden;
+    border-radius: 18px;
+    border: 6px solid #1c1108;
+    background: #2b1c12;
+    perspective: 2200px;
+    min-height: 480px;
+    margin-bottom: 16px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28), inset 0 0 0 2px rgba(255, 183, 3, 0.08);
+}
+
+.book-page-left,
+.book-right {
+    position: relative;
+    width: 50%;
+}
+
+.book-page-left {
+    background:
+        radial-gradient(ellipse at 25% 30%, rgba(150, 90, 10, 0.10), transparent 55%),
+        radial-gradient(ellipse at 75% 70%, rgba(150, 90, 10, 0.08), transparent 50%),
+        radial-gradient(ellipse 75% 90% at 65% 50%, var(--paper-1) 0%, var(--paper-1) 58%, var(--paper-2) 90%, var(--paper-3) 96%, var(--paper-3) 100%);
+    background-color: var(--paper-3);
+    box-shadow: inset -10px 0 30px rgba(0, 0, 0, 0.15);
+}
+
+.book-right {
+    background:
+        radial-gradient(ellipse at 75% 30%, rgba(150, 90, 10, 0.10), transparent 55%),
+        radial-gradient(ellipse at 25% 70%, rgba(150, 90, 10, 0.08), transparent 50%),
+        radial-gradient(ellipse 75% 90% at 35% 50%, var(--paper-1) 0%, var(--paper-1) 58%, var(--paper-2) 90%, var(--paper-3) 96%, var(--paper-3) 100%);
+    background-color: var(--paper-3);
+    box-shadow: inset 10px 0 30px rgba(0, 0, 0, 0.15);
+}
+
+.page-lines,
+.page-lines-right {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image:
+        radial-gradient(circle at 30% 20%, rgba(120, 60, 0, 0.10), transparent 40%),
+        radial-gradient(circle at 70% 80%, rgba(120, 60, 0, 0.08), transparent 45%),
+        radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.12), transparent 35%);
+}
+
+.left-page-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    padding: clamp(18px, 5vw, 30px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.left-page-content .qtext {
+    font-family: "Yu Mincho", "Hiragino Mincho ProN", serif;
+    font-weight: bold;
+    line-height: 1.8;
+    font-size: clamp(1rem, 3.6vw, 1.15rem);
+    color: #2b1c12;
+    margin: 0;
+}
+
+.flip-page {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    transform-origin: left center;
+    backface-visibility: hidden;
+    transform: rotateY(0deg);
+    transition: transform 0.6s cubic-bezier(0.62, 0, 0.3, 1);
+}
+
+.flip-page.flipped {
+    transform: rotateY(-165deg);
+    pointer-events: none;
+}
+
+.flip-page.paper {
+    background:
+        radial-gradient(circle at 80% 25%, rgba(120, 60, 0, 0.10), transparent 40%),
+        radial-gradient(circle at 30% 75%, rgba(120, 60, 0, 0.08), transparent 45%),
+        radial-gradient(ellipse 75% 90% at 35% 50%, var(--paper-1) 0%, var(--paper-1) 58%, var(--paper-2) 90%, var(--paper-3) 96%, var(--paper-3) 100%);
+    background-color: var(--paper-3);
+    border-left: 1px solid rgba(58, 44, 34, 0.15);
+    box-shadow: inset -4px 0 10px rgba(0, 0, 0, 0.08);
+}
+
+.flip-page.cover {
+    width: 100%;
+    height: 100%;
+    transition-duration: 0.8s;
+    background:
+        radial-gradient(circle at 30% 20%, rgba(255, 183, 3, 0.15), transparent 55%),
+        linear-gradient(155deg, #7a4322, #4a2712 60%, #351a0c);
+    border-left: 3px solid rgba(0, 0, 0, 0.35);
+    box-shadow: inset 0 0 0 8px rgba(255, 183, 3, 0.12), inset 0 0 40px rgba(0, 0, 0, 0.45), -6px 0 20px rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cover-shine {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, rgba(255, 255, 255, 0.08), transparent 40%);
+    pointer-events: none;
+}
+
+.cover-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: #fdf6ec;
+    padding: 32px 26px;
+    max-width: 340px;
+    width: 88%;
+}
+
+.cover-content .icon {
+    font-size: 2.6rem;
+    margin-bottom: 10px;
+}
+
+.cover-content h2 {
+    margin: 0 0 10px;
+    font-size: 1.35rem;
+    color: var(--gold);
+}
+
+.cover-content p {
+    margin: 0 0 20px;
+    line-height: 1.7;
+    color: #f1e4cf;
+    font-size: 0.92rem;
+}
+
+.cover-content button {
+    width: 100%;
+    padding: 13px 18px;
+    border: 2px solid var(--gold);
+    border-radius: 10px;
+    background: linear-gradient(180deg, #ffc233, var(--gold));
+    color: #3a2210;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.content-page .page-inner {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    padding: clamp(18px, 5vw, 28px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow-y: auto;
+}
+
+.book-right .question,
+.book-right .question.solved {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+}
+
+.book-right #clearBox {
+    display: block;
+    background: rgba(255, 255, 255, 0.35);
+}
+
+#passwordOverlay {
+    background: linear-gradient(160deg, #3a2210, #1c1108);
+}
+
+.lock-card {
+    border-radius: 14px;
+}
+
+@media (max-width: 700px) {
+    .book-frame {
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .book-page-left,
+    .book-right {
+        width: 100%;
+    }
+
+    .book-page-left {
+        box-shadow: inset 0 -10px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .book-right {
+        min-height: 300px;
+        box-shadow: inset 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .left-page-content {
+        height: auto;
+        padding: clamp(14px, 5vw, 22px);
+    }
 }

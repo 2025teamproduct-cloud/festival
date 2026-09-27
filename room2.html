@@ -15,46 +15,77 @@
     <a class="admin-link" data-admin-link href="reservation.html">予約ページへ戻る（管理者）</a>
   </div>
 
-  <div class="timer-box">
-    <div class="label">残り時間</div>
-    <div class="time" id="timeDisplay">--:--</div>
-  </div>
+  <div class="game-content" id="gameContent">
+    <div class="progress" id="progressText">正解数: 0 / 3</div>
 
-  <div class="progress" id="progressText">正解数: 0 / 3</div>
+    <div class="book-frame" id="bookFrame">
+      <div class="book-page-left">
+        <div class="page-lines"></div>
+        <div class="left-page-content">
+          <p class="qtext" id="leftQuestionText">開始ボタンを押すと、ここに問題が表示されます。</p>
+        </div>
+      </div>
 
-  <!-- ▼▼▼ 問題1〜3（本体）。文章と答えはここで編集してください ▼▼▼ -->
-  <div class="question" data-index="0">
-    <p class="qtext">問題1：この部屋に置かれた箱の中には、いくつのボールが入っていた？</p>
-    <div class="qrow">
-      <input type="text" placeholder="こたえを入力">
-      <button onclick="checkAnswer(0, this)">確認</button>
+      <div class="book-right" id="bookRight">
+        <div class="page-lines-right"></div>
+
+        <div class="flip-page paper content-page" data-page="clear">
+          <div class="page-inner">
+            <div id="clearBox">
+              <h2>🎉 全問正解！</h2>
+              <p>おめでとうございます！最後のページへ進みましょう。</p>
+              <a class="nextlink" href="complete.html">クリア画面へ →</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-page paper content-page" data-page="q3">
+          <div class="page-inner">
+            <div class="question" data-index="2">
+              <div class="qrow">
+                <input type="text" placeholder="こたえを入力">
+                <button onclick="checkAnswer(2, this)">確認</button>
+              </div>
+              <div class="feedback"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-page paper content-page" data-page="q2">
+          <div class="page-inner">
+            <div class="question" data-index="1">
+              <div class="qrow">
+                <input type="text" placeholder="こたえを入力">
+                <button onclick="checkAnswer(1, this)">確認</button>
+              </div>
+              <div class="feedback"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-page paper content-page" data-page="q1">
+          <div class="page-inner">
+            <div class="question" data-index="0">
+              <div class="qrow">
+                <input type="text" placeholder="こたえを入力">
+                <button onclick="checkAnswer(0, this)">確認</button>
+              </div>
+              <div class="feedback"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flip-page cover" data-page="cover">
+        <div class="cover-content">
+          <div class="icon">📖</div>
+          <h2>ゲーム開始前の確認</h2>
+          <p>開始ボタンを押すと、左のページに問題が表示されます。<br>準備ができたら開始してください。</p>
+          <button id="startButton" type="button">開始する</button>
+        </div>
+        <div class="cover-shine"></div>
+      </div>
     </div>
-    <div class="feedback"></div>
-  </div>
-
-  <div class="question" data-index="1">
-    <p class="qtext">問題2：アルファベットで「C」の次の文字は？</p>
-    <div class="qrow">
-      <input type="text" placeholder="こたえを入力">
-      <button onclick="checkAnswer(1, this)">確認</button>
-    </div>
-    <div class="feedback"></div>
-  </div>
-
-  <div class="question" data-index="2">
-    <p class="qtext">問題3：「文化祭」を英語に訳すと何でしょう？（カタカナでも可）</p>
-    <div class="qrow">
-      <input type="text" placeholder="こたえを入力">
-      <button onclick="checkAnswer(2, this)">確認</button>
-    </div>
-    <div class="feedback"></div>
-  </div>
-  <!-- ▲▲▲ 編集ここまで ▲▲▲ -->
-
-  <div id="clearBox">
-    <h2>🎉 全問正解！</h2>
-    <p>おめでとうございます！最後のページへ進みましょう。</p>
-    <a class="nextlink" href="complete.html">クリア画面へ →</a>
   </div>
 </div>
 
