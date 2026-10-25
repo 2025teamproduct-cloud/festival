@@ -530,28 +530,92 @@ body {
     border-radius: 14px;
 }
 
+/* ページ内の問題文（スマホ用）。PC（見開き）では左ページに問題文があるため非表示 */
+.page-qtext {
+    display: none;
+}
+
+/* =========================================================
+   スマホ（700px以下）
+
+   ・縦持ち前提の1ページ表示（右ページのみ）
+   ・左ページは非表示
+   ・各ページの上半分に問題文、下半分に解答欄
+   ========================================================= */
 @media (max-width: 700px) {
+
+    /* 本は縦長の1ページ分 */
     .book-frame {
-        flex-direction: column;
+        flex-direction: row;
+        height: 75vh;
+        height: 75dvh;
+        min-height: 440px;
+        max-height: 640px;
+    }
+
+    /* 左ページは使わない */
+    .book-page-left {
+        display: none;
+    }
+
+    /* 右ページを本の全幅に */
+    .book-right {
+        width: 100%;
+        min-height: 0;
+        box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.12);
+    }
+
+    /* ページ内部：上半分＝問題文 / 下半分＝解答欄 */
+    .content-page .page-inner {
+        display: grid;
+        grid-template-rows: 1fr 1fr;
+        justify-content: stretch;
+        padding: clamp(16px, 5vw, 24px);
+    }
+
+    /* 上半分：問題文 */
+    .page-qtext {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        padding-bottom: 14px;
+        min-height: 0;
+        overflow-y: auto;
+        text-align: left;
+        font-family: "Yu Mincho", "Hiragino Mincho ProN", serif;
+        font-weight: bold;
+        line-height: 1.8;
+        font-size: clamp(1rem, 4.4vw, 1.2rem);
+        color: #2b1c12;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+        border-bottom: 2px dashed rgba(58, 44, 34, 0.25);
+    }
+
+    /* 下半分：解答欄（solved時にも位置がずれないよう同じ詳細度で指定） */
+    .book-right .question,
+    .book-right .question.solved {
+        align-self: center;
+        padding-top: 14px;
         min-height: 0;
     }
 
-    .book-page-left,
-    .book-right {
+    /* クリアページは問題文を持たないので、従来の中央寄せ */
+    .content-page[data-page="clear"] .page-inner {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    /* 解答欄は縦並び */
+    .qrow {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .qrow input[type=text],
+    .qrow button {
         width: 100%;
-    }
-
-    .book-page-left {
-        box-shadow: inset 0 -10px 20px rgba(0, 0, 0, 0.15);
-    }
-
-    .book-right {
-        min-height: 300px;
-        box-shadow: inset 0 10px 20px rgba(0, 0, 0, 0.15);
-    }
-
-    .left-page-content {
-        height: auto;
-        padding: clamp(14px, 5vw, 22px);
+        min-height: 40px;
     }
 }

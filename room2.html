@@ -18,7 +18,15 @@
   <div class="game-content" id="gameContent">
     <div class="progress" id="progressText">正解数: 0 / 3</div>
 
+    <!--
+      本全体
+      PC（701px以上）：左ページに問題文、右ページに解答欄の見開き
+      スマホ（700px以下）：右ページのみの1ページ表示。
+        各ページの上半分に問題文(.page-qtext)、下半分に解答欄(.question)
+    -->
     <div class="book-frame" id="bookFrame">
+
+      <!-- 左ページ（PCのみ表示 / スマホでは非表示） -->
       <div class="book-page-left">
         <div class="page-lines"></div>
         <div class="left-page-content">
@@ -41,6 +49,8 @@
 
         <div class="flip-page paper content-page" data-page="q3">
           <div class="page-inner">
+            <!-- スマホ用：上半分の問題文（PCでは非表示） -->
+            <p class="page-qtext" data-qtext="2"></p>
             <div class="question" data-index="2">
               <div class="qrow">
                 <input type="text" placeholder="こたえを入力">
@@ -53,6 +63,7 @@
 
         <div class="flip-page paper content-page" data-page="q2">
           <div class="page-inner">
+            <p class="page-qtext" data-qtext="1"></p>
             <div class="question" data-index="1">
               <div class="qrow">
                 <input type="text" placeholder="こたえを入力">
@@ -65,6 +76,7 @@
 
         <div class="flip-page paper content-page" data-page="q1">
           <div class="page-inner">
+            <p class="page-qtext" data-qtext="0"></p>
             <div class="question" data-index="0">
               <div class="qrow">
                 <input type="text" placeholder="こたえを入力">

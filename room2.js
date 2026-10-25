@@ -17,6 +17,22 @@ const FLIP_DURATION_MS = 600;
 
 /* ====================== 設定エリアここまで ====================== */
 
+/*
+    各ページの問題文をセット（スマホ用）
+
+    .page-qtext の data-qtext="0|1|2" に QUESTIONS[n].text を流し込みます。
+    PCでは CSS で非表示なので、見た目には影響しません。
+*/
+function fillPageQuestions() {
+    document.querySelectorAll('[data-qtext]').forEach(el => {
+        const q = QUESTIONS[Number(el.dataset.qtext)];
+        if (q) {
+            el.textContent = q.text;
+        }
+    });
+}
+fillPageQuestions();
+
 function normalize(s) {
     return s.trim()
         .toLowerCase()
