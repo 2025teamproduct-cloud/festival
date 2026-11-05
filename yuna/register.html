@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>かんたんレジ</title>
+    <link rel="stylesheet" href="register.css">
+</head>
+
+<body>
+    <header>
+        <h1>🧾 かんたんレジ</h1>
+        <nav><button data-tab="reg" class="on">レジ</button><button data-tab="sales">売上</button></nav>
+    </header>
+
+    <section id="v-reg" class="reg">
+        <div class="card">
+            <h2>商品 <button class="sec" id="editBtn">削除編集</button></h2>
+            <div class="grid" id="tiles"></div>
+            <div class="add" id="addBox">
+                <input id="newName" aria-label="商品名" placeholder="商品名">
+                <input id="newPrice" aria-label="価格" type="number" min="0" inputmode="numeric" placeholder="価格">
+                <button class="sec" id="addBtn">商品を登録</button>
+            </div>
+        </div>
+        <div class="card">
+            <h2>お会計</h2>
+            <div id="cart"></div>
+            <div class="total"><span>合計</span><span id="total">¥0</span></div>
+            <div class="pay"><label for="paid">お預り</label><input id="paid" type="number" min="0" inputmode="numeric"
+                    placeholder="0"></div>
+            <div class="pay"><span id="changeLabel">おつり</span><b id="change">—</b></div>
+            <button class="pri" id="payBtn">会計する</button>
+            <div class="bar"><button class="sec" id="clearBtn">クリア</button></div>
+        </div>
+    </section>
+
+    <section id="v-sales" hidden>
+        <div class="card">
+            <h2>日付を選択</h2>
+            <input type="date" id="date">
+            <button class="sec" id="todayBtn">今日</button>
+            <div class="chips" id="chips"></div>
+        </div>
+        <div class="card">
+            <div class="stats" id="stats"></div>
+        </div>
+        <div class="card">
+            <h2>レジ締め（差額）</h2>
+            <p class="muted" style="margin:0 0 8px">理論在高 ＝ 開始金 ＋ 売上合計。実際の現金との差額を表示します（売上はすべて現金として計算）。</p>
+            <div class="pay"><label for="cFloat">開始金（釣銭準備金）</label><input id="cFloat" type="number" min="0"
+                    inputmode="numeric" placeholder="0"></div>
+            <div class="pay"><label for="cActual">実際の現金</label><input id="cActual" type="number" min="0"
+                    inputmode="numeric" placeholder="0"></div>
+            <div class="pay"><span>理論在高</span><b id="cTheo">¥0</b></div>
+            <div class="pay"><span>差額（実際 − 理論）</span><b id="cDiff">—</b></div>
+            <div class="bar"><button class="sec" id="cSave">この日の締めを保存</button></div>
+        </div>
+        <div class="card">
+            <h2>商品別</h2>
+            <div class="scroll" id="byItem"></div>
+        </div>
+        <div class="card">
+            <h2>会計一覧</h2>
+            <div id="receipts"></div>
+        </div>
+        <div class="card">
+            <h2>保存テキスト（全期間）</h2>
+            <p class="muted" style="margin:0 0 8px">1行＝1明細（タブ区切り）：日付 / 時刻 / 伝票ID / 商品名 / 単価 / 数量 /
+                小計。コピーして保管、貼り付けて復元できます。</p>
+            <textarea id="raw" spellcheck="false"></textarea>
+            <div class="bar"><button class="sec" id="copyBtn">コピー</button><button class="sec"
+                    id="saveBtn">この内容で保存</button></div>
+        </div>
+        <div class="card">
+            <h2>データ管理</h2>
+            <p class="muted" style="margin:0 0 8px">この端末に保存されている商品・売上・レジ締めをすべて削除します。元に戻せません。</p>
+            <div class="bar"><button class="sec dg" id="wipeBtn">全データを削除</button></div>
+        </div>
+    </section>
+    <div id="toast"></div>
+
+    <script src="register.js"></script>
+</body>
+
+</html>
