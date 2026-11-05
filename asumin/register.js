@@ -372,7 +372,9 @@
   $('wipeBtn').addEventListener('click', () => {
     if (!confirm('保存されている全データ（商品・売上・レジ締め）を完全に削除します。\n元に戻せません。\n\n事前に「保存テキスト」をコピーして控えましたか？\n続行しますか？')) return;
     const v = prompt('本当に削除する場合は学籍番号を入力してください');
-    if (v === null || v.normalize('NFKC').trim().toLowerCase() !== '2402CO0025') return toast('キャンセルしました');
+    // 大文字小文字・全角半角の違いは無視して比較（両辺を同じ形に揃える）
+    const fold = s => s.normalize('NFKC').trim().toLowerCase();
+    if (v === null || fold(v) !== fold('2402CO0025')) return toast('キャンセルしました');
     // このアプリのキー(kr.*)だけを消す。同じオリジンの他のデータには触れない
     Object.values(KEY).forEach(k => {
       delete mem[k];
