@@ -354,6 +354,35 @@
     }
   });
 
+  /* ---------- ファイルに保存（iPhone: 共有シート →「"ファイル"に保存」） ---------- */
+  $('fileBtn').addEventListener('click', async () => {
+    const text = buildRaw();
+    if (!text) return toast('保存するデータがありません');
+    const now = new Date();
+    const name = 'register_' + dstr(now) + '_' + p2(now.getHours()) + p2(now.getMinutes()) + '.txt';
+
+    // 1) 共有シート（iOS15+ / HTTPS が必要）
+    try {
+      const file = new File([text], name, { type: 'text/plain' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: name });
+        return toast('書き出しました');
+      }
+    } catch (e) {
+      if (e && e.name === 'AbortError') return; // 共有シートを閉じただけ
+      /* それ以外の失敗はダウンロードにフォールバック */
+    }
+
+    // 2) ダウンロード（ファイルアプリの「ダウンロード」に入る）
+    const url = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
+    const a = h('a', { href: url, download: name });
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    toast('ダウンロードしました');
+  });
+
   $('saveBtn').addEventListener('click', () => {
     let parsed;
     try {
