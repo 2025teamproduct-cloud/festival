@@ -1,129 +1,397 @@
-const KS = 'pos_sales_v1', KI = 'pos_items_v1', KC = 'pos_close_v1';
-const $ = s => document.querySelector(s);
-const yen = n => '¥' + Number(n).toLocaleString('ja-JP');
-const signed = n => (n > 0 ? '+' : n < 0 ? '−' : '±') + yen(Math.abs(n));
-const cls = n => n > 0 ? 'pos' : n < 0 ? 'neg' : '';
-const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const pad = n => String(n).padStart(2, '0');
-const today = () => { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) };
-const load = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v } catch (e) { return d } };
-const save = (k, v) => { try { localStorage.setItem(k, v) } catch (e) { toast('保存できませんでした') } };
-function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 1800) }
+/* かんたんレジ - localStorage 版
+   保存先: この端末・このブラウザ（同一オリジン）の localStorage
+   ※ iPhoneでは「ホーム画面に追加」して使うと自動削除(ITP)の対象外になります */
+(() => {
+  'use strict';
 
-// ---- データ（すべてテキストで保持）----
-let salesText = load(KS, '');
-let closeText = load(KC, '');   // 日付\t開始金\t実際の現金
-let itemsText = load(KI, 'コーヒー\t350\nカフェラテ\t420\n紅茶\t330\nサンドイッチ\t480\nケーキ\t450\nクッキー\t200');
-const getItems = () => itemsText.split('\n').filter(Boolean).map(l => { const p = l.split('\t'); return { n: p[0], p: +p[1] || 0 } });
-const setItems = a => { itemsText = a.map(i => i.n + '\t' + i.p).join('\n'); save(KI, itemsText) };
-const parseSales = () => salesText.split('\n').filter(Boolean).map(l => { const p = l.split('\t'); return { d: p[0], t: p[1], id: p[2], n: p[3], p: +p[4], q: +p[5], s: +p[6] } }).filter(r => r.d && r.id && r.n && !isNaN(r.s));
-const getClose = d => { const l = closeText.split('\n').find(x => x.split('\t')[0] === d); if (!l) return null; const p = l.split('\t'); return { f: p[1], a: p[2] } };
-const setClose = (d, f, a) => { const ls = closeText.split('\n').filter(l => l && l.split('\t')[0] !== d); ls.push([d, f, a].join('\t')); closeText = ls.join('\n') + '\n'; save(KC, closeText) };
+  /* ---------- 保存層 ---------- */
+  const KEY = {
+    products: 'kr.products.v1',
+    receipts: 'kr.receipts.v1',
+    closing: 'kr.closing.v1',
+    cart: 'kr.cart.v1'
+  };
+  const mem = {}; // localStorage が使えないときの退避（リロードで消える）
 
-// ---- レジ ----
-let cart = [], edit = false;
-function renderTiles() {
-    $('#tiles').innerHTML = getItems().map((it, i) => `<button class="tile" data-i="${i}"><b>${esc(it.n)}</b><span>${yen(it.p)}</span>${edit ? '<i class="x" data-del="' + i + '">×</i>' : ''}</button>`).join('') || '<span class="muted">商品がありません</span>';
-}
-$('#tiles').onclick = e => {
-    const del = e.target.dataset.del;
-    if (edit && del !== undefined) { const a = getItems(); a.splice(+del, 1); setItems(a); renderTiles(); return }
-    const b = e.target.closest('.tile'); if (!b || edit) return;
-    const it = getItems()[+b.dataset.i]; const f = cart.find(c => c.n === it.n && c.p === it.p);
-    f ? f.q++ : cart.push({ n: it.n, p: it.p, q: 1 }); renderCart();
-};
-$('#editBtn').onclick = () => { edit = !edit; $('#editBtn').textContent = edit ? '完了' : '削除編集'; renderTiles() };
-$('#addBtn').onclick = () => {
-    const n = $('#newName').value.replace(/[\t\n]/g, ' ').trim(), p = Math.max(0, parseInt($('#newPrice').value) || 0);
-    if (!n) return toast('商品名を入力してください');
-    const a = getItems(); a.push({ n, p }); setItems(a); $('#newName').value = ''; $('#newPrice').value = ''; renderTiles();
-};
-const sum = () => cart.reduce((s, c) => s + c.p * c.q, 0);
-function renderCart() {
-    $('#cart').innerHTML = cart.map((c, i) => `<div class="row"><div>${esc(c.n)}<div class="muted">${yen(c.p)}</div></div><div class="qty"><button data-m="${i}">−</button><b>${c.q}</b><button data-p="${i}">＋</button></div><b>${yen(c.p * c.q)}</b></div>`).join('') || '<p class="muted">商品を選んでください</p>';
-    $('#total').textContent = yen(sum()); updChange();
-}
-$('#cart').onclick = e => {
-    const m = e.target.dataset.m, p = e.target.dataset.p;
-    if (m !== undefined) { if (--cart[+m].q <= 0) cart.splice(+m, 1) } else if (p !== undefined) cart[+p].q++; else return;
+  function load(key, fallback) {
+    try {
+      const s = localStorage.getItem(key);
+      return s ? JSON.parse(s) : fallback;
+    } catch (e) {
+      return key in mem ? mem[key] : fallback;
+    }
+  }
+  function save(key, val) {
+    mem[key] = val;
+    try {
+      localStorage.setItem(key, JSON.stringify(val));
+    } catch (e) {
+      toast('⚠ 保存できません（プライベートモード/容量不足の可能性）');
+    }
+  }
+
+  // 消されにくくするようブラウザに要求（許可はブラウザ次第）
+  try {
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+  } catch (e) { /* 無視 */ }
+
+  /* ---------- 状態 ---------- */
+  let products = load(KEY.products, []);   // [{id,name,price}]
+  let receipts = load(KEY.receipts, []);   // [{id,date,time,items:[{name,price,qty}]}]
+  let closing = load(KEY.closing, {});     // {'YYYY-MM-DD':{float,actual}}
+  let cart = load(KEY.cart, []);           // [{id,name,price,qty}]
+  let editMode = false;
+  let selDate = '';
+
+  /* ---------- ユーティリティ ---------- */
+  const $ = id => document.getElementById(id);
+  const p2 = n => String(n).padStart(2, '0');
+  const dstr = d => d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
+  const tstr = d => p2(d.getHours()) + ':' + p2(d.getMinutes()) + ':' + p2(d.getSeconds());
+  const yen = n => (n < 0 ? '-¥' : '¥') + Math.abs(n).toLocaleString('ja-JP');
+  const num = v => { const n = parseInt(v, 10); return isNaN(n) ? 0 : n; };
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  const clean = s => String(s).replace(/[\t\r\n]+/g, ' ').trim();
+
+  function h(tag, props, ...kids) {
+    const el = document.createElement(tag);
+    if (props) {
+      for (const k in props) {
+        if (k === 'class') el.className = props[k];
+        else if (k.startsWith('on')) el.addEventListener(k.slice(2), props[k]);
+        else el.setAttribute(k, props[k]);
+      }
+    }
+    kids.flat().forEach(c => {
+      if (c == null) return;
+      el.append(c.nodeType ? c : document.createTextNode(c));
+    });
+    return el;
+  }
+
+  let toastTimer;
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('on'), 2200);
+  }
+
+  const cartTotal = () => cart.reduce((s, c) => s + c.price * c.qty, 0);
+  const receiptTotal = r => r.items.reduce((s, i) => s + i.price * i.qty, 0);
+
+  /* ---------- タブ ---------- */
+  document.querySelectorAll('nav button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === b));
+      const reg = b.dataset.tab === 'reg';
+      $('v-reg').hidden = !reg;
+      $('v-sales').hidden = reg;
+      if (!reg) renderSales();
+    });
+  });
+
+  /* ---------- 商品 ---------- */
+  function renderTiles() {
+    const box = $('tiles');
+    box.classList.toggle('editing', editMode);
+    $('addBox').hidden = !editMode && products.length > 0;
+    $('editBtn').textContent = editMode ? '完了' : '削除編集';
+    box.replaceChildren();
+    if (!products.length) {
+      box.append(h('p', { class: 'muted' }, '商品がありません。下のフォームから登録してください。'));
+      return;
+    }
+    products.forEach(p => {
+      box.append(h('button', {
+        class: 'tile', type: 'button',
+        onclick: () => {
+          if (editMode) {
+            if (confirm('「' + p.name + '」を商品一覧から削除しますか？\n（過去の売上は残ります）')) {
+              products = products.filter(x => x.id !== p.id);
+              save(KEY.products, products);
+              renderTiles();
+            }
+          } else {
+            addToCart(p);
+          }
+        }
+      }, editMode ? h('span', { class: 'x' }, '×') : null,
+        h('b', null, p.name),
+        h('span', null, yen(p.price))));
+    });
+  }
+
+  $('editBtn').addEventListener('click', () => { editMode = !editMode; renderTiles(); });
+
+  $('addBtn').addEventListener('click', () => {
+    const name = clean($('newName').value);
+    const price = $('newPrice').value;
+    if (!name) return toast('商品名を入力してください');
+    if (price === '' || num(price) < 0) return toast('価格を入力してください');
+    products.push({ id: uid(), name, price: num(price) });
+    save(KEY.products, products);
+    $('newName').value = '';
+    $('newPrice').value = '';
+    renderTiles();
+    toast('登録しました');
+  });
+
+  /* ---------- カート ---------- */
+  function addToCart(p) {
+    const ex = cart.find(c => c.id === p.id);
+    if (ex) ex.qty++;
+    else cart.push({ id: p.id, name: p.name, price: p.price, qty: 1 });
+    save(KEY.cart, cart);
     renderCart();
-};
-// お預り − 合計 の差額（おつり／不足）
-function updChange() {
-    const v = $('#paid').value, d = +v - sum(), el = $('#change');
-    $('#changeLabel').textContent = v !== '' && d < 0 ? '不足' : 'おつり';
-    el.textContent = v === '' ? '—' : yen(Math.abs(d));
-    el.className = v === '' ? '' : (d < 0 ? 'neg' : 'pos');
-}
-$('#paid').oninput = updChange;
-$('#clearBtn').onclick = () => { cart = []; $('#paid').value = ''; renderCart() };
-$('#payBtn').onclick = () => {
-    if (!cart.length) return toast('商品がありません');
-    const pv = $('#paid').value; if (pv !== '' && +pv < sum()) return toast('お預りが不足しています');
-    const n = new Date(), d = today(), t = pad(n.getHours()) + ':' + pad(n.getMinutes()) + ':' + pad(n.getSeconds());
-    const id = n.getTime().toString(36);
-    const lines = cart.map(c => [d, t, id, c.n, c.p, c.q, c.p * c.q].join('\t')).join('\n');
-    salesText += (salesText && !salesText.endsWith('\n') ? '\n' : '') + lines + '\n'; save(KS, salesText);
-    const tot = sum(); cart = []; $('#paid').value = ''; renderCart(); toast('会計完了 ' + yen(tot));
-};
+  }
 
-// ---- 売上（日付別）----
-let sd = today(), dayTotal = 0;
-function renderSales() {
-    const recs = parseSales(), dates = [...new Set(recs.map(r => r.d))].sort().reverse();
-    $('#date').value = sd;
-    $('#chips').innerHTML = dates.slice(0, 14).map(d => `<button class="chip ${d === sd ? 'on' : ''}" data-d="${d}">${d}</button>`).join('') || '<span class="muted">売上データなし</span>';
-    const day = recs.filter(r => r.d === sd), rc = new Map();
-    day.forEach(r => { if (!rc.has(r.id)) rc.set(r.id, { id: r.id, t: r.t, rows: [], s: 0 }); const o = rc.get(r.id); o.rows.push(r); o.s += r.s });
-    const total = day.reduce((s, r) => s + r.s, 0), qty = day.reduce((s, r) => s + r.q, 0), cnt = rc.size;
-    dayTotal = total;
-    // 前回営業日との売上差額
-    const prev = dates.find(d => d < sd);
-    const pTotal = prev ? recs.filter(r => r.d === prev).reduce((s, r) => s + r.s, 0) : null;
-    const dv = pTotal === null ? '<b>—</b><small>比較対象なし</small>' : `<b class="${cls(total - pTotal)}">${signed(total - pTotal)}</b><small>${prev} との差</small>`;
-    $('#stats').innerHTML = `<div class="stat"><small>売上合計</small><b>${yen(total)}</b></div><div class="stat"><small>前回営業日比（差額）</small>${dv}</div><div class="stat"><small>会計数</small><b>${cnt}</b></div><div class="stat"><small>販売点数</small><b>${qty}</b></div><div class="stat"><small>客単価</small><b>${yen(cnt ? Math.round(total / cnt) : 0)}</b></div>`;
-    const agg = {}; day.forEach(r => { const a = agg[r.n] || (agg[r.n] = { q: 0, s: 0 }); a.q += r.q; a.s += r.s });
-    const ar = Object.entries(agg).sort((a, b) => b[1].s - a[1].s);
-    $('#byItem').innerHTML = ar.length ? `<table><tr><th>商品</th><th>数量</th><th>金額</th></tr>${ar.map(([n, a]) => `<tr><td>${esc(n)}</td><td>${a.q}</td><td>${yen(a.s)}</td></tr>`).join('')}</table>` : '<p class="muted">この日の売上はありません</p>';
-    $('#receipts').innerHTML = [...rc.values()].sort((a, b) => b.t.localeCompare(a.t)).map(o => `<div class="row"><div><b>${o.t}</b> <span class="muted">${o.rows.map(r => esc(r.n) + '×' + r.q).join('、')}</span></div><div style="white-space:nowrap"><b>${yen(o.s)}</b> <button class="sec dg" data-rm="${o.id}" style="padding:2px 8px">削除</button></div></div>`).join('') || '<p class="muted">—</p>';
-    const c = getClose(sd); $('#cFloat').value = c ? c.f : ''; $('#cActual').value = c ? c.a : ''; updClose();
-    $('#raw').value = salesText;
-}
-// レジ締め：実際の現金 − (開始金 + 売上合計)
-function updClose() {
-    const f = +$('#cFloat').value || 0, a = $('#cActual').value, theo = f + dayTotal, el = $('#cDiff');
-    $('#cTheo').textContent = yen(theo);
-    if (a === '') { el.textContent = '—'; el.className = ''; return }
-    const d = +a - theo;
-    el.textContent = signed(d) + (d > 0 ? '（過剰）' : d < 0 ? '（不足）' : '（一致）');
-    el.className = cls(d);
-}
-$('#cFloat').oninput = $('#cActual').oninput = updClose;
-$('#cSave').onclick = () => { setClose(sd, $('#cFloat').value, $('#cActual').value); toast(sd + ' の締めを保存しました') };
-$('#date').onchange = e => { sd = e.target.value || today(); renderSales() };
-$('#todayBtn').onclick = () => { sd = today(); renderSales() };
-$('#chips').onclick = e => { if (e.target.dataset.d) { sd = e.target.dataset.d; renderSales() } };
-$('#receipts').onclick = e => {
-    const b = e.target.closest('[data-rm]'); if (!b) return;
-    if (!b.dataset.arm) { b.dataset.arm = 1; b.textContent = '本当に削除'; setTimeout(() => { b.dataset.arm = ''; b.textContent = '削除' }, 2500); return }
-    salesText = salesText.split('\n').filter(l => l && l.split('\t')[2] !== b.dataset.rm).join('\n') + '\n';
-    save(KS, salesText); renderSales(); toast('削除しました');
-};
-$('#copyBtn').onclick = async () => {
-    try { await navigator.clipboard.writeText($('#raw').value) } catch (e) { $('#raw').select(); document.execCommand('copy') }
-    toast('コピーしました');
-};
-$('#saveBtn').onclick = () => {
-    const ls = $('#raw').value.split('\n').map(l => l.replace(/\r/g, '')).filter(l => l.trim());
-    const bad = ls.findIndex(l => { const p = l.split('\t'); return p.length !== 7 || !/^\d{4}-\d{2}-\d{2}$/.test(p[0]) || p.slice(4).some(x => isNaN(+x) || x === '') });
-    if (bad >= 0) return toast((bad + 1) + '行目の形式が正しくありません');
-    salesText = ls.length ? ls.join('\n') + '\n' : ''; save(KS, salesText); renderSales(); toast('保存しました');
-};
+  function renderCart() {
+    const box = $('cart');
+    box.replaceChildren();
+    if (!cart.length) box.append(h('p', { class: 'muted' }, '商品をタップして追加'));
+    cart.forEach(c => {
+      const chg = d => () => {
+        c.qty += d;
+        if (c.qty <= 0) cart = cart.filter(x => x !== c);
+        save(KEY.cart, cart);
+        renderCart();
+      };
+      box.append(h('div', { class: 'row' },
+        h('span', { class: 'nm' }, c.name),
+        h('span', { class: 'qty' },
+          h('button', { class: 'sec', type: 'button', 'aria-label': '減らす', onclick: chg(-1) }, '−'),
+          h('b', null, String(c.qty)),
+          h('button', { class: 'sec', type: 'button', 'aria-label': '増やす', onclick: chg(1) }, '＋')),
+        h('span', { class: 'sub' }, yen(c.price * c.qty))));
+    });
+    $('total').textContent = yen(cartTotal());
+    renderChange();
+  }
 
-// ---- タブ ----
-document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
-    document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === b));
-    $('#v-reg').hidden = b.dataset.tab !== 'reg'; $('#v-sales').hidden = b.dataset.tab !== 'sales';
-    if (b.dataset.tab === 'sales') renderSales();
-});
-renderTiles(); renderCart();
+  function renderChange() {
+    const paid = $('paid').value;
+    const total = cartTotal();
+    if (paid === '') {
+      $('changeLabel').textContent = 'おつり';
+      $('change').textContent = '—';
+      return;
+    }
+    const d = num(paid) - total;
+    $('changeLabel').textContent = d >= 0 ? 'おつり' : '不足';
+    $('change').textContent = yen(Math.abs(d));
+  }
+  $('paid').addEventListener('input', renderChange);
+
+  $('clearBtn').addEventListener('click', () => {
+    if (cart.length && !confirm('カートを空にしますか？')) return;
+    cart = [];
+    save(KEY.cart, cart);
+    $('paid').value = '';
+    renderCart();
+  });
+
+  $('payBtn').addEventListener('click', () => {
+    if (!cart.length) return toast('商品が選ばれていません');
+    const total = cartTotal();
+    const paid = $('paid').value;
+    if (paid !== '' && num(paid) < total) return toast('お預りが不足しています');
+    const now = new Date();
+    receipts.push({
+      id: uid(),
+      date: dstr(now),
+      time: tstr(now),
+      items: cart.map(c => ({ name: c.name, price: c.price, qty: c.qty }))
+    });
+    save(KEY.receipts, receipts);
+    const change = paid === '' ? null : num(paid) - total;
+    cart = [];
+    save(KEY.cart, cart);
+    $('paid').value = '';
+    renderCart();
+    toast(change === null ? '会計しました ' + yen(total) : '会計しました　おつり ' + yen(change));
+  });
+
+  /* ---------- 売上 ---------- */
+  const dayReceipts = () => receipts.filter(r => r.date === selDate)
+    .sort((a, b) => a.time.localeCompare(b.time));
+
+  function renderSales() {
+    if (!selDate) selDate = dstr(new Date());
+    $('date').value = selDate;
+
+    // 日付チップ（売上のある日）
+    const dates = [...new Set(receipts.map(r => r.date))].sort().reverse().slice(0, 14);
+    const chips = $('chips');
+    chips.replaceChildren();
+    dates.forEach(d => {
+      const sum = receipts.filter(r => r.date === d).reduce((s, r) => s + receiptTotal(r), 0);
+      chips.append(h('button', {
+        class: 'chip' + (d === selDate ? ' on' : ''), type: 'button',
+        onclick: () => { selDate = d; renderSales(); }
+      }, d.slice(5).replace('-', '/') + ' ' + yen(sum)));
+    });
+
+    const list = dayReceipts();
+    const total = list.reduce((s, r) => s + receiptTotal(r), 0);
+    const count = list.reduce((s, r) => s + r.items.reduce((a, i) => a + i.qty, 0), 0);
+
+    // 統計
+    const stat = (label, val) => h('div', { class: 'stat' }, h('small', null, label), h('b', null, val));
+    $('stats').replaceChildren(
+      stat('売上合計', yen(total)),
+      stat('会計数', list.length + '件'),
+      stat('販売点数', count + '点'),
+      stat('客単価', list.length ? yen(Math.round(total / list.length)) : '—')
+    );
+
+    // レジ締め
+    const cl = closing[selDate] || {};
+    $('cFloat').value = cl.float ?? '';
+    $('cActual').value = cl.actual ?? '';
+    renderClosing();
+
+    // 商品別
+    const agg = {};
+    list.forEach(r => r.items.forEach(i => {
+      const k = i.name + '\t' + i.price;
+      agg[k] = agg[k] || { name: i.name, price: i.price, qty: 0 };
+      agg[k].qty += i.qty;
+    }));
+    const rows = Object.values(agg).sort((a, b) => b.price * b.qty - a.price * a.qty);
+    $('byItem').replaceChildren(rows.length
+      ? h('table', null,
+        h('thead', null, h('tr', null, ...['商品', '単価', '数量', '小計'].map(t => h('th', null, t)))),
+        h('tbody', null, rows.map(r => h('tr', null,
+          h('td', null, r.name), h('td', { class: 'r' }, yen(r.price)),
+          h('td', { class: 'r' }, String(r.qty)), h('td', { class: 'r' }, yen(r.price * r.qty))))))
+      : h('p', { class: 'muted' }, 'この日の売上はありません'));
+
+    // 会計一覧
+    const rc = $('receipts');
+    rc.replaceChildren();
+    if (!list.length) rc.append(h('p', { class: 'muted' }, 'この日の会計はありません'));
+    list.slice().reverse().forEach(r => {
+      rc.append(h('div', { class: 'row' },
+        h('div', null,
+          h('b', null, r.time.slice(0, 5) + '　' + yen(receiptTotal(r))),
+          h('div', { class: 'muted' }, r.items.map(i => i.name + '×' + i.qty).join('、'))),
+        h('button', {
+          class: 'sec dg', type: 'button',
+          onclick: () => {
+            if (confirm(r.time.slice(0, 5) + ' の会計（' + yen(receiptTotal(r)) + '）を削除しますか？')) {
+              receipts = receipts.filter(x => x.id !== r.id);
+              save(KEY.receipts, receipts);
+              renderSales();
+            }
+          }
+        }, '削除')));
+    });
+
+    $('raw').value = buildRaw();
+  }
+
+  function renderClosing() {
+    const total = dayReceipts().reduce((s, r) => s + receiptTotal(r), 0);
+    const theo = num($('cFloat').value) + total;
+    $('cTheo').textContent = yen(theo);
+    const actual = $('cActual').value;
+    const d = $('cDiff');
+    d.classList.remove('pos', 'neg');
+    if (actual === '') { d.textContent = '—'; return; }
+    const diff = num(actual) - theo;
+    d.textContent = (diff > 0 ? '+' : '') + yen(diff);
+    if (diff > 0) d.classList.add('pos');
+    if (diff < 0) d.classList.add('neg');
+  }
+  $('cFloat').addEventListener('input', renderClosing);
+  $('cActual').addEventListener('input', renderClosing);
+
+  $('cSave').addEventListener('click', () => {
+    closing[selDate] = { float: $('cFloat').value, actual: $('cActual').value };
+    save(KEY.closing, closing);
+    toast('締めを保存しました。下のテキストもバックアップ推奨です');
+  });
+
+  $('date').addEventListener('change', e => { if (e.target.value) { selDate = e.target.value; renderSales(); } });
+  $('todayBtn').addEventListener('click', () => { selDate = dstr(new Date()); renderSales(); });
+
+  /* ---------- 保存テキスト（バックアップ/復元） ---------- */
+  function buildRaw() {
+    const lines = [];
+    receipts.slice()
+      .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))
+      .forEach(r => r.items.forEach(i =>
+        lines.push([r.date, r.time, r.id, i.name, i.price, i.qty, i.price * i.qty].join('\t'))));
+    return lines.join('\n');
+  }
+
+  function parseRaw(text) {
+    const map = new Map();
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    for (let n = 0; n < lines.length; n++) {
+      const c = lines[n].split('\t');
+      if (c.length < 6 || !/^\d{4}-\d{2}-\d{2}$/.test(c[0]) || isNaN(+c[4]) || isNaN(+c[5])) {
+        throw new Error((n + 1) + '行目の形式が正しくありません');
+      }
+      const id = c[2];
+      if (!map.has(id)) map.set(id, { id, date: c[0], time: c[1], items: [] });
+      map.get(id).items.push({ name: c[3], price: +c[4], qty: +c[5] });
+    }
+    return [...map.values()];
+  }
+
+  $('copyBtn').addEventListener('click', async () => {
+    const t = $('raw').value;
+    try {
+      await navigator.clipboard.writeText(t);
+      toast('コピーしました');
+    } catch (e) {
+      $('raw').select();
+      document.execCommand && document.execCommand('copy');
+      toast('コピーしました');
+    }
+  });
+
+  $('saveBtn').addEventListener('click', () => {
+    let parsed;
+    try {
+      parsed = parseRaw($('raw').value);
+    } catch (e) {
+      return toast(e.message);
+    }
+    if (!confirm('全期間の売上を、このテキストの内容（' + parsed.length + '件の会計）で置き換えます。よろしいですか？')) return;
+    receipts = parsed;
+    save(KEY.receipts, receipts);
+    renderSales();
+    toast('保存しました');
+  });
+
+  /* ---------- 全データ削除 ---------- */
+  $('wipeBtn').addEventListener('click', () => {
+    if (!confirm('保存されている全データ（商品・売上・レジ締め）を完全に削除します。\n元に戻せません。\n\n事前に「保存テキスト」をコピーして控えましたか？\n続行しますか？')) return;
+    const v = prompt('本当に削除する場合は「削除」と入力してください');
+    if (v === null || v.trim() !== '削除') return toast('キャンセルしました');
+    // このアプリのキー(kr.*)だけを消す。同じオリジンの他のデータには触れない
+    Object.values(KEY).forEach(k => {
+      delete mem[k];
+      try { localStorage.removeItem(k); } catch (e) { /* 無視 */ }
+    });
+    products = [];
+    receipts = [];
+    closing = {};
+    cart = [];
+    editMode = false;
+    $('paid').value = '';
+    renderTiles();
+    renderCart();
+    renderSales();
+    toast('全データを削除しました');
+  });
+
+  /* ---------- 起動 ---------- */
+  selDate = dstr(new Date());
+  renderTiles();
+  renderCart();
+})();
