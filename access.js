@@ -1,6 +1,10 @@
 //  /access.js
-const ADMIN_PASSWORD = 'festival-admin-2026';
+const ADMIN_PASSWORDS = ['festival-admin-2026'];
 const ACCESS_KEY = 'festival-admin-access';
+
+function isAdminPassword(password) {
+    return ADMIN_PASSWORDS.includes(password);
+}
 
 function hasAdminAccess() {
     return sessionStorage.getItem(ACCESS_KEY) === 'granted';
@@ -14,7 +18,7 @@ function requireAdminAccess(event) {
     }
 
     const password = window.prompt('管理者パスワードを入力してください');
-    if (password === ADMIN_PASSWORD) {
+    if (isAdminPassword(password)) {
         sessionStorage.setItem(ACCESS_KEY, 'granted');
         window.location.href = event.currentTarget.href;
     } else if (password !== null) {
@@ -28,7 +32,7 @@ document.querySelectorAll('[data-admin-link]').forEach((link) => {
 
 if (document.querySelector('[data-admin-page]')) {
     const password = window.prompt('管理者パスワードを入力してください');
-    if (password === ADMIN_PASSWORD) {
+    if (isAdminPassword(password)) {
         sessionStorage.setItem(ACCESS_KEY, 'granted');
     } else {
         if (password !== null) {
