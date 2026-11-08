@@ -6,9 +6,9 @@ const PASSWORD_LIST = ["がくえんさい", "学園祭", "asd"];
 
 // 正解データ
 const QUESTIONS = [
-    { text: "問題1：この部屋に置かれた箱の中には、いくつのボールが入っていた？", answers: ["3", "3個", "三つ", "みっつ", "asd"] },
-    { text: "問題2：アルファベットで「C」の次の文字は？", answers: ["D", "asd"] },
-    { text: "問題3：「文化祭」を英語に訳すと何でしょう？（カタカナでも可）", answers: ["フェスティバル", "school festival", "festival", "スクールフェスティバル", "asd"] }
+    { text: "問題1：これは何", answers: ["3", "3個", "三つ", "みっつ", "asd"] },
+    { text: "問題2：これは何", answers: ["D", "asd"] },
+    { text: "問題3：これは何", answers: ["フェスティバル", "school festival", "festival", "スクールフェスティバル", "asd"] }
 ];
 
 const PAGE_ORDER = ['q1', 'q2', 'q3'];
