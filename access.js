@@ -1,5 +1,5 @@
 //  /access.js
-const ADMIN_PASSWORDS = ['festival-admin-2026'];
+const ADMIN_PASSWORDS = ['2402it0002'];
 const ACCESS_KEY = 'festival-admin-access';
 
 function isAdminPassword(password) {
