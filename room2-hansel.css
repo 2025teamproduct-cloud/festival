@@ -427,17 +427,17 @@ body::after {
         0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
-/* 扉の上にのったアイシング */
+/* 扉のアーチに沿ってのったアイシング
+   （カードの内側いっぱいに置き、上辺だけ太い枠線にすることで、
+     アーチの曲線に沿った三日月形になる。はみ出さない） */
 .lock-card::before {
     content: "";
     position: absolute;
-    left: 50px;
-    right: 50px;
-    top: -3px;
-    height: 12px;
-    background:
-        radial-gradient(circle at 8px 0, var(--candy-pink) 6px, transparent 6.5px) 0 0 / 16px 12px repeat-x,
-        linear-gradient(var(--candy-pink), var(--candy-pink)) 0 0 / 100% 4px no-repeat;
+    inset: 0;
+    border-top: 12px solid var(--candy-pink);
+    border-radius: 134px 134px 0 0;
+    pointer-events: none;
+    filter: drop-shadow(0 1px 0 rgba(122, 66, 32, 0.45));
 }
 
 /* 扉のドアノブ（グミ） */
