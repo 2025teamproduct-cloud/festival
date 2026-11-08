@@ -276,6 +276,8 @@ reservationForm.addEventListener('submit', async (event) => {
     try {
         const selectedDay = festivalDay.value;
         const selectedSlot = slotSelect.value;
+        const name = document.getElementById('name').value;
+        const partnerName = document.getElementById('partnerName').value;
 
         const response = await fetch('/api/reservations', {
             method: 'POST',
@@ -290,11 +292,8 @@ reservationForm.addEventListener('submit', async (event) => {
 
                 slotId: selectedSlot,
 
-                name:
-                    document.getElementById('name').value,
-
-                partnerName:
-                    document.getElementById('partnerName').value,
+                name,
+                partnerName,
             }),
         });
 
@@ -308,6 +307,10 @@ reservationForm.addEventListener('submit', async (event) => {
         document.getElementById(
             'reservationNumber'
         ).textContent = data.reservation.number;
+
+        document.getElementById('reservationName').textContent = name;
+        document.getElementById('reservationPartnerName').textContent =
+            partnerName;
 
         document.getElementById(
             'numberPanel'

@@ -307,6 +307,17 @@ button:disabled {
     border: 2px solid var(--warm);
 }
 
+.reservation-names {
+    margin: 20px 0 14px;
+    padding: 12px 16px;
+    background: #fff;
+    border-radius: 10px;
+}
+
+.reservation-names p {
+    margin: 4px 0;
+}
+
 .number-box {
     display: grid;
     gap: 5px;
