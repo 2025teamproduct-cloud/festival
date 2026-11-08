@@ -121,7 +121,7 @@ body::after {
     padding: 5px 22px 5px 30px;
     background: linear-gradient(180deg, #fbf0d0, #ecd9a3);
     border: 2px solid var(--alice-tea);
-    border-radius: 6px 14px 14px 6px;
+    border-radius: 14px 14px 14px 14px;
     color: #5b3a1a;
     font-weight: bold;
     letter-spacing: 0.06em;
