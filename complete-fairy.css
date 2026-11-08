@@ -1,0 +1,292 @@
+/* /complete-fairy.css
+   クリア画面用の童話デコレーション（CSSのみ・外部画像/フォントなし）
+   第1の部屋（不思議の国のアリス）と第2の部屋（ヘンゼルとグレーテル）の
+   モチーフをひとつにまとめた、エンディングのページです。
+
+   使い方：complete.html の complete.css の「次の行」に追加してください。
+   <link rel="stylesheet" href="complete.css">
+   <link rel="stylesheet" href="complete-fairy.css">
+
+   消したいときは、この1行を消すだけで元の見た目に戻ります。
+
+   モチーフ
+   ・月夜の森と星        … 背景（ヘンゼルとグレーテル）
+   ・トランプのカード    … メッセージカード（アリス）
+   ・グミ・アイシング    … カードの飾り（ヘンゼルとグレーテル）
+   ・金の鍵              … 🎊 の代わり。「脱出成功」の象徴
+   ・チェシャ猫の笑み    … 画面右下で現れては消える（アリス）
+   ・紙吹雪              … ダイヤ・星・まるいグミの形に
+   ・めでたし、めでたし  … 童話のおしまいの一言
+*/
+
+:root {
+    --candy-red: #d6304a;
+    --candy-red-dark: #a8203a;
+    --candy-pink: #f7a8bd;
+    --icing: #fffaf0;
+    --gold: #e0b43c;
+    --tea: #8b5a2b;
+    --ink: #2e1a0c;
+}
+
+
+/* =========================================================
+   背景：月夜の森
+   ========================================================= */
+
+body {
+    background:
+        radial-gradient(circle at 86% 12%, #fffbe0 0 24px, rgba(255, 248, 200, 0.30) 25px 64px, transparent 140px),
+        linear-gradient(180deg, #140b34 0%, #2b1055 50%, #3b4a8c 100%);
+    font-family: "Yu Mincho", "Hiragino Mincho ProN", "Georgia", serif;
+}
+
+/* もみの木のシルエット（2列） */
+body::before {
+    content: "";
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 26vh;
+    pointer-events: none;
+    z-index: 0;
+    background:
+        conic-gradient(from 166deg at 50% 0, #0a0620 0 28deg, transparent 0) 0 100% / 80px 160px repeat-x,
+        conic-gradient(from 164.2deg at 50% 0, #150d36 0 31.6deg, transparent 0) 40px 100% / 130px 230px repeat-x;
+}
+
+/* またたく星 */
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60vh;
+    pointer-events: none;
+    z-index: 0;
+    background:
+        radial-gradient(1.6px 1.6px at 8% 14%, #fff, transparent),
+        radial-gradient(1.2px 1.2px at 17% 38%, #fff, transparent),
+        radial-gradient(1.8px 1.8px at 26% 8%, #fff, transparent),
+        radial-gradient(1.2px 1.2px at 34% 26%, #fff, transparent),
+        radial-gradient(1.6px 1.6px at 46% 12%, #fff, transparent),
+        radial-gradient(1.2px 1.2px at 55% 34%, #fff, transparent),
+        radial-gradient(1.8px 1.8px at 63% 6%, #fff, transparent),
+        radial-gradient(1.2px 1.2px at 72% 24%, #fff, transparent),
+        radial-gradient(1.6px 1.6px at 79% 42%, #fff, transparent),
+        radial-gradient(1.2px 1.2px at 94% 30%, #fff, transparent),
+        radial-gradient(1.2px 1.2px at 5% 48%, #fff, transparent),
+        radial-gradient(1.6px 1.6px at 41% 52%, #fff, transparent);
+    animation: twinkle 5s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.95; }
+    50%      { opacity: 0.45; }
+}
+
+/* チェシャ猫の笑み：目と三日月の口だけが現れては消える */
+html::after {
+    content: "";
+    position: fixed;
+    right: 4vw;
+    bottom: 3vh;
+    width: 150px;
+    height: 80px;
+    border-bottom: 9px solid #fffbe6;
+    border-radius: 0 0 150px 150px / 0 0 70px 70px;
+    background:
+        radial-gradient(ellipse 6px 11px at 24% 14%, #d9ff45 45%, transparent 50%),
+        radial-gradient(ellipse 6px 11px at 76% 14%, #d9ff45 45%, transparent 50%);
+    filter: drop-shadow(0 0 8px rgba(217, 255, 69, 0.55));
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    animation: grin 12s ease-in-out infinite;
+}
+
+@keyframes grin {
+    0%, 55%, 100% { opacity: 0; }
+    68%, 86%      { opacity: 0.75; }
+}
+
+
+/* =========================================================
+   メッセージカード：トランプのカード
+   ========================================================= */
+
+.card {
+    background: linear-gradient(180deg, #fffdf4, #f7ecd0);
+    border: 4px solid var(--candy-red);
+    border-radius: 22px;
+    box-shadow:
+        0 0 0 4px var(--icing),
+        0 0 0 7px var(--gold),
+        0 0 60px rgba(255, 200, 100, 0.35),
+        0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* カードの左上・右下のインデックス（トランプのように逆さにも） */
+.card::before,
+.card::after {
+    content: "♥";
+    position: absolute;
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--candy-red);
+}
+
+.card::before {
+    top: 12px;
+    left: 16px;
+}
+
+.card::after {
+    bottom: 12px;
+    right: 16px;
+    transform: rotate(180deg);
+}
+
+/* 🎊 の絵文字をやめて、金の鍵を描く（脱出成功の鍵） */
+.card .emoji {
+    position: relative;
+    width: 96px;
+    height: 44px;
+    margin: 0 auto 14px;
+    font-size: 0;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
+}
+
+/* 鍵の頭（輪） */
+.card .emoji::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 5px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 8px solid var(--gold);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px rgba(255, 241, 176, 0.7);
+}
+
+/* 鍵の軸と歯 */
+.card .emoji::after {
+    content: "";
+    position: absolute;
+    left: 32px;
+    top: 17px;
+    width: 62px;
+    height: 24px;
+    background:
+        linear-gradient(var(--gold), var(--gold)) 0 0 / 100% 9px no-repeat,
+        linear-gradient(var(--gold), var(--gold)) 40px 0 / 9px 22px no-repeat,
+        linear-gradient(var(--gold), var(--gold)) 53px 0 / 7px 15px no-repeat;
+}
+
+/* 見出し：上にグミ、下にアイシングの垂れ */
+.card h1 {
+    color: var(--candy-red-dark);
+    letter-spacing: 0.05em;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.card h1::before {
+    content: "● ● ● ● ●";
+    display: table;
+    margin: 0 auto 10px;
+    letter-spacing: 0.3em;
+    font-size: 0.8rem;
+    background: linear-gradient(90deg, #d6304a, #f2a516, #4aa564, #3c7bff, #d65ab8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    text-shadow: none;
+}
+
+.card h1::after {
+    content: "";
+    display: block;
+    width: 60%;
+    height: 12px;
+    margin: 14px auto 0;
+    background:
+        radial-gradient(circle at 8px 0, var(--candy-pink) 6px, transparent 6.5px) 0 0 / 16px 12px repeat-x,
+        linear-gradient(var(--candy-pink), var(--candy-pink)) 0 0 / 100% 4px no-repeat;
+    filter: drop-shadow(0 1px 0 rgba(139, 90, 43, 0.45));
+}
+
+.card p {
+    color: #5b3a1a;
+}
+
+/* 童話のおしまいの一言 */
+.card p::after {
+    content: "めでたし、めでたし。";
+    display: block;
+    margin-top: 16px;
+    color: var(--tea);
+    font-weight: bold;
+    letter-spacing: 0.25em;
+}
+
+
+/* =========================================================
+   紙吹雪：ダイヤ・星・まるいグミの形に（色はJSのまま）
+   ========================================================= */
+
+.confetti {
+    height: 12px;
+    border-radius: 0;
+}
+
+/* まるいグミ */
+.confetti:nth-of-type(3n + 1) {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+}
+
+/* 星 */
+.confetti:nth-of-type(3n + 2) {
+    width: 16px;
+    height: 16px;
+    clip-path: polygon(
+        50% 0%, 61% 35%, 98% 35%, 68% 57%,
+        79% 91%, 50% 70%, 21% 91%, 32% 57%,
+        2% 35%, 39% 35%
+    );
+}
+
+/* ダイヤ（トランプの ♦） */
+.confetti:nth-of-type(3n) {
+    width: 11px;
+    height: 16px;
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+
+/* =========================================================
+   動きを減らす設定の人には、星・笑み・紙吹雪の動きを止める
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    body::after {
+        animation: none;
+        opacity: 0.8;
+    }
+
+    html::after {
+        animation: none;
+        opacity: 0.35;
+    }
+
+    .confetti {
+        animation: none;
+        display: none;
+    }
+}
