@@ -3,7 +3,9 @@ const ADMIN_PASSWORDS = ['festival-admin-2026'];
 const ACCESS_KEY = 'festival-admin-access';
 
 function isAdminPassword(password) {
-    return ADMIN_PASSWORDS.includes(password);
+    return ADMIN_PASSWORDS.some((adminPassword) =>
+        adminPassword.toLowerCase() === password?.toLowerCase()
+    );
 }
 
 function hasAdminAccess() {
