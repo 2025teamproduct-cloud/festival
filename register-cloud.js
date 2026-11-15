@@ -1,0 +1,27 @@
+(() => {
+  'use strict';
+
+  const store = window.location.pathname.split('/')[1];
+  if (store !== 'asumin' && store !== 'yuna') {
+    throw new Error('店舗を特定できません。');
+  }
+
+  async function request(method, body) {
+    const url = `/api/register?store=${encodeURIComponent(store)}`;
+    const response = await fetch(url, {
+      method,
+      headers: method === 'POST' ? { 'Content-Type': 'application/json' } : undefined,
+      body: method === 'POST' ? JSON.stringify({ ...body, store }) : undefined,
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || 'Firestoreとの通信に失敗しました。');
+    }
+    return data;
+  }
+
+  window.registerCloud = {
+    load: () => request('GET'),
+    write: (action, data = {}) => request('POST', { action, ...data }),
+  };
+})();

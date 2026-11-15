@@ -1,5 +1,5 @@
-/* かんたんレジ - localStorage 版
-   保存先: この端末・このブラウザ（同一オリジン）の localStorage
+/* かんたんレジ - Firestore同期版
+   Firestoreを主保存先とし、localStorageは一時キャッシュと旧データ移行に使用
    ※ iPhoneでは「ホーム画面に追加」して使うと自動削除(ITP)の対象外になります */
 (() => {
   'use strict';
@@ -12,6 +12,21 @@
     cart: 'kr.cart.v1'
   };
   const mem = {}; // localStorage が使えないときの退避（リロードで消える）
+  const cloud = window.registerCloud;
+
+  async function cloudWrite(action, data) {
+    try {
+      await cloud.write(action, data);
+      return true;
+    } catch (e) {
+      toast('⚠ Firestoreへの保存に失敗しました: ' + e.message);
+      return false;
+    }
+  }
+
+  function showCloudError(error) {
+    toast('⚠ Firestoreからデータを取得できません: ' + error.message);
+  }
 
   function load(key, fallback) {
     try {
@@ -111,6 +126,7 @@
             if (confirm('「' + p.name + '」を商品一覧から削除しますか？\n（過去の売上は残ります）')) {
               products = products.filter(x => x.id !== p.id);
               save(KEY.products, products);
+              cloudWrite('product-delete', { id: p.id });
               renderTiles();
             }
           } else {
@@ -125,17 +141,19 @@
 
   $('editBtn').addEventListener('click', () => { editMode = !editMode; renderTiles(); });
 
-  $('addBtn').addEventListener('click', () => {
+  $('addBtn').addEventListener('click', async () => {
     const name = clean($('newName').value);
     const price = $('newPrice').value;
     if (!name) return toast('商品名を入力してください');
     if (price === '' || num(price) < 0) return toast('価格を入力してください');
-    products.push({ id: uid(), name, price: num(price) });
+    const product = { id: uid(), name, price: num(price) };
+    products.push(product);
     save(KEY.products, products);
+    const saved = await cloudWrite('product-save', { product });
     $('newName').value = '';
     $('newPrice').value = '';
     renderTiles();
-    toast('登録しました');
+    if (saved) toast('登録しました');
   });
 
   /* ---------- カート ---------- */
@@ -192,25 +210,32 @@
     renderCart();
   });
 
-  $('payBtn').addEventListener('click', () => {
+  $('payBtn').addEventListener('click', async () => {
     if (!cart.length) return toast('商品が選ばれていません');
     const total = cartTotal();
     const paid = $('paid').value;
     if (paid !== '' && num(paid) < total) return toast('お預りが不足しています');
     const now = new Date();
-    receipts.push({
+    const receipt = {
       id: uid(),
       date: dstr(now),
       time: tstr(now),
+      total,
+      paid: paid === '' ? null : num(paid),
+      change: paid === '' ? null : num(paid) - total,
       items: cart.map(c => ({ name: c.name, price: c.price, qty: c.qty }))
-    });
+    };
+    receipts.push(receipt);
     save(KEY.receipts, receipts);
+    const saved = await cloudWrite('receipt-save', { receipt });
     const change = paid === '' ? null : num(paid) - total;
     cart = [];
     save(KEY.cart, cart);
     $('paid').value = '';
     renderCart();
-    toast(change === null ? '会計しました ' + yen(total) : '会計しました　おつり ' + yen(change));
+    if (saved) {
+      toast(change === null ? '会計しました ' + yen(total) : '会計しました　おつり ' + yen(change));
+    }
   });
 
   /* ---------- 売上 ---------- */
@@ -283,6 +308,7 @@
             if (confirm(r.time.slice(0, 5) + ' の会計（' + yen(receiptTotal(r)) + '）を削除しますか？')) {
               receipts = receipts.filter(x => x.id !== r.id);
               save(KEY.receipts, receipts);
+              cloudWrite('receipt-delete', { id: r.id });
               renderSales();
             }
           }
@@ -308,10 +334,11 @@
   $('cFloat').addEventListener('input', renderClosing);
   $('cActual').addEventListener('input', renderClosing);
 
-  $('cSave').addEventListener('click', () => {
+  $('cSave').addEventListener('click', async () => {
     closing[selDate] = { float: $('cFloat').value, actual: $('cActual').value };
     save(KEY.closing, closing);
-    toast('締めを保存しました。下のテキストもバックアップ推奨です');
+    const saved = await cloudWrite('closing-save', { closing: { date: selDate, ...closing[selDate] } });
+    if (saved) toast('締めを保存しました。下のテキストもバックアップ推奨です');
   });
 
   $('date').addEventListener('change', e => { if (e.target.value) { selDate = e.target.value; renderSales(); } });
@@ -383,7 +410,7 @@
     toast('ダウンロードしました');
   });
 
-  $('saveBtn').addEventListener('click', () => {
+  $('saveBtn').addEventListener('click', async () => {
     let parsed;
     try {
       parsed = parseRaw($('raw').value);
@@ -393,17 +420,19 @@
     if (!confirm('全期間の売上を、このテキストの内容（' + parsed.length + '件の会計）で置き換えます。よろしいですか？')) return;
     receipts = parsed;
     save(KEY.receipts, receipts);
+    const saved = await cloudWrite('receipts-replace', { receipts });
     renderSales();
-    toast('保存しました');
+    if (saved) toast('保存しました');
   });
 
   /* ---------- 全データ削除 ---------- */
-  $('wipeBtn').addEventListener('click', () => {
+  $('wipeBtn').addEventListener('click', async () => {
     if (!confirm('保存されている全データ（商品・売上・レジ締め）を完全に削除します。\n元に戻せません。\n\n事前に「保存テキスト」をコピーして控えましたか？\n続行しますか？')) return;
     const v = prompt('本当に削除する場合は学籍番号を入力してください');
     // 大文字小文字・全角半角の違いは無視して比較（両辺を同じ形に揃える）
     const fold = s => s.normalize('NFKC').trim().toLowerCase();
     if (v === null || fold(v) !== fold('2402CO0025')) return toast('キャンセルしました');
+    if (!await cloudWrite('wipe')) return;
     // このアプリのキー(kr.*)だけを消す。同じオリジンの他のデータには触れない
     Object.values(KEY).forEach(k => {
       delete mem[k];
@@ -422,7 +451,31 @@
   });
 
   /* ---------- 起動 ---------- */
-  selDate = dstr(new Date());
-  renderTiles();
-  renderCart();
+  async function initialize() {
+    document.body.inert = true;
+    try {
+      let data = await cloud.load();
+      if (!data.products.length && !data.receipts.length && !data.closing.length) {
+        if (products.length || receipts.length || Object.keys(closing).length) {
+          await cloud.write('migrate', { products, receipts, closing });
+          data = await cloud.load();
+        }
+      }
+      products = data.products;
+      receipts = data.receipts;
+      closing = Object.fromEntries(data.closing.map(({ date, ...value }) => [date, value]));
+      save(KEY.products, products);
+      save(KEY.receipts, receipts);
+      save(KEY.closing, closing);
+    } catch (error) {
+      showCloudError(error);
+    }
+    finally {
+      selDate = dstr(new Date());
+      renderTiles();
+      renderCart();
+      document.body.inert = false;
+    }
+  }
+  initialize();
 })();

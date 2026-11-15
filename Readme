@@ -7,6 +7,7 @@
 - `complete.html` / `complete.css` / `complete.js` … クリア画面
 - `reservation.html` / `reservation.css` / `reservation.js` … 参加予約・整理番号確認
 - `api/reservations.js` … Vercel Functionsの予約API
+- `api/register.js` … Vercel FunctionsのレジデータAPI
 - `access.js` … 管理者用パスワードの認証処理
 - `staff.html` / `staff.js` … スタッフ用の確認ページ
 
@@ -53,6 +54,8 @@ Firestoreには次の2コレクションを使用します。`slots/{slotId}` �
 
 - `slots/10:00` など: `slotId`, `capacity`, `reservedCount`
 - `reservations/F-XXXXXXXX`: `number`, `slotId`, `name`, `partnerName`, `createdAt`, `verified`, `verifiedAt`
+
+レジのデータも同じFirebaseプロジェクトに保存されます。`registers/asumin` と `registers/yuna` の下に `products`（商品）、`receipts`（会計明細・金額）、`closing`（日別レジ締め）を作成します。既存ブラウザーに保存されているデータは、対象店舗のFirestoreが空の場合に初回起動時に移行します。レジのページも上記と同じFirebase Admin環境変数を設定したVercel環境で利用してください。
 
 Firestore Rulesは、クライアントから直接読み書きさせないため、提示された `allow read, write: if false;` のままで構いません。サービスアカウントの秘密鍵は Firebase Console の「プロジェクトの設定」→「サービス アカウント」→「新しい秘密鍵の生成」から取得し、`FIREBASE_PRIVATE_KEY` に登録します。秘密鍵内の改行はVercelの環境変数では `\n` として保持してください。
 
