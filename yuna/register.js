@@ -5,11 +5,13 @@
   'use strict';
 
   /* ---------- 保存層 ---------- */
+  const STORE = window.registerCloud.store;
+  const KEY_PREFIX = 'kr.' + STORE + '.v2.';
   const KEY = {
-    products: 'kr.products.v1',
-    receipts: 'kr.receipts.v1',
-    closing: 'kr.closing.v1',
-    cart: 'kr.cart.v1'
+    products: KEY_PREFIX + 'products',
+    receipts: KEY_PREFIX + 'receipts',
+    closing: KEY_PREFIX + 'closing',
+    cart: KEY_PREFIX + 'cart'
   };
   const mem = {}; // localStorage が使えないときの退避（リロードで消える）
   const cloud = window.registerCloud;

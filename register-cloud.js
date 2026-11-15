@@ -21,6 +21,7 @@
   }
 
   window.registerCloud = {
+    store,
     load: () => request('GET'),
     write: (action, data = {}) => request('POST', { action, ...data }),
   };
