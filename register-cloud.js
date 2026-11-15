@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const store = window.location.pathname.split('/')[1];
+  const store = document.body.dataset.store;
   if (store !== 'asumin' && store !== 'yuna') {
     throw new Error('店舗を特定できません。');
   }
