@@ -21,7 +21,7 @@ const QUESTIONS = [
 
     {
         text:
-            "問題1：これは何",
+            "問題1：小石落ちてたってよ",
 
         answers: [
             "さ",
