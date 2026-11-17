@@ -1,22 +1,15 @@
-/* /room2-hansel.css
-   「ヘンゼルとグレーテル」風デコレーション（CSSのみ・外部画像/フォントなし）
+/* /room1-hansel.css
+   第1の部屋に「ヘンゼルとグレーテル」風デコレーションを適用（CSSのみ）
 
-   使い方：room2.html の room2.css の「次の行」に追加してください。
-   <link rel="stylesheet" href="room2.css">
-   <link rel="stylesheet" href="room2-hansel.css">
+   index.html の room1.css の「次の行」に追加してください。
+   <link rel="stylesheet" href="room1.css">
+   <link rel="stylesheet" href="room1-hansel.css">
 
-   消したいときは、この1行を消すだけで元の見た目に戻ります。
-
-   モチーフ
-   ・月夜の森          … body の背景（月・星・もみの木のシルエット）
-   ・お菓子の家        … 本の縁（キャンディケイン）、アイシングの垂れ、グミ
-   ・パンくずの道しるべ … ページの点線の額縁
-   ・ジンジャーブレッド … 正解数の札、ページの紙の色
-   ・魔女の家のドア     … 合言葉カード（アーチ型の扉と、窓の明かり）
+   ※ room1 は「表紙 → 開始ボタン」構造なので、
+     表紙はお菓子の家のドア風、本の縁は開始後(.started)に付きます。
 */
 
 :root {
-    /* 紙の色：ジンジャークッキー風 */
     --paper-1: #fff3dc;
     --paper-2: #e2b476;
     --paper-3: #9a5a2a;
@@ -32,9 +25,7 @@
 }
 
 
-/* =========================================================
-   背景：月夜の森
-   ========================================================= */
+/* ===== 背景：月夜の森 ===== */
 
 body {
     background:
@@ -44,11 +35,6 @@ body {
     font-family: "Yu Mincho", "Hiragino Mincho ProN", "Georgia", serif;
 }
 
-.wrap {
-    z-index: 10;
-}
-
-/* 手前と奥、2列のもみの木のシルエット */
 body::before {
     content: "";
     position: fixed;
@@ -63,7 +49,6 @@ body::before {
         conic-gradient(from 164.2deg at 50% 0, #0a1a10 0 31.6deg, transparent 0) 40px 100% / 130px 230px repeat-x;
 }
 
-/* またたく星 */
 body::after {
     content: "";
     position: fixed;
@@ -96,9 +81,7 @@ body::after {
 }
 
 
-/* =========================================================
-   見出し・正解数
-   ========================================================= */
+/* ===== 見出し・正解数 ===== */
 
 .header h1 {
     color: #ffd9a0;
@@ -108,7 +91,6 @@ body::after {
         0 0 14px rgba(255, 190, 90, 0.35);
 }
 
-/* 見出しの両脇にキャンディ（ぐるぐる飴） */
 .header h1::before,
 .header h1::after {
     content: "";
@@ -121,20 +103,15 @@ body::after {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-.header h1::before {
-    margin-right: 0.45em;
-}
+.header h1::before { margin-right: 0.45em; }
 
 .header h1::after {
     margin-left: 0.45em;
     background: repeating-conic-gradient(var(--candy-green) 0 20deg, var(--icing) 0 40deg);
 }
 
-.admin-link {
-    color: #ffd9a0;
-}
+.admin-link { color: #ffd9a0; }
 
-/* ジンジャーブレッドのクッキー風の札（アイシングの縫い目つき） */
 .progress {
     width: fit-content;
     margin: 0 auto 14px;
@@ -151,11 +128,9 @@ body::after {
 }
 
 
-/* =========================================================
-   本の外枠：ジンジャーブレッド ＋ キャンディケインの縁
-   ========================================================= */
+/* ===== 本の外枠：ジンジャーブレッド＋キャンディケイン（開始後） ===== */
 
-.book-frame {
+.book-frame.started {
     border-color: #6b3a1a;
     background: var(--ginger-dark);
     box-shadow:
@@ -164,8 +139,7 @@ body::after {
         0 0 40px rgba(255, 180, 80, 0.20);
 }
 
-/* ページの外周に、赤白のキャンディケイン風の縞リング */
-.book-frame::after {
+.book-frame.started::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -184,11 +158,8 @@ body::after {
 }
 
 
-/* =========================================================
-   ページ：パンくずの点線の額縁、アイシングの飾り、グミ
-   ========================================================= */
+/* ===== ページ：パンくずの点線、アイシング、グミ ===== */
 
-/* パンくずを落としながら歩いた道のような点線 */
 .book-page-left::before,
 .flip-page.paper::before {
     content: "";
@@ -199,13 +170,11 @@ body::after {
     pointer-events: none;
 }
 
-/* 左ページの問題文 */
 .left-page-content .qtext {
     text-align: center;
     color: var(--ink);
 }
 
-/* 上：カラフルなグミの並び */
 .left-page-content .qtext::before {
     content: "● ● ● ● ●";
     display: table;
@@ -219,7 +188,6 @@ body::after {
     color: transparent;
 }
 
-/* 下：ピンクのアイシングが垂れた線 */
 .left-page-content .qtext::after {
     content: "";
     display: block;
@@ -232,7 +200,6 @@ body::after {
     filter: drop-shadow(0 1px 0 rgba(122, 66, 32, 0.45));
 }
 
-/* 右ページの角：問題ごとに違うグミ、最後はキャンディ */
 .flip-page.paper::after {
     content: "";
     position: absolute;
@@ -248,21 +215,15 @@ body::after {
 }
 
 .flip-page.paper[data-page="q1"]::after {
-    background:
-        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.75), transparent 36%),
-        var(--candy-red);
+    background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.75), transparent 36%), var(--candy-red);
 }
 
 .flip-page.paper[data-page="q2"]::after {
-    background:
-        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.75), transparent 36%),
-        var(--candy-green);
+    background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.75), transparent 36%), var(--candy-green);
 }
 
 .flip-page.paper[data-page="q3"]::after {
-    background:
-        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.75), transparent 36%),
-        #f2a516;
+    background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.75), transparent 36%), #f2a516;
 }
 
 .flip-page.paper[data-page="clear"]::after {
@@ -270,7 +231,6 @@ body::after {
     background: repeating-conic-gradient(var(--candy-red) 0 20deg, var(--icing) 0 40deg);
 }
 
-/* スマホの問題文の区切り線 */
 @media (max-width: 700px) {
     .page-qtext {
         color: var(--ink);
@@ -279,9 +239,94 @@ body::after {
 }
 
 
-/* =========================================================
-   解答欄：キャンディの縞ボタン
-   ========================================================= */
+/* ===== 表紙：お菓子の家のドア（ジンジャーブレッド＋アイシング） ===== */
+
+.flip-page.cover {
+    background:
+        radial-gradient(circle at 30% 20%, rgba(255, 200, 120, 0.22), transparent 55%),
+        linear-gradient(155deg, #9a5a2a, var(--ginger) 55%, var(--ginger-dark));
+    border-left-color: rgba(0, 0, 0, 0.45);
+    box-shadow:
+        inset 0 0 0 6px rgba(255, 250, 240, 0.18),
+        inset 0 0 36px rgba(0, 0, 0, 0.5),
+        -4px 0 14px rgba(0, 0, 0, 0.4);
+}
+
+/* アイシングの点線の二重枠 */
+.flip-page.cover::before {
+    content: "";
+    position: absolute;
+    inset: 12px;
+    border: 4px dotted var(--candy-pink);
+    border-radius: 8px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* 四隅のグミ */
+.cover-shine::before,
+.cover-shine::after {
+    position: absolute;
+    left: 24px;
+    right: 24px;
+    text-align: justify;
+    text-align-last: justify;
+    font-size: 1.25rem;
+    line-height: 1;
+    opacity: 0.95;
+}
+
+.cover-shine::before {
+    content: "● ●";
+    top: 22px;
+    color: var(--candy-red);
+}
+
+.cover-shine::after {
+    content: "● ●";
+    bottom: 22px;
+    color: var(--candy-green);
+}
+
+/* 📖 をやめて、ぐるぐるキャンディに */
+.cover-content .icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 12px;
+    font-size: 0;
+    border-radius: 50%;
+    background: repeating-conic-gradient(var(--candy-red) 0 20deg, var(--icing) 0 40deg);
+    border: 3px solid var(--icing);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+}
+
+.cover-content h2 {
+    color: #ffd9a0;
+    font-family: "Yu Mincho", "Hiragino Mincho ProN", "Georgia", serif;
+}
+
+.cover-content h2::after {
+    content: "";
+    display: block;
+    width: 70%;
+    height: 8px;
+    margin: 8px auto 0;
+    background:
+        radial-gradient(circle at 6px 0, var(--candy-pink) 5px, transparent 5.5px) 0 0 / 12px 8px repeat-x,
+        linear-gradient(var(--candy-pink), var(--candy-pink)) 0 0 / 100% 3px no-repeat;
+}
+
+.cover-content button {
+    font-family: inherit;
+    letter-spacing: 0.1em;
+    background: repeating-linear-gradient(-45deg, var(--candy-red) 0 10px, var(--candy-red-dark) 10px 20px);
+    border: 2px solid var(--icing);
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+
+/* ===== 解答欄：キャンディの縞ボタン ===== */
 
 .qrow input[type=text] {
     border: 2px solid var(--ginger);
@@ -301,8 +346,7 @@ body::after {
     box-shadow: 0 0 0 3px rgba(214, 48, 74, 0.22);
 }
 
-.qrow button,
-.lock-card button {
+.qrow button {
     font-family: inherit;
     letter-spacing: 0.15em;
     background: repeating-linear-gradient(-45deg, var(--candy-red) 0 10px, var(--candy-red-dark) 10px 20px);
@@ -312,8 +356,7 @@ body::after {
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 }
 
-.qrow button:hover,
-.lock-card button:hover {
+.qrow button:hover {
     background: repeating-linear-gradient(-45deg, #ea4560 0 10px, var(--candy-red) 10px 20px);
 }
 
@@ -325,26 +368,13 @@ body::after {
     text-shadow: none;
 }
 
-.feedback.ok::before {
-    content: "★ ";
-}
-
-.feedback.ng::before {
-    content: "✕ ";
-}
-
-.feedback.ok {
-    color: #1f7a3c;
-}
-
-.feedback.ng {
-    color: var(--candy-red-dark);
-}
+.feedback.ok::before { content: "★ "; }
+.feedback.ng::before { content: "✕ "; }
+.feedback.ok { color: #1f7a3c; }
+.feedback.ng { color: var(--candy-red-dark); }
 
 
-/* =========================================================
-   クリア画面：アイシングが垂れたクッキーのプレート
-   ========================================================= */
+/* ===== クリア画面：アイシングが垂れたクッキーのプレート ===== */
 
 .book-right #clearBox,
 #clearBox {
@@ -359,7 +389,6 @@ body::after {
         0 6px 14px rgba(0, 0, 0, 0.3);
 }
 
-/* 上端のアイシング */
 #clearBox::before {
     content: "";
     position: absolute;
@@ -388,103 +417,6 @@ body::after {
     background: repeating-linear-gradient(-45deg, #ea4560 0 10px, var(--candy-red) 10px 20px);
 }
 
-
-/* =========================================================
-   合言葉オーバーレイ：森の奥の、お菓子の家のドア
-   ========================================================= */
-
-#passwordOverlay {
-    background:
-        radial-gradient(circle at 88% 11%, #fffbe0 0 22px, rgba(255, 248, 200, 0.30) 23px 60px, transparent 130px),
-        linear-gradient(180deg, #06130c 0%, #10291b 55%, #1d4430 100%);
-}
-
-/* オーバーレイにも、もみの木のシルエット */
-#passwordOverlay::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 26vh;
-    pointer-events: none;
-    background:
-        conic-gradient(from 166deg at 50% 0, #040b07 0 28deg, transparent 0) 0 100% / 80px 160px repeat-x,
-        conic-gradient(from 164.2deg at 50% 0, #0a1a10 0 31.6deg, transparent 0) 40px 100% / 130px 230px repeat-x;
-}
-
-/* アーチ型の扉。窓の明かりのように、ほんのり暖かく光る */
-.lock-card {
-    position: relative;
-    z-index: 1;
-    padding-top: 44px;
-    background: linear-gradient(180deg, #fff6e2, #f3dcae);
-    border: 6px solid var(--ginger);
-    border-radius: 140px 140px 16px 16px;
-    box-shadow:
-        0 0 0 3px var(--icing),
-        0 0 60px rgba(255, 190, 80, 0.40),
-        0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-/* 扉のアーチに沿ってのったアイシング
-   （カードの内側いっぱいに置き、上辺だけ太い枠線にすることで、
-     アーチの曲線に沿った三日月形になる。はみ出さない） */
-.lock-card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-top: 12px solid var(--candy-pink);
-    border-radius: 134px 134px 0 0;
-    pointer-events: none;
-    filter: drop-shadow(0 1px 0 rgba(122, 66, 32, 0.45));
-}
-
-/* 扉のドアノブ（グミ） */
-.lock-card::after {
-    content: "";
-    position: absolute;
-    right: 18px;
-    bottom: 18px;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background:
-        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.75), transparent 38%),
-        var(--candy-red);
-    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.35);
-}
-
-.lock-card h2 {
-    color: var(--candy-red-dark);
-    font-family: inherit;
-}
-
-.lock-card p {
-    color: #6b4a2e;
-}
-
-.lock-card input[type=text] {
-    border: 2px solid var(--ginger);
-    background: rgba(255, 250, 240, 0.9);
-    color: var(--ink);
-    font-family: inherit;
-}
-
-.lock-card input[type=text]:focus {
-    outline: none;
-    border-color: var(--candy-red);
-    box-shadow: 0 0 0 3px rgba(214, 48, 74, 0.22);
-}
-
-.lock-feedback {
-    color: var(--candy-red-dark);
-}
-
-
-/* =========================================================
-   動きを減らす設定の人には、星のまたたきを止める
-   ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
     body::after {

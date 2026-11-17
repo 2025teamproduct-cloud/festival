@@ -1,0 +1,1346 @@
+<!-- /room2.html -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第2の部屋 - なぞ解き脱出ゲーム</title>
+<link rel="stylesheet" href="room2.css">
+<link rel="stylesheet" href="room2-hansel.css">
+
+</head>
+<body>
+
+<div class="wrap">
+  <div class="header">
+    <h1>🔐 第2の部屋 ― なぞ解き</h1>
+    <!-- <a class="admin-link" data-admin-link href="reservation.html">予約ページへ戻る（管理者）</a> -->
+  </div>
+
+  <div class="game-content" id="gameContent">
+    <div class="progress" id="progressText">正解数: 0 / 3</div>
+
+    <!--
+      本全体
+      PC（701px以上）：左ページに問題文、右ページに解答欄の見開き
+      スマホ（700px以下）：右ページのみの1ページ表示。
+        各ページの上半分に問題文(.page-qtext)、下半分に解答欄(.question)
+    -->
+    <div class="book-frame" id="bookFrame">
+
+      <!-- 左ページ（PCのみ表示 / スマホでは非表示） -->
+      <div class="book-page-left">
+        <div class="page-lines"></div>
+        <div class="left-page-content">
+          <p class="qtext" id="leftQuestionText">開始ボタンを押すと、ここに問題が表示されます。</p>
+        </div>
+      </div>
+
+      <div class="book-right" id="bookRight">
+        <div class="page-lines-right"></div>
+
+        <div class="flip-page paper content-page" data-page="clear">
+          <div class="page-inner">
+            <div id="clearBox">
+              <h2>🎉 全問正解！</h2>
+              <p>おめでとうございます！最後のページへ進みましょう。</p>
+              <a class="nextlink" href="complete.html">クリア画面へ →</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-page paper content-page" data-page="q3">
+          <div class="page-inner">
+            <!-- スマホ用：上半分の問題文（PCでは非表示） -->
+            <p class="page-qtext" data-qtext="2"></p>
+            <div class="question" data-index="2">
+              <div class="qrow">
+                <input type="text" placeholder="こたえを入力">
+                <button onclick="checkAnswer(2, this)">確認</button>
+              </div>
+              <div class="feedback"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-page paper content-page" data-page="q2">
+          <div class="page-inner">
+            <p class="page-qtext" data-qtext="1"></p>
+            <div class="question" data-index="1">
+              <div class="qrow">
+                <input type="text" placeholder="こたえを入力">
+                <button onclick="checkAnswer(1, this)">確認</button>
+              </div>
+              <div class="feedback"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-page paper content-page" data-page="q1">
+          <div class="page-inner">
+            <p class="page-qtext" data-qtext="0"></p>
+            <div class="question" data-index="0">
+              <div class="qrow">
+                <input type="text" placeholder="こたえを入力">
+                <button onclick="checkAnswer(0, this)">確認</button>
+              </div>
+              <div class="feedback"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 合言葉オーバーレイ：本体の上に重ねて表示。正解でhiddenにする -->
+<div id="passwordOverlay">
+  <div class="lock-card">
+    <div class="icon">🔒</div>
+    <h2>合言葉を入力してください</h2>
+    <p>スタッフから教えられた合言葉を入力すると、部屋が開きます。</p>
+    <input type="text" id="pwInput" placeholder="合言葉">
+    <button onclick="checkPassword()">解錠する</button>
+    <div class="lock-feedback" id="pwFeedback"></div>
+  </div>
+</div>
+
+<script src="room2.js"></script>
+<script src="access.js"></script>
+</body>
+</html>
+-------------------------------------------
+/* /room2.css */
+:root {
+    --main: #3c7bff;
+    --main-dark: #1f57e2;
+    --gold: #ffb703;
+    --bg: #eef3ff;
+    --card: #ffffff;
+    --text: #20263a;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    margin: 0;
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    background: linear-gradient(160deg, #eef3ff, #dbe6ff);
+    color: var(--text);
+    min-height: 100vh;
+    padding: clamp(12px, 2.5vw, 20px);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+img,
+svg {
+    max-width: 100%;
+    height: auto;
+}
+
+.wrap {
+    max-width: 640px;
+    width: min(100%, 640px);
+    margin: 0 auto;
+    position: relative;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    font-size: clamp(1.25rem, 4.8vw, 1.6rem);
+    margin: 0;
+    color: var(--main-dark);
+}
+
+.admin-link {
+    color: var(--main-dark);
+    font-size: 0.82rem;
+    font-weight: bold;
+}
+
+/* ===== 本体（3問） ===== */
+.question {
+    background: var(--card);
+    border-radius: 14px;
+    padding: clamp(14px, 4vw, 18px);
+    margin-bottom: 16px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+    border-left: 6px solid var(--main);
+}
+
+.question.solved {
+    border-left-color: #2e9e4f;
+    background: #f2fbf3;
+}
+
+.question p.qtext {
+    font-weight: bold;
+    margin: 0 0 10px;
+    line-height: 1.5;
+    font-size: clamp(0.96rem, 3.2vw, 1.05rem);
+}
+
+.qrow {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: stretch;
+}
+
+.qrow input[type=text] {
+    /* flex: 1 1 180px; */
+    min-width: 0;
+    padding: 8px 10px;
+    font-size: 0.96rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    width: 100%;
+    min-height: 40px;
+    max-width: 100%;
+}
+
+.qrow input[type=text]:disabled {
+    background: #e9f7ec;
+    border-color: #2e9e4f;
+}
+
+.qrow button {
+    padding: 8px 14px;
+    background: var(--main);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    min-height: 40px;
+}
+
+.qrow button:hover {
+    background: var(--main-dark);
+}
+
+.feedback {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    min-height: 1.2em;
+}
+
+.feedback.ok {
+    color: #2e9e4f;
+}
+
+.feedback.ng {
+    color: #c40000;
+}
+
+.shake {
+    animation: shake 0.3s;
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-6px);
+    }
+
+    75% {
+        transform: translateX(6px);
+    }
+}
+
+.progress {
+    text-align: center;
+    margin: 10px 0 18px;
+    font-size: 0.9rem;
+    color: #777;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 12px;
+    }
+
+    .wrap {
+        width: min(100%, 100%);
+    }
+
+    .qrow {
+        flex-direction: column;
+    }
+
+    .qrow input[type=text],
+    .qrow button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 420px) {
+    .question,
+    #clearBox,
+    .lock-card {
+        border-radius: 12px;
+    }
+
+    .qrow input[type=text],
+    .qrow button,
+    .lock-card input[type=text],
+    .lock-card button {
+        font-size: 16px;
+    }
+}
+
+#clearBox {
+    display: none;
+    background: #fff8e1;
+    border: 3px solid var(--gold);
+    border-radius: 16px;
+    padding: clamp(18px, 5vw, 22px);
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#clearBox h2 {
+    color: var(--main-dark);
+    margin-top: 0;
+    font-size: clamp(1.2rem, 5vw, 1.6rem);
+}
+
+#clearBox a.nextlink {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 14px 26px;
+    background: var(--main-dark);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: clamp(0.95rem, 3vw, 1.05rem);
+    width: min(100%, 260px);
+}
+
+#clearBox a.nextlink:hover {
+    background: #123fae;
+}
+
+/* ===== 合言葉オーバーレイ（本体の上に重ねる） ===== */
+#passwordOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: linear-gradient(160deg, #20263a, #0d1120);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    transition: opacity 0.6s ease;
+}
+
+#passwordOverlay.hide {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.lock-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 34px 28px;
+    max-width: 380px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.lock-card .icon {
+    font-size: 2.6rem;
+    margin-bottom: 8px;
+}
+
+.lock-card h2 {
+    margin: 0 0 6px;
+    color: var(--main-dark);
+    font-size: 1.2rem;
+}
+
+.lock-card p {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0 0 16px;
+}
+
+.lock-card input[type=text] {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 1rem;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    text-align: center;
+    margin-bottom: 10px;
+    min-height: 40px;
+}
+
+.lock-card button {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--main-dark);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    min-height: 40px;
+}
+
+.lock-card button:hover {
+    background: #123fae;
+}
+
+.lock-feedback {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #c40000;
+    min-height: 1.2em;
+}
+
+/* ===== room1と共通の本・ページデザイン ===== */
+:root {
+    --main: #ff6f3c;
+    --main-dark: #e2551f;
+    --bg: #fdf6ec;
+    --text: #3a2c22;
+    --paper-1: #FFFDE8;
+    --paper-2: #F39800;
+    --paper-3: #C07700;
+}
+
+body {
+    background: linear-gradient(160deg, #fdf6ec, #ffe9d6);
+    color: var(--text);
+}
+
+.wrap {
+    max-width: 700px;
+    width: min(100%, 700px);
+}
+
+.header h1,
+.admin-link {
+    color: var(--main-dark);
+}
+
+.game-content {
+    position: relative;
+}
+
+.progress {
+    margin: 0 0 12px;
+}
+
+.book-frame {
+    position: relative;
+    display: flex;
+    overflow: hidden;
+    border-radius: 18px;
+    border: 6px solid #1c1108;
+    background: #2b1c12;
+    perspective: 2200px;
+    min-height: 480px;
+    margin-bottom: 16px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28), inset 0 0 0 2px rgba(255, 183, 3, 0.08);
+}
+
+.book-page-left,
+.book-right {
+    position: relative;
+    width: 50%;
+}
+
+.book-page-left {
+    background:
+        radial-gradient(ellipse at 25% 30%, rgba(150, 90, 10, 0.10), transparent 55%),
+        radial-gradient(ellipse at 75% 70%, rgba(150, 90, 10, 0.08), transparent 50%),
+        radial-gradient(ellipse 75% 90% at 65% 50%, var(--paper-1) 0%, var(--paper-1) 58%, var(--paper-2) 90%, var(--paper-3) 96%, var(--paper-3) 100%);
+    background-color: var(--paper-3);
+    box-shadow: inset -10px 0 30px rgba(0, 0, 0, 0.15);
+}
+
+.book-right {
+    background:
+        radial-gradient(ellipse at 75% 30%, rgba(150, 90, 10, 0.10), transparent 55%),
+        radial-gradient(ellipse at 25% 70%, rgba(150, 90, 10, 0.08), transparent 50%),
+        radial-gradient(ellipse 75% 90% at 35% 50%, var(--paper-1) 0%, var(--paper-1) 58%, var(--paper-2) 90%, var(--paper-3) 96%, var(--paper-3) 100%);
+    background-color: var(--paper-3);
+    box-shadow: inset 10px 0 30px rgba(0, 0, 0, 0.15);
+}
+
+.page-lines,
+.page-lines-right {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image:
+        radial-gradient(circle at 30% 20%, rgba(120, 60, 0, 0.10), transparent 40%),
+        radial-gradient(circle at 70% 80%, rgba(120, 60, 0, 0.08), transparent 45%),
+        radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.12), transparent 35%);
+}
+
+.left-page-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    padding: clamp(18px, 5vw, 30px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.left-page-content .qtext {
+    font-family: "Yu Mincho", "Hiragino Mincho ProN", serif;
+    font-weight: bold;
+    line-height: 1.8;
+    font-size: clamp(1rem, 3.6vw, 1.15rem);
+    color: #2b1c12;
+    margin: 0;
+}
+
+.flip-page {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    transform-origin: left center;
+    backface-visibility: hidden;
+    transform: rotateY(0deg);
+    transition: transform 0.6s cubic-bezier(0.62, 0, 0.3, 1);
+}
+
+.flip-page.flipped {
+    transform: rotateY(-165deg);
+    pointer-events: none;
+}
+
+.flip-page.paper {
+    background:
+        radial-gradient(circle at 80% 25%, rgba(120, 60, 0, 0.10), transparent 40%),
+        radial-gradient(circle at 30% 75%, rgba(120, 60, 0, 0.08), transparent 45%),
+        radial-gradient(ellipse 75% 90% at 35% 50%, var(--paper-1) 0%, var(--paper-1) 58%, var(--paper-2) 90%, var(--paper-3) 96%, var(--paper-3) 100%);
+    background-color: var(--paper-3);
+    border-left: 1px solid rgba(58, 44, 34, 0.15);
+    box-shadow: inset -4px 0 10px rgba(0, 0, 0, 0.08);
+}
+
+.flip-page.cover {
+    width: 100%;
+    height: 100%;
+    transition-duration: 0.8s;
+    background:
+        radial-gradient(circle at 30% 20%, rgba(255, 183, 3, 0.15), transparent 55%),
+        linear-gradient(155deg, #7a4322, #4a2712 60%, #351a0c);
+    border-left: 3px solid rgba(0, 0, 0, 0.35);
+    box-shadow: inset 0 0 0 8px rgba(255, 183, 3, 0.12), inset 0 0 40px rgba(0, 0, 0, 0.45), -6px 0 20px rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cover-shine {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, rgba(255, 255, 255, 0.08), transparent 40%);
+    pointer-events: none;
+}
+
+.cover-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: #fdf6ec;
+    padding: 32px 26px;
+    max-width: 340px;
+    width: 88%;
+}
+
+.cover-content .icon {
+    font-size: 2.6rem;
+    margin-bottom: 10px;
+}
+
+.cover-content h2 {
+    margin: 0 0 10px;
+    font-size: 1.35rem;
+    color: var(--gold);
+}
+
+.cover-content p {
+    margin: 0 0 20px;
+    line-height: 1.7;
+    color: #f1e4cf;
+    font-size: 0.92rem;
+}
+
+.cover-content button {
+    width: 100%;
+    padding: 13px 18px;
+    border: 2px solid var(--gold);
+    border-radius: 10px;
+    background: linear-gradient(180deg, #ffc233, var(--gold));
+    color: #3a2210;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.content-page .page-inner {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    padding: clamp(18px, 5vw, 28px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow-y: auto;
+}
+
+.book-right .question,
+.book-right .question.solved {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+}
+
+.book-right #clearBox {
+    display: block;
+    background: rgba(255, 255, 255, 0.35);
+}
+
+#passwordOverlay {
+    background: linear-gradient(160deg, #3a2210, #1c1108);
+}
+
+.lock-card {
+    border-radius: 14px;
+}
+
+/* ページ内の問題文（スマホ用）。PC（見開き）では左ページに問題文があるため非表示 */
+.page-qtext {
+    display: none;
+}
+
+/* =========================================================
+   スマホ（700px以下）
+
+   ・縦持ち前提の1ページ表示（右ページのみ）
+   ・左ページは非表示
+   ・各ページの上半分に問題文、下半分に解答欄
+   ========================================================= */
+@media (max-width: 700px) {
+
+    /* 本は縦長の1ページ分 */
+    .book-frame {
+        flex-direction: row;
+        height: 75vh;
+        height: 75dvh;
+        min-height: 440px;
+        max-height: 640px;
+    }
+
+    /* 左ページは使わない */
+    .book-page-left {
+        display: none;
+    }
+
+    /* 右ページを本の全幅に */
+    .book-right {
+        width: 100%;
+        min-height: 0;
+        box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.12);
+    }
+
+    /* ページ内部：上半分＝問題文 / 下半分＝解答欄 */
+    .content-page .page-inner {
+        display: grid;
+        grid-template-rows: 1fr 1fr;
+        justify-content: stretch;
+        padding: clamp(16px, 5vw, 24px);
+    }
+
+    /* 上半分：問題文 */
+    .page-qtext {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        padding-bottom: 14px;
+        min-height: 0;
+        overflow-y: auto;
+        text-align: left;
+        font-family: "Yu Mincho", "Hiragino Mincho ProN", serif;
+        font-weight: bold;
+        line-height: 1.8;
+        font-size: clamp(1rem, 4.4vw, 1.2rem);
+        color: #2b1c12;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+        border-bottom: 2px dashed rgba(58, 44, 34, 0.25);
+    }
+
+    /* 下半分：解答欄（solved時にも位置がずれないよう同じ詳細度で指定） */
+    .book-right .question,
+    .book-right .question.solved {
+        align-self: center;
+        padding-top: 14px;
+        min-height: 0;
+    }
+
+    /* クリアページは問題文を持たないので、従来の中央寄せ */
+    .content-page[data-page="clear"] .page-inner {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    /* 解答欄は縦並び */
+    .qrow {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .qrow input[type=text],
+    .qrow button {
+        width: 100%;
+        min-height: 40px;
+    }
+}
+-----------------------------------------
+/* /room2-hansel.css
+   「ヘンゼルとグレーテル」風デコレーション（CSSのみ・外部画像/フォントなし）
+
+   使い方：room2.html の room2.css の「次の行」に追加してください。
+   <link rel="stylesheet" href="room2.css">
+   <link rel="stylesheet" href="room2-hansel.css">
+
+   消したいときは、この1行を消すだけで元の見た目に戻ります。
+
+   モチーフ
+   ・月夜の森          … body の背景（月・星・もみの木のシルエット）
+   ・お菓子の家        … 本の縁（キャンディケイン）、アイシングの垂れ、グミ
+   ・パンくずの道しるべ … ページの点線の額縁
+   ・ジンジャーブレッド … 正解数の札、ページの紙の色
+   ・魔女の家のドア     … 合言葉カード（アーチ型の扉と、窓の明かり）
+*/
+
+:root {
+    /* 紙の色：ジンジャークッキー風 */
+    --paper-1: #fff3dc;
+    --paper-2: #e2b476;
+    --paper-3: #9a5a2a;
+
+    --candy-red: #d6304a;
+    --candy-red-dark: #a8203a;
+    --candy-green: #4aa564;
+    --candy-pink: #f7a8bd;
+    --icing: #fffaf0;
+    --ginger: #7a4220;
+    --ginger-dark: #4a2410;
+    --ink: #2e1a0c;
+}
+
+
+/* =========================================================
+   背景：月夜の森
+   ========================================================= */
+
+body {
+    background:
+        radial-gradient(circle at 88% 11%, #fffbe0 0 22px, rgba(255, 248, 200, 0.30) 23px 60px, transparent 130px),
+        linear-gradient(180deg, #06130c 0%, #10291b 55%, #1d4430 100%);
+    background-attachment: fixed;
+    font-family: "Yu Mincho", "Hiragino Mincho ProN", "Georgia", serif;
+}
+
+.wrap {
+    z-index: 10;
+}
+
+/* 手前と奥、2列のもみの木のシルエット */
+body::before {
+    content: "";
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 26vh;
+    pointer-events: none;
+    z-index: 0;
+    background:
+        conic-gradient(from 166deg at 50% 0, #040b07 0 28deg, transparent 0) 0 100% / 80px 160px repeat-x,
+        conic-gradient(from 164.2deg at 50% 0, #0a1a10 0 31.6deg, transparent 0) 40px 100% / 130px 230px repeat-x;
+}
+
+/* またたく星 */
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 55vh;
+    pointer-events: none;
+    z-index: 0;
+    background:
+        radial-gradient(1.6px 1.6px at 8% 14%, #fff, transparent),
+        radial-gradient(1.2px 1.2px at 17% 38%, #fff, transparent),
+        radial-gradient(1.8px 1.8px at 26% 8%, #fff, transparent),
+        radial-gradient(1.2px 1.2px at 34% 26%, #fff, transparent),
+        radial-gradient(1.6px 1.6px at 46% 12%, #fff, transparent),
+        radial-gradient(1.2px 1.2px at 55% 34%, #fff, transparent),
+        radial-gradient(1.8px 1.8px at 63% 6%, #fff, transparent),
+        radial-gradient(1.2px 1.2px at 72% 24%, #fff, transparent),
+        radial-gradient(1.6px 1.6px at 79% 42%, #fff, transparent),
+        radial-gradient(1.2px 1.2px at 94% 30%, #fff, transparent),
+        radial-gradient(1.2px 1.2px at 5% 48%, #fff, transparent),
+        radial-gradient(1.6px 1.6px at 41% 47%, #fff, transparent);
+    opacity: 0.9;
+    animation: twinkle 5s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.95; }
+    50%      { opacity: 0.45; }
+}
+
+
+/* =========================================================
+   見出し・正解数
+   ========================================================= */
+
+.header h1 {
+    color: #ffd9a0;
+    letter-spacing: 0.08em;
+    text-shadow:
+        0 2px 0 rgba(0, 0, 0, 0.6),
+        0 0 14px rgba(255, 190, 90, 0.35);
+}
+
+/* 見出しの両脇にキャンディ（ぐるぐる飴） */
+.header h1::before,
+.header h1::after {
+    content: "";
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    vertical-align: -0.05em;
+    border-radius: 50%;
+    background: repeating-conic-gradient(var(--candy-red) 0 20deg, var(--icing) 0 40deg);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.header h1::before {
+    margin-right: 0.45em;
+}
+
+.header h1::after {
+    margin-left: 0.45em;
+    background: repeating-conic-gradient(var(--candy-green) 0 20deg, var(--icing) 0 40deg);
+}
+
+.admin-link {
+    color: #ffd9a0;
+}
+
+/* ジンジャーブレッドのクッキー風の札（アイシングの縫い目つき） */
+.progress {
+    width: fit-content;
+    margin: 0 auto 14px;
+    padding: 5px 26px;
+    background: linear-gradient(180deg, #a8622d, var(--ginger));
+    border: 2px dashed rgba(255, 250, 240, 0.85);
+    border-radius: 999px;
+    box-shadow:
+        0 0 0 3px var(--ginger),
+        0 4px 10px rgba(0, 0, 0, 0.45);
+    color: var(--icing);
+    font-weight: bold;
+    letter-spacing: 0.08em;
+}
+
+
+/* =========================================================
+   本の外枠：ジンジャーブレッド ＋ キャンディケインの縁
+   ========================================================= */
+
+.book-frame {
+    border-color: #6b3a1a;
+    background: var(--ginger-dark);
+    box-shadow:
+        0 14px 34px rgba(0, 0, 0, 0.55),
+        0 0 0 3px var(--icing),
+        0 0 40px rgba(255, 180, 80, 0.20);
+}
+
+/* ページの外周に、赤白のキャンディケイン風の縞リング */
+.book-frame::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 7px;
+    border-radius: 12px;
+    background: repeating-linear-gradient(-45deg, var(--candy-red) 0 9px, var(--icing) 9px 18px);
+    -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+        linear-gradient(#000 0 0) content-box exclude,
+        linear-gradient(#000 0 0);
+    pointer-events: none;
+    z-index: 15;
+}
+
+
+/* =========================================================
+   ページ：パンくずの点線の額縁、アイシングの飾り、グミ
+   ========================================================= */
+
+/* パンくずを落としながら歩いた道のような点線 */
+.book-page-left::before,
+.flip-page.paper::before {
+    content: "";
+    position: absolute;
+    inset: 16px;
+    border: 4px dotted rgba(122, 66, 32, 0.55);
+    border-radius: 6px;
+    pointer-events: none;
+}
+
+/* 左ページの問題文 */
+.left-page-content .qtext {
+    text-align: center;
+    color: var(--ink);
+}
+
+/* 上：カラフルなグミの並び */
+.left-page-content .qtext::before {
+    content: "● ● ● ● ●";
+    display: table;
+    margin: 0 auto 12px;
+    letter-spacing: 0.3em;
+    font-size: 0.95rem;
+    background: linear-gradient(90deg, #d6304a, #f2a516, #4aa564, #3c7bff, #d65ab8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+
+/* 下：ピンクのアイシングが垂れた線 */
+.left-page-content .qtext::after {
+    content: "";
+    display: block;
+    width: 60%;
+    height: 12px;
+    margin: 14px auto 0;
+    background:
+        radial-gradient(circle at 8px 0, var(--candy-pink) 6px, transparent 6.5px) 0 0 / 16px 12px repeat-x,
+        linear-gradient(var(--candy-pink), var(--candy-pink)) 0 0 / 100% 4px no-repeat;
+    filter: drop-shadow(0 1px 0 rgba(122, 66, 32, 0.45));
+}
+
+/* 右ページの角：問題ごとに違うグミ、最後はキャンディ */
+.flip-page.paper::after {
+    content: "";
+    position: absolute;
+    right: 28px;
+    bottom: 24px;
+    width: 20px;
+    height: 20px;
+    pointer-events: none;
+    border-radius: 50% 50% 38% 38% / 62% 62% 38% 38%;
+    box-shadow:
+        inset -2px -3px 4px rgba(0, 0, 0, 0.25),
+        0 2px 3px rgba(0, 0, 0, 0.3);
+}
+
+.flip-page.paper[data-page="q1"]::after {
+    background:
+        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.75), transparent 36%),
+        var(--candy-red);
+}
+
+.flip-page.paper[data-page="q2"]::after {
+    background:
+        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.75), transparent 36%),
+        var(--candy-green);
+}
+
+.flip-page.paper[data-page="q3"]::after {
+    background:
+        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.75), transparent 36%),
+        #f2a516;
+}
+
+.flip-page.paper[data-page="clear"]::after {
+    border-radius: 50%;
+    background: repeating-conic-gradient(var(--candy-red) 0 20deg, var(--icing) 0 40deg);
+}
+
+/* スマホの問題文の区切り線 */
+@media (max-width: 700px) {
+    .page-qtext {
+        color: var(--ink);
+        border-bottom: 3px dotted rgba(122, 66, 32, 0.5);
+    }
+}
+
+
+/* =========================================================
+   解答欄：キャンディの縞ボタン
+   ========================================================= */
+
+.qrow input[type=text] {
+    border: 2px solid var(--ginger);
+    background: rgba(255, 250, 240, 0.85);
+    color: var(--ink);
+    font-family: inherit;
+}
+
+.qrow input[type=text]::placeholder {
+    color: rgba(46, 26, 12, 0.45);
+    font-style: italic;
+}
+
+.qrow input[type=text]:focus {
+    outline: none;
+    border-color: var(--candy-red);
+    box-shadow: 0 0 0 3px rgba(214, 48, 74, 0.22);
+}
+
+.qrow button,
+.lock-card button {
+    font-family: inherit;
+    letter-spacing: 0.15em;
+    background: repeating-linear-gradient(-45deg, var(--candy-red) 0 10px, var(--candy-red-dark) 10px 20px);
+    border: 2px solid var(--icing);
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.qrow button:hover,
+.lock-card button:hover {
+    background: repeating-linear-gradient(-45deg, #ea4560 0 10px, var(--candy-red) 10px 20px);
+}
+
+.qrow button:disabled {
+    cursor: default;
+    opacity: 0.7;
+    background: linear-gradient(180deg, #8a7a6c, #66584c);
+    border-color: #cdbfae;
+    text-shadow: none;
+}
+
+.feedback.ok::before {
+    content: "★ ";
+}
+
+.feedback.ng::before {
+    content: "✕ ";
+}
+
+.feedback.ok {
+    color: #1f7a3c;
+}
+
+.feedback.ng {
+    color: var(--candy-red-dark);
+}
+
+
+/* =========================================================
+   クリア画面：アイシングが垂れたクッキーのプレート
+   ========================================================= */
+
+.book-right #clearBox,
+#clearBox {
+    position: relative;
+    overflow: hidden;
+    padding-top: calc(clamp(18px, 5vw, 22px) + 12px);
+    background: linear-gradient(180deg, #fff6e2, #f3dcae);
+    border: 3px solid var(--ginger);
+    border-radius: 14px;
+    box-shadow:
+        0 0 0 3px var(--icing),
+        0 6px 14px rgba(0, 0, 0, 0.3);
+}
+
+/* 上端のアイシング */
+#clearBox::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 14px;
+    background:
+        radial-gradient(circle at 8px 0, var(--candy-pink) 7px, transparent 7.5px) 0 0 / 16px 14px repeat-x,
+        linear-gradient(var(--candy-pink), var(--candy-pink)) 0 0 / 100% 6px no-repeat;
+}
+
+#clearBox h2 {
+    color: var(--candy-red-dark);
+    font-family: inherit;
+}
+
+#clearBox a.nextlink {
+    background: repeating-linear-gradient(-45deg, var(--candy-red) 0 10px, var(--candy-red-dark) 10px 20px);
+    border: 2px solid var(--icing);
+    letter-spacing: 0.08em;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+#clearBox a.nextlink:hover {
+    background: repeating-linear-gradient(-45deg, #ea4560 0 10px, var(--candy-red) 10px 20px);
+}
+
+
+/* =========================================================
+   合言葉オーバーレイ：森の奥の、お菓子の家のドア
+   ========================================================= */
+
+#passwordOverlay {
+    background:
+        radial-gradient(circle at 88% 11%, #fffbe0 0 22px, rgba(255, 248, 200, 0.30) 23px 60px, transparent 130px),
+        linear-gradient(180deg, #06130c 0%, #10291b 55%, #1d4430 100%);
+}
+
+/* オーバーレイにも、もみの木のシルエット */
+#passwordOverlay::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 26vh;
+    pointer-events: none;
+    background:
+        conic-gradient(from 166deg at 50% 0, #040b07 0 28deg, transparent 0) 0 100% / 80px 160px repeat-x,
+        conic-gradient(from 164.2deg at 50% 0, #0a1a10 0 31.6deg, transparent 0) 40px 100% / 130px 230px repeat-x;
+}
+
+/* アーチ型の扉。窓の明かりのように、ほんのり暖かく光る */
+.lock-card {
+    position: relative;
+    z-index: 1;
+    padding-top: 44px;
+    background: linear-gradient(180deg, #fff6e2, #f3dcae);
+    border: 6px solid var(--ginger);
+    border-radius: 140px 140px 16px 16px;
+    box-shadow:
+        0 0 0 3px var(--icing),
+        0 0 60px rgba(255, 190, 80, 0.40),
+        0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* 扉のアーチに沿ってのったアイシング
+   （カードの内側いっぱいに置き、上辺だけ太い枠線にすることで、
+     アーチの曲線に沿った三日月形になる。はみ出さない） */
+.lock-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-top: 12px solid var(--candy-pink);
+    border-radius: 134px 134px 0 0;
+    pointer-events: none;
+    filter: drop-shadow(0 1px 0 rgba(122, 66, 32, 0.45));
+}
+
+/* 扉のドアノブ（グミ） */
+.lock-card::after {
+    content: "";
+    position: absolute;
+    right: 18px;
+    bottom: 18px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.75), transparent 38%),
+        var(--candy-red);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.35);
+}
+
+.lock-card h2 {
+    color: var(--candy-red-dark);
+    font-family: inherit;
+}
+
+.lock-card p {
+    color: #6b4a2e;
+}
+
+.lock-card input[type=text] {
+    border: 2px solid var(--ginger);
+    background: rgba(255, 250, 240, 0.9);
+    color: var(--ink);
+    font-family: inherit;
+}
+
+.lock-card input[type=text]:focus {
+    outline: none;
+    border-color: var(--candy-red);
+    box-shadow: 0 0 0 3px rgba(214, 48, 74, 0.22);
+}
+
+.lock-feedback {
+    color: var(--candy-red-dark);
+}
+
+
+/* =========================================================
+   動きを減らす設定の人には、星のまたたきを止める
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    body::after {
+        animation: none;
+        opacity: 0.8;
+    }
+}
+--------------------------------------------
+//  /room2.js
+/* ====================== ここから設定エリア ====================== */
+
+// スタッフが伝える合言葉（複数OK。全角/半角・大文字小文字・空白は自動で吸収されます）
+const PASSWORD_LIST = ["がくえんさい", "学園祭", "asd"];
+
+// 正解データ
+const QUESTIONS = [
+    { text: "問題1：これは何", answers: ["3", "3個", "三つ", "みっつ", "asd"] },
+    { text: "問題2：これは何", answers: ["D", "asd"] },
+    { text: "問題3：これは何", answers: ["フェスティバル", "school festival", "festival", "スクールフェスティバル", "asd"] }
+];
+
+const PAGE_ORDER = ['q1', 'q2', 'q3'];
+const FLIP_DELAY_MS = 500;
+const FLIP_DURATION_MS = 600;
+
+/* ====================== 設定エリアここまで ====================== */
+
+/*
+    各ページの問題文をセット（スマホ用）
+
+    .page-qtext の data-qtext="0|1|2" に QUESTIONS[n].text を流し込みます。
+    PCでは CSS で非表示なので、見た目には影響しません。
+*/
+function fillPageQuestions() {
+    document.querySelectorAll('[data-qtext]').forEach(el => {
+        const q = QUESTIONS[Number(el.dataset.qtext)];
+        if (q) {
+            el.textContent = q.text;
+        }
+    });
+}
+fillPageQuestions();
+
+function normalize(s) {
+    return s.trim()
+        .toLowerCase()
+        .replace(/\s+/g, '')
+        .replace(/[Ａ-Ｚａ-ｚ０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0));
+}
+
+function checkPassword() {
+    const input = document.getElementById('pwInput');
+    const feedback = document.getElementById('pwFeedback');
+    const val = normalize(input.value);
+    const ok = PASSWORD_LIST.some(p => normalize(p) === val);
+    if (ok) {
+        setLeftText(QUESTIONS[0].text);
+        document.getElementById('passwordOverlay').classList.add('hide');
+        setTimeout(() => {
+            document.getElementById('passwordOverlay').style.display = 'none';
+        }, 650);
+    } else {
+        feedback.textContent = '合言葉が違います。スタッフに確認してください。';
+    }
+}
+document.getElementById('pwInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkPassword();
+});
+
+let solvedCount = 0;
+const solved = new Set();
+
+function flipPage(pageName) {
+    const page = document.querySelector('.flip-page[data-page="' + pageName + '"]');
+    if (page) {
+        page.classList.add('flipped');
+    }
+}
+
+function setLeftText(text) {
+    const el = document.getElementById('leftQuestionText');
+    if (el) {
+        el.textContent = text;
+    }
+}
+
+function checkAnswer(index, btn) {
+    const row = btn.closest('.question');
+    const input = row.querySelector('input');
+    const feedback = row.querySelector('.feedback');
+    const val = normalize(input.value);
+    const ok = QUESTIONS[index].answers.some(a => normalize(a) === val);
+
+    if (ok) {
+        feedback.textContent = '正解！';
+        feedback.className = 'feedback ok';
+        input.disabled = true;
+        btn.disabled = true;
+        row.classList.add('solved');
+        if (!solved.has(index)) {
+            solved.add(index);
+            solvedCount++;
+            document.getElementById('progressText').textContent = '正解数: ' + solvedCount + ' / ' + QUESTIONS.length;
+
+            setTimeout(() => {
+                flipPage(PAGE_ORDER[index]);
+                setTimeout(() => {
+                    if (solvedCount === QUESTIONS.length) {
+                        setLeftText('🎉 全問正解！ おめでとうございます！最後のページへ進みましょう。');
+                        document.getElementById('clearBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    } else {
+                        setLeftText(QUESTIONS[index + 1].text);
+                    }
+                }, FLIP_DURATION_MS);
+            }, FLIP_DELAY_MS);
+        }
+    } else {
+        feedback.textContent = '不正解…もう一度考えてみよう';
+        feedback.className = 'feedback ng';
+        row.classList.remove('shake');
+        void row.offsetWidth;
+        row.classList.add('shake');
+    }
+}

@@ -1,22 +1,15 @@
-/* /room1-alice.css
-   「不思議の国のアリス」風デコレーション（CSSのみ・外部画像/フォントなし）
+/* /room2-alice.css
+   第2の部屋に「不思議の国のアリス」風デコレーションを適用（CSSのみ）
 
-   使い方：index.html の room1.css の「次の行」に追加してください。
-   <link rel="stylesheet" href="room1.css">
-   <link rel="stylesheet" href="room1-alice.css">
+   room2.html の room2.css の「次の行」に追加してください。
+   <link rel="stylesheet" href="room2.css">
+   <link rel="stylesheet" href="room2-alice.css">
 
-   消したいときは、この1行を消すだけで元の見た目に戻ります。
-
-   モチーフ
-   ・チェス盤の床      … body の背景 / 本の縁
-   ・トランプの4マーク … 背景・ページ隅・表紙の四隅
-   ・鍵穴              … 表紙の金のプレート
-   ・Drink Me の札     … 正解数の表示
-   ・チェシャ猫の笑み  … 画面右下で現れては消える
+   ※ room2 は表紙がなく「合言葉オーバーレイ」構造なので、
+     合言葉カードを「トランプ＋鍵穴」風にしています。
 */
 
 :root {
-    /* 紙の色を、オレンジの古紙から「紅茶のしみ込んだ羊皮紙」へ */
     --paper-1: #fffaf0;
     --paper-2: #ead3a0;
     --paper-3: #b98a4a;
@@ -31,9 +24,7 @@
 }
 
 
-/* =========================================================
-   背景：チェス盤の床 ＋ 周辺を暗くするビネット
-   ========================================================= */
+/* ===== 背景：チェス盤の床 ===== */
 
 body {
     background:
@@ -43,7 +34,10 @@ body {
     font-family: "Yu Mincho", "Hiragino Mincho ProN", "Georgia", serif;
 }
 
-/* 背景に浮かぶ4つのマーク（うっすら） */
+.wrap {
+    z-index: 10;
+}
+
 body::before {
     content: "♠ ♥ ♣ ♦";
     position: fixed;
@@ -60,7 +54,7 @@ body::before {
     z-index: 0;
 }
 
-/* チェシャ猫の笑み：目と三日月の口だけが現れては消える */
+/* チェシャ猫の笑み */
 body::after {
     content: "";
     position: fixed;
@@ -86,13 +80,10 @@ body::after {
 }
 
 
-/* =========================================================
-   見出し・正解数
-   ========================================================= */
+/* ===== 見出し・正解数（DRINK ME の札） ===== */
 
 .header h1 {
     color: var(--alice-gold);
-    font-family: "Yu Mincho", "Hiragino Mincho ProN", "Georgia", serif;
     letter-spacing: 0.08em;
     text-shadow:
         0 2px 0 rgba(0, 0, 0, 0.55),
@@ -113,7 +104,6 @@ body::after {
     color: var(--alice-gold);
 }
 
-/* 「DRINK ME」の札のような見た目 */
 .progress {
     position: relative;
     width: fit-content;
@@ -121,14 +111,13 @@ body::after {
     padding: 5px 22px 5px 30px;
     background: linear-gradient(180deg, #fbf0d0, #ecd9a3);
     border: 2px solid var(--alice-tea);
-    border-radius: 14px 14px 14px 14px;
+    border-radius: 14px;
     color: #5b3a1a;
     font-weight: bold;
     letter-spacing: 0.06em;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
 }
 
-/* 札のひもを通す穴 */
 .progress::before {
     content: "";
     position: absolute;
@@ -143,11 +132,9 @@ body::after {
 }
 
 
-/* =========================================================
-   本の外枠：赤いビロード ＋ 金の縁 ＋ チェス盤の縁取り
-   ========================================================= */
+/* ===== 本の外枠：赤いビロード＋金縁＋チェス盤リング ===== */
 
-.book-frame.started {
+.book-frame {
     border-color: #5a0b17;
     background: #3b0710;
     box-shadow:
@@ -156,8 +143,7 @@ body::after {
         inset 0 0 0 2px rgba(224, 180, 60, 0.35);
 }
 
-/* ページの外周に白黒チェックのリング（表紙より下、ページより上） */
-.book-frame.started::after {
+.book-frame::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -176,9 +162,7 @@ body::after {
 }
 
 
-/* =========================================================
-   ページ（左・右）：二重線の額縁と、トランプのマーク
-   ========================================================= */
+/* ===== ページ：二重線の額縁とトランプのマーク ===== */
 
 .book-page-left::before,
 .flip-page.paper::before {
@@ -190,7 +174,6 @@ body::after {
     pointer-events: none;
 }
 
-/* 左ページの問題文：上に4マークの飾り、下に区切り線 */
 .left-page-content .qtext {
     text-align: center;
     color: var(--alice-ink);
@@ -203,7 +186,6 @@ body::after {
     letter-spacing: 0.4em;
     font-size: 0.9rem;
     color: var(--alice-red);
-    text-shadow: none;
 }
 
 .left-page-content .qtext::after {
@@ -215,7 +197,6 @@ body::after {
     background: linear-gradient(90deg, transparent, var(--alice-tea), transparent);
 }
 
-/* 右ページの角：問題ごとに違うマーク（トランプ風） */
 .flip-page.paper::after {
     position: absolute;
     right: 26px;
@@ -231,7 +212,6 @@ body::after {
 .flip-page.paper[data-page="q3"]::after    { content: "♦"; color: var(--alice-red); }
 .flip-page.paper[data-page="clear"]::after { content: "♣"; color: var(--alice-ink); }
 
-/* スマホの問題文の区切り線も紅茶色に */
 @media (max-width: 700px) {
     .page-qtext {
         color: var(--alice-ink);
@@ -240,117 +220,7 @@ body::after {
 }
 
 
-/* =========================================================
-   表紙：夜のブルー ＋ 金の二重枠 ＋ 鍵穴
-   ========================================================= */
-
-.flip-page.cover {
-    background:
-        radial-gradient(circle at 28% 18%, rgba(224, 180, 60, 0.22), transparent 55%),
-        radial-gradient(circle at 80% 85%, rgba(179, 18, 42, 0.25), transparent 50%),
-        linear-gradient(155deg, #1f4f86, #14305a 55%, #0b1d38);
-    border-left-color: rgba(0, 0, 0, 0.45);
-    box-shadow:
-        inset 0 0 0 6px rgba(224, 180, 60, 0.20),
-        inset 0 0 36px rgba(0, 0, 0, 0.55),
-        -4px 0 14px rgba(0, 0, 0, 0.4);
-}
-
-/* 金の二重枠 */
-.flip-page.cover::before {
-    content: "";
-    position: absolute;
-    inset: 12px;
-    border: 3px double var(--alice-gold);
-    border-radius: 6px;
-    pointer-events: none;
-    z-index: 1;
-}
-
-/* 四隅のトランプマーク（上段 ♠ ♥ / 下段 ♦ ♣ を両端に広げて配置） */
-.cover-shine::before,
-.cover-shine::after {
-    position: absolute;
-    left: 24px;
-    right: 24px;
-    text-align: justify;
-    text-align-last: justify;
-    font-size: 1.25rem;
-    line-height: 1;
-    color: var(--alice-gold);
-    opacity: 0.9;
-}
-
-.cover-shine::before {
-    content: "♠ ♥";
-    top: 22px;
-}
-
-.cover-shine::after {
-    content: "♦ ♣";
-    bottom: 22px;
-}
-
-/* 📖 の絵文字をやめて、金のプレートに鍵穴を描く */
-.cover-content .icon {
-    position: relative;
-    width: 56px;
-    height: 56px;
-    margin: 0 auto 12px;
-    font-size: 0;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #fff1b0, var(--alice-gold) 55%, #9a7416);
-    border: 2px solid #fff1b0;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
-}
-
-.cover-content .icon::before {
-    content: "";
-    position: absolute;
-    top: 14px;
-    left: 50%;
-    width: 11px;
-    height: 11px;
-    transform: translateX(-50%);
-    border-radius: 50%;
-    background: #1a1206;
-}
-
-.cover-content .icon::after {
-    content: "";
-    position: absolute;
-    top: 23px;
-    left: 50%;
-    width: 11px;
-    height: 18px;
-    transform: translateX(-50%);
-    background: #1a1206;
-    clip-path: polygon(30% 0, 70% 0, 100% 100%, 0 100%);
-}
-
-.cover-content h2 {
-    font-family: "Yu Mincho", "Hiragino Mincho ProN", "Georgia", serif;
-}
-
-/* 見出しの下の飾り線 */
-.cover-content h2::after {
-    content: "";
-    display: block;
-    width: 70%;
-    height: 2px;
-    margin: 8px auto 0;
-    background: linear-gradient(90deg, transparent, var(--alice-gold), transparent);
-}
-
-.cover-content button {
-    font-family: inherit;
-    letter-spacing: 0.1em;
-}
-
-
-/* =========================================================
-   解答欄：女王のハートのボタン
-   ========================================================= */
+/* ===== 解答欄：女王のハートのボタン ===== */
 
 .qrow input[type=text] {
     border: 2px solid rgba(29, 27, 51, 0.55);
@@ -393,27 +263,13 @@ body::after {
     border-color: #b9b9c4;
 }
 
-/* 正解・不正解のマーク */
-.feedback.ok::before {
-    content: "♥ ";
-}
-
-.feedback.ng::before {
-    content: "♠ ";
-}
-
-.feedback.ok {
-    color: #1f7a3c;
-}
-
-.feedback.ng {
-    color: var(--alice-red);
-}
+.feedback.ok::before { content: "♥ "; }
+.feedback.ng::before { content: "♠ "; }
+.feedback.ok { color: #1f7a3c; }
+.feedback.ng { color: var(--alice-red); }
 
 
-/* =========================================================
-   クリア画面：トランプのカード風
-   ========================================================= */
+/* ===== クリア画面：トランプのカード風 ===== */
 
 .book-right #clearBox,
 #clearBox {
@@ -427,7 +283,6 @@ body::after {
         0 6px 14px rgba(0, 0, 0, 0.3);
 }
 
-/* カードの左上・右下のインデックス */
 #clearBox::before,
 #clearBox::after {
     position: absolute;
@@ -465,9 +320,125 @@ body::after {
 }
 
 
-/* =========================================================
-   動きを減らす設定の人には、チェシャ猫のアニメを止める
-   ========================================================= */
+/* ===== 合言葉オーバーレイ：チェス盤の床に、鍵穴のトランプ ===== */
+
+#passwordOverlay {
+    background:
+        radial-gradient(ellipse at 50% 40%, rgba(255, 255, 255, 0.10) 0%, rgba(8, 8, 30, 0.70) 100%),
+        repeating-conic-gradient(var(--alice-night) 0% 25%, var(--alice-night-2) 0% 50%) 0 0 / 64px 64px;
+}
+
+.lock-card {
+    position: relative;
+    background: linear-gradient(180deg, #fffdf4, #f7ecd0);
+    border: 3px solid var(--alice-red);
+    border-radius: 14px;
+    box-shadow:
+        0 0 0 3px #fffdf4,
+        0 0 0 5px var(--alice-gold),
+        0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* カードの左上・右下のインデックス */
+.lock-card::before,
+.lock-card::after {
+    position: absolute;
+    font-size: 1.3rem;
+    line-height: 1;
+    color: var(--alice-red);
+}
+
+.lock-card::before {
+    content: "♥";
+    top: 10px;
+    left: 14px;
+}
+
+.lock-card::after {
+    content: "♥";
+    bottom: 10px;
+    right: 14px;
+    transform: rotate(180deg);
+}
+
+/* 🔒 をやめて、金のプレートに鍵穴 */
+.lock-card .icon {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 12px;
+    font-size: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff1b0, var(--alice-gold) 55%, #9a7416);
+    border: 2px solid #fff1b0;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+}
+
+.lock-card .icon::before {
+    content: "";
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    width: 11px;
+    height: 11px;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: #1a1206;
+}
+
+.lock-card .icon::after {
+    content: "";
+    position: absolute;
+    top: 23px;
+    left: 50%;
+    width: 11px;
+    height: 18px;
+    transform: translateX(-50%);
+    background: #1a1206;
+    clip-path: polygon(30% 0, 70% 0, 100% 100%, 0 100%);
+}
+
+.lock-card h2 {
+    color: var(--alice-red);
+    font-family: inherit;
+}
+
+.lock-card p {
+    color: #5b3a1a;
+}
+
+.lock-card input[type=text] {
+    border: 2px solid rgba(29, 27, 51, 0.55);
+    background: rgba(255, 253, 244, 0.85);
+    color: var(--alice-ink);
+    font-family: inherit;
+}
+
+.lock-card input[type=text]:focus {
+    outline: none;
+    border-color: var(--alice-red);
+    box-shadow: 0 0 0 3px rgba(179, 18, 42, 0.20);
+}
+
+.lock-card button {
+    font-family: inherit;
+    letter-spacing: 0.15em;
+    background: linear-gradient(180deg, #d4223c, var(--alice-red-dark));
+    border: 2px solid var(--alice-gold);
+}
+
+.lock-card button::before {
+    content: "♥ ";
+}
+
+.lock-card button:hover {
+    background: linear-gradient(180deg, #e52b47, var(--alice-red));
+}
+
+.lock-feedback {
+    color: var(--alice-red);
+}
+
 
 @media (prefers-reduced-motion: reduce) {
     body::after {
