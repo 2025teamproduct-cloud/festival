@@ -1,105 +1,101 @@
-// /complete.js
-// 紙吹雪：グミ・星・ぐるぐるキャンディ・トランプのマークが降ります。
-// 金の鍵を押すと、もう一度まとめて舞います。
+<!-- /complete.html -->
+<!DOCTYPE html>
+<html lang="ja">
 
-(function () {
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>脱出成功！ - なぞ解き脱出ゲーム</title>
+    <link rel="stylesheet" href="complete.css">
+</head>
 
-    const layer = document.getElementById('confetti');
+<body>
 
-    if (!layer) {
-        return;
-    }
+    <!-- ===== 背景（すべて飾り。CSSのみ・外部画像なし） ===== -->
+    <div class="scenery" aria-hidden="true">
+        <div class="moon"></div>
+        <div class="stars"></div>
+        <div class="stars stars-2"></div>
+        <div class="trees trees-back"></div>
+        <div class="trees trees-front"></div>
+        <div class="floor"></div>
+        <div class="grin"></div>
+    </div>
 
-    /* 動きを減らす設定の人には紙吹雪を出さない（CSS側でも非表示） */
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        return;
-    }
-
-
-    /* ================= 設定 ================= */
-
-    const COLORS = [
-        '#d6304a',  // キャンディの赤
-        '#f2a516',  // 金
-        '#f7a8bd',  // アイシングのピンク
-        '#4aa564',  // 緑
-        '#3c7bff',  // 青
-        '#d65ab8',  // 紫ピンク
-        '#fff1b0'   // 淡い金
-    ];
-
-    /* 同じ形が偏らないよう、出現しやすさを重みで調整 */
-    const SHAPES = [
-        'gummy', 'gummy', 'gummy',
-        'star', 'star',
-        'swirl',
-        'heart', 'diamond', 'club', 'spade'
-    ];
-
-    const isSmall = window.matchMedia('(max-width: 480px)').matches;
-
-    /* 常に降り続ける数 */
-    const BASE_COUNT = isSmall ? 26 : 46;
-
-    /* 鍵を押したときのバースト数 */
-    const BURST_COUNT = isSmall ? 24 : 40;
+    <!-- 紙吹雪（complete.js が中身を作ります） -->
+    <div class="confetti-layer" id="confetti" aria-hidden="true"></div>
 
 
-    /* ================= 部品 ================= */
+    <main class="stage">
 
-    function rand(min, max) {
-        return min + Math.random() * (max - min);
-    }
+        <!-- トランプのエース（ハート）をモチーフにしたカード -->
+        <article class="card">
 
-    function pick(list) {
-        return list[Math.floor(Math.random() * list.length)];
-    }
+            <span class="corner corner-tl" aria-hidden="true"><b>A</b><i>♥</i></span>
+            <span class="corner corner-br" aria-hidden="true"><b>A</b><i>♥</i></span>
 
-    function createPiece(options) {
+            <!-- 金の鍵（押すと紙吹雪がもう一度舞います） -->
+            <button class="emblem reveal" type="button" style="--i:0"
+                    id="keyButton" aria-label="紙吹雪をもう一度舞わせる">
 
-        const once = options && options.once;
-        const delayMax = (options && options.delayMax) || 4;
+                <span class="sparkle s1">✦</span>
+                <span class="sparkle s2">✦</span>
+                <span class="sparkle s3">✦</span>
 
-        const el = document.createElement('span');
-        const shape = pick(SHAPES);
+                <svg viewBox="0 0 140 64" aria-hidden="true" focusable="false">
+                    <defs>
+                        <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0" stop-color="#fff4bd" />
+                            <stop offset="0.45" stop-color="#e0b43c" />
+                            <stop offset="1" stop-color="#9a7416" />
+                        </linearGradient>
+                    </defs>
 
-        el.className = 'confetti ' + shape + (once ? ' once' : '');
+                    <g fill="url(#gold)" stroke="#6b4a0c" stroke-width="1.5" stroke-linejoin="round">
+                        <!-- 輪 -->
+                        <path fill-rule="evenodd"
+                              d="M30 10a22 22 0 1 0 0 44a22 22 0 1 0 0-44zm0 10a12 12 0 1 1 0 24a12 12 0 1 1 0-24z" />
+                        <!-- 軸 -->
+                        <rect x="50" y="28" width="82" height="9" rx="3" />
+                        <rect x="52" y="24" width="6" height="17" rx="2" />
+                        <!-- 歯 -->
+                        <path d="M108 37h9v14h-9z" />
+                        <path d="M121 37h9v10h-9z" />
+                    </g>
 
-        el.style.setProperty('--x', rand(0, 98).toFixed(1) + 'vw');
-        el.style.setProperty('--size', rand(10, 19).toFixed(1) + 'px');
-        el.style.setProperty('--color', pick(COLORS));
-        el.style.setProperty('--dur', rand(5, 9).toFixed(2) + 's');
-        el.style.setProperty('--delay', rand(0, delayMax).toFixed(2) + 's');
-        el.style.setProperty('--sway', rand(12, 46).toFixed(0) + 'px');
-        el.style.setProperty('--spin', (Math.random() < 0.5 ? -1 : 1) * rand(240, 720).toFixed(0) + 'deg');
+                    <!-- 輪の中のハート -->
+                    <path d="M30 40C21 34 22 26 27 26C29 26 30 28 30 29C30 28 31 26 33 26C38 26 39 34 30 40Z"
+                          fill="#b3122a" />
+                    <!-- ツヤ -->
+                    <path d="M16 24a17 17 0 0 1 12-9" fill="none" stroke="#fffbe0"
+                          stroke-width="2.5" stroke-linecap="round" opacity="0.8" />
+                    <path d="M60 31h44" fill="none" stroke="#fffbe0"
+                          stroke-width="1.6" stroke-linecap="round" opacity="0.7" />
+                </svg>
+            </button>
 
-        /* バーストは落ち終わったら消す */
-        if (once) {
-            el.addEventListener('animationend', function () {
-                el.remove();
-            }, { once: true });
-        }
+            <div class="gummies reveal" style="--i:1" aria-hidden="true">
+                <i></i><i></i><i></i><i></i><i></i>
+            </div>
 
-        layer.appendChild(el);
-    }
+            <h1 class="reveal" style="--i:2">
+                <span>脱出成功、</span><span>おめでとうございます！</span>
+            </h1>
 
+            <div class="drip reveal" style="--i:3" aria-hidden="true"></div>
 
-    /* ================= 実行 ================= */
+            <p class="message reveal" style="--i:4">
+                <span>すべてのなぞを解き明かしました。</span><br>
+                <span>ご参加いただきありがとうございました！</span>
+            </p>
 
-    for (let i = 0; i < BASE_COUNT; i++) {
-        createPiece({ delayMax: 5 });
-    }
+            <p class="ending reveal" style="--i:6"><span>めでたし、めでたし。</span></p>
 
-    const keyButton = document.getElementById('keyButton');
+        </article>
 
-    if (keyButton) {
+    </main>
 
-        keyButton.addEventListener('click', function () {
+    <script src="complete.js"></script>
+</body>
 
-            for (let i = 0; i < BURST_COUNT; i++) {
-                createPiece({ once: true, delayMax: 0.9 });
-            }
-        });
-    }
-
-})();
+</html>
