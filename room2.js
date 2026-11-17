@@ -33,6 +33,34 @@ function fillPageQuestions() {
 }
 fillPageQuestions();
 
+const SESSION_KEY = 'festival-room2-progress-v1';
+const savedSession = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}') || {};
+const savedSolved = Array.isArray(savedSession.solved)
+    ? savedSession.solved.filter(index =>
+        Number.isInteger(index) && index >= 0 && index < QUESTIONS.length
+    )
+    : [];
+const savedInputs = Array.isArray(savedSession.inputs)
+    ? savedSession.inputs
+    : [];
+let roomUnlocked = savedSession.unlocked === true;
+let solvedCount = 0;
+const solved = new Set(savedSolved);
+
+function saveSession() {
+    const inputs = Array.from(
+        document.querySelectorAll('.question[data-index]')
+    )
+        .sort((a, b) => Number(a.dataset.index) - Number(b.dataset.index))
+        .map(row => row.querySelector('input').value);
+
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+        unlocked: roomUnlocked,
+        solved: Array.from(solved),
+        inputs
+    }));
+}
+
 function normalize(s) {
     return s.trim()
         .toLowerCase()
@@ -46,6 +74,8 @@ function checkPassword() {
     const val = normalize(input.value);
     const ok = PASSWORD_LIST.some(p => normalize(p) === val);
     if (ok) {
+        roomUnlocked = true;
+        saveSession();
         setLeftText(QUESTIONS[0].text);
         document.getElementById('passwordOverlay').classList.add('hide');
         setTimeout(() => {
@@ -58,9 +88,6 @@ function checkPassword() {
 document.getElementById('pwInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') checkPassword();
 });
-
-let solvedCount = 0;
-const solved = new Set();
 
 function flipPage(pageName) {
     const page = document.querySelector('.flip-page[data-page="' + pageName + '"]');
@@ -75,6 +102,57 @@ function setLeftText(text) {
         el.textContent = text;
     }
 }
+
+function restoreSession() {
+    savedInputs.forEach((value, index) => {
+        const input = document.querySelector(
+            '.question[data-index="' + index + '"] input'
+        );
+
+        if (input && typeof value === 'string') {
+            input.value = value;
+        }
+    });
+
+    if (roomUnlocked) {
+        document.getElementById('passwordOverlay').style.display = 'none';
+    }
+
+    solvedCount = solved.size;
+    document.getElementById('progressText').textContent =
+        '正解数: ' + solvedCount + ' / ' + QUESTIONS.length;
+
+    if (roomUnlocked) {
+        setLeftText(
+            solvedCount === QUESTIONS.length
+                ? '🎉 全問正解！ おめでとうございます！最後のページへ進みましょう。'
+                : QUESTIONS[solvedCount].text
+        );
+    }
+
+    solved.forEach(index => {
+        const row = document.querySelector(
+            '.question[data-index="' + index + '"]'
+        );
+
+        if (!row) {
+            return;
+        }
+
+        row.querySelector('input').disabled = true;
+        row.querySelector('button').disabled = true;
+        row.querySelector('.feedback').textContent = '正解！';
+        row.querySelector('.feedback').className = 'feedback ok';
+        row.classList.add('solved');
+        flipPage(PAGE_ORDER[index]);
+    });
+}
+
+document.querySelectorAll('.question[data-index] input').forEach(input => {
+    input.addEventListener('input', saveSession);
+});
+
+restoreSession();
 
 function checkAnswer(index, btn) {
     const row = btn.closest('.question');
@@ -92,6 +170,7 @@ function checkAnswer(index, btn) {
         if (!solved.has(index)) {
             solved.add(index);
             solvedCount++;
+            saveSession();
             document.getElementById('progressText').textContent = '正解数: ' + solvedCount + ' / ' + QUESTIONS.length;
 
             setTimeout(() => {

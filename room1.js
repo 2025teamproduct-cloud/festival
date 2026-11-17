@@ -84,12 +84,36 @@ const COVER_OPEN_DURATION_MS = 1100;
    ========================================================= */
 
 
+const SESSION_KEY = 'festival-room1-progress-v1';
+const savedSession = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}') || {};
+const savedSolved = Array.isArray(savedSession.solved)
+    ? savedSession.solved.filter(index =>
+        Number.isInteger(index) && index >= 0 && index < QUESTIONS.length
+    )
+    : [];
+const savedInputs = Array.isArray(savedSession.inputs)
+    ? savedSession.inputs
+    : [];
 let solvedCount = 0;
 
-const solved = new Set();
+const solved = new Set(savedSolved);
 
 /* ゲーム開始済みか（開始ボタンの二重クリック防止） */
-let gameStarted = false;
+let gameStarted = savedSession.started === true || solved.size > 0;
+
+function saveSession() {
+    const inputs = Array.from(
+        document.querySelectorAll('.question[data-index]')
+    )
+        .sort((a, b) => Number(a.dataset.index) - Number(b.dataset.index))
+        .map(row => row.querySelector('input').value);
+
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+        started: gameStarted,
+        solved: Array.from(solved),
+        inputs
+    }));
+}
 
 
 /* =========================================================
@@ -194,6 +218,8 @@ function startGame() {
     /* PC用：左ページに問題1をセット */
     setLeftText(QUESTIONS[0].text);
 
+    saveSession();
+
     /* 表紙を開く（回転のみ） */
     cover.classList.add('cover-opening');
 
@@ -218,6 +244,65 @@ if (startButton) {
         { once: true }
     );
 }
+
+function restoreSession() {
+    savedInputs.forEach((value, index) => {
+        const input = document.querySelector(
+            '.question[data-index="' + index + '"] input'
+        );
+
+        if (input && typeof value === 'string') {
+            input.value = value;
+        }
+    });
+
+    if (!gameStarted) {
+        return;
+    }
+
+    const bookFrame = document.getElementById('bookFrame');
+    const cover = document.querySelector('.flip-page.cover');
+
+    if (!bookFrame || !cover) {
+        return;
+    }
+
+    bookFrame.classList.remove('pre-start');
+    bookFrame.classList.add('started');
+    cover.style.visibility = 'hidden';
+    solvedCount = solved.size;
+
+    document.getElementById('progressText').textContent =
+        '正解数: ' + solvedCount + ' / ' + QUESTIONS.length;
+    setLeftText(
+        solvedCount === QUESTIONS.length
+            ? CLEAR_TEXT
+            : QUESTIONS[solvedCount].text
+    );
+
+    solved.forEach(index => {
+        const row = document.querySelector(
+            '.question[data-index="' + index + '"]'
+        );
+
+        if (!row) {
+            return;
+        }
+
+        row.querySelector('input').disabled = true;
+        row.querySelector('button').disabled = true;
+        row.querySelector('.feedback').textContent = '正解！';
+        row.querySelector('.feedback').className = 'feedback ok';
+        row.classList.add('solved');
+        flipPage(PAGE_ORDER[index]);
+    });
+}
+
+document.querySelectorAll('.question[data-index] input').forEach(input => {
+    input.addEventListener('input', saveSession);
+});
+
+restoreSession();
 
 
 /* =========================================================
@@ -254,6 +339,8 @@ function checkAnswer(index, btn) {
 
             solved.add(index);
             solvedCount++;
+
+            saveSession();
 
             document.getElementById('progressText').textContent =
                 '正解数: ' + solvedCount + ' / ' + QUESTIONS.length;
