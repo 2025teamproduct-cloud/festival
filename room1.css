@@ -53,11 +53,11 @@ svg {
     margin-bottom: 20px;
 }
 
-.site-logo {
+.cover-logo {
     display: block;
-    width: min(100%, 320px);
+    width: min(100%, 260px);
     height: auto;
-    margin: 0 auto 4px;
+    margin: 0 auto 12px;
 }
 
 .header h1 {
@@ -656,10 +656,6 @@ svg {
     .header h1 {
         font-size: 1.05rem;
         margin-bottom: 2px;
-    }
-
-    .site-logo {
-        width: min(76vw, 280px);
     }
 
     .admin-link {
