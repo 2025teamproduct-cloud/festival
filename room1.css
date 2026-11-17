@@ -55,7 +55,7 @@ svg {
 
 .cover-logo {
     display: block;
-    width: min(100%, 300px);
+    width: min(100%, 350px);
     height: auto;
     margin: 0 auto 12px;
 }
