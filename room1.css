@@ -53,6 +53,13 @@ svg {
     margin-bottom: 20px;
 }
 
+.site-logo {
+    display: block;
+    width: min(100%, 320px);
+    height: auto;
+    margin: 0 auto 4px;
+}
+
 .header h1 {
     font-size: clamp(1.25rem, 4.8vw, 1.6rem);
     margin: 0 0 6px;
@@ -649,6 +656,10 @@ svg {
     .header h1 {
         font-size: 1.05rem;
         margin-bottom: 2px;
+    }
+
+    .site-logo {
+        width: min(76vw, 280px);
     }
 
     .admin-link {
