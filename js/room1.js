@@ -26,7 +26,8 @@ const QUESTIONS = [
         answers: [
             "さ",
             "サ",
-            "asd"
+            "asd",
+            "あｓｄ"
         ]
     },
 
@@ -36,7 +37,8 @@ const QUESTIONS = [
 
         answers: [
             "15",
-            "asd"
+            "asd",
+            "あｓｄ"
         ]
     }
 
