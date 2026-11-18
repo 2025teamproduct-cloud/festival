@@ -5,8 +5,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>第2の部屋 - なぞ解き脱出ゲーム</title>
+<link rel="preload" as="image" href="img/alice.jpg">
 <link rel="stylesheet" href="css/room2.css">
 <link rel="stylesheet" href="css/room2-alice.css">
+<!-- 表紙画像・あらすじページ用（必ず最後に読み込む） -->
+<link rel="stylesheet" href="css/room2-intro.css">
 </head>
 <body>
 
@@ -17,27 +20,30 @@
   </div>
 
   <div class="game-content" id="gameContent">
-    <div class="progress" id="progressText">正解数: 0 / 3</div>
+    <div class="progress" id="progressText">正解数: 0 / 2</div>
 
     <!--
       本全体
-      PC（701px以上）：左ページに問題文、右ページに解答欄の見開き
+      構成：表紙 → 1ページ目(あらすじ) → 2ページ目(問題1) → 3ページ目(問題2) → クリア
+
+      PC（701px以上）：左ページに文章、右ページに操作欄の見開き
       スマホ（700px以下）：右ページのみの1ページ表示。
-        各ページの上半分に問題文(.page-qtext)、下半分に解答欄(.question)
+        各ページの上半分に文章(.page-qtext)、下半分に解答欄／ボタン
     -->
-    <div class="book-frame" id="bookFrame">
+    <div class="book-frame pre-start" id="bookFrame">
 
       <!-- 左ページ（PCのみ表示 / スマホでは非表示） -->
       <div class="book-page-left">
         <div class="page-lines"></div>
         <div class="left-page-content">
-          <p class="qtext" id="leftQuestionText">開始ボタンを押すと、ここに問題が表示されます。</p>
+          <p class="qtext" id="leftQuestionText">本をタップすると、ここに物語が表示されます。</p>
         </div>
       </div>
 
       <div class="book-right" id="bookRight">
         <div class="page-lines-right"></div>
 
+        <!-- 一番下：クリアページ -->
         <div class="flip-page paper content-page" data-page="clear">
           <div class="page-inner">
             <div id="clearBox">
@@ -48,6 +54,7 @@
           </div>
         </div>
 
+        <!-- 3ページ目：問題2 -->
         <div class="flip-page paper content-page" data-page="q2">
           <div class="page-inner">
             <p class="page-qtext" data-qtext="1"></p>
@@ -61,6 +68,7 @@
           </div>
         </div>
 
+        <!-- 2ページ目：問題1 -->
         <div class="flip-page paper content-page" data-page="q1">
           <div class="page-inner">
             <p class="page-qtext" data-qtext="0"></p>
@@ -73,6 +81,24 @@
             </div>
           </div>
         </div>
+
+        <!-- 1ページ目：あらすじ（表紙をめくった後、最初に見えるページ） -->
+        <div class="flip-page paper content-page" data-page="story">
+          <div class="page-inner">
+            <p class="page-qtext page-story" data-story></p>
+            <div class="story-next">
+              <button type="button" id="storyNextButton">問題へ進む →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 表紙（alice.jpg）：合言葉で鍵を開けた後、本をタップすると開く -->
+      <div class="flip-page cover" id="bookCover" data-page="cover"
+           role="button" tabindex="0" aria-label="本をタップして開く">
+        <img class="cover-image" src="img/alice.jpg" alt="不思議の国のアリス" draggable="false">
+        <div class="cover-shine"></div>
+        <span class="cover-tap">タップして開く</span>
       </div>
 
     </div>

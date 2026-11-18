@@ -4,22 +4,37 @@
 // スタッフが伝える合言葉（複数OK。全角/半角・大文字小文字・空白は自動で吸収されます）
 const PASSWORD_LIST = ["がくえんさい", "学園祭", "asd"];
 
+// あらすじ（1ページ目）
+// PC：左ページに表示 / スマホ：1ページ目の上半分に表示
+const STORY_TEXT =
+    "ヘンゼルとグレーテルの世界をぬけ出すと、" +
+    "次に現れたのはアリスの世界だった。" +
+    "時計を持った白うさぎが、どこかであわてている。" +
+    "なぞを解いて、この不思議の国から出口を見つけよう。";
+
 // 正解データ
 const QUESTIONS = [
     { text: "問題1：これは何", answers: ["3", "3個", "三つ", "みっつ", "asd"] },
     { text: "問題2：これは何", answers: ["D", "asd"] }
 ];
 
+// あらすじページの data-page 名（めくると問題1が見える）
+const STORY_PAGE = 'story';
+
 const PAGE_ORDER = ['q1', 'q2'];
 const FLIP_DELAY_MS = 500;
 const FLIP_DURATION_MS = 600;
 
+// 表紙を開くアニメーション時間（room2-intro.css の coverOpenAlice と合わせる）
+const COVER_OPEN_DURATION_MS = 1100;
+
 /* ====================== 設定エリアここまで ====================== */
 
 /*
-    各ページの問題文をセット（スマホ用）
+    各ページの文章をセット（スマホ用）
 
-    .page-qtext の data-qtext="0|1|2" に QUESTIONS[n].text を流し込みます。
+    .page-qtext の data-qtext="0|1" に QUESTIONS[n].text を、
+    data-story に STORY_TEXT を流し込みます。
     PCでは CSS で非表示なので、見た目には影響しません。
 */
 function fillPageQuestions() {
@@ -28,6 +43,10 @@ function fillPageQuestions() {
         if (q) {
             el.textContent = q.text;
         }
+    });
+
+    document.querySelectorAll('[data-story]').forEach(el => {
+        el.textContent = STORY_TEXT;
     });
 }
 fillPageQuestions();
@@ -47,6 +66,12 @@ let solvedCount = 0;
 const solved = new Set(savedSolved);
 let isUnlocking = false;
 
+// 表紙を開いて本を読み始めたか（二重タップ防止）
+let gameStarted = savedSession.started === true || solved.size > 0;
+
+// あらすじページを読み終えて問題へ進んだか
+let storyDone = savedSession.storyDone === true || solved.size > 0;
+
 function saveSession() {
     const inputs = Array.from(
         document.querySelectorAll('.question[data-index]')
@@ -56,6 +81,8 @@ function saveSession() {
 
     sessionStorage.setItem(SESSION_KEY, JSON.stringify({
         unlocked: roomUnlocked,
+        started: gameStarted,
+        storyDone: storyDone,
         solved: Array.from(solved),
         inputs
     }));
@@ -81,7 +108,6 @@ function checkPassword() {
         isUnlocking = true;
         roomUnlocked = true;
         saveSession();
-        setLeftText(QUESTIONS[0].text);
         const overlay = document.getElementById('passwordOverlay');
         const lockCard = overlay.querySelector('.lock-card');
         const icon = lockCard.querySelector('.icon');
@@ -121,6 +147,95 @@ function setLeftText(text) {
     }
 }
 
+
+/* =========================================================
+   ゲーム開始（表紙をタップ）
+   ========================================================= */
+
+function startGame() {
+    // 合言葉で鍵を開けるまでは開かない
+    if (!roomUnlocked || gameStarted) {
+        return;
+    }
+
+    gameStarted = true;
+
+    const bookFrame = document.getElementById('bookFrame');
+    const cover = document.querySelector('.flip-page.cover');
+
+    if (!bookFrame || !cover) {
+        return;
+    }
+
+    // 本を即座に表示してから、その上で表紙をめくる
+    bookFrame.classList.remove('pre-start');
+    bookFrame.classList.add('started');
+
+    // PC用：左ページにあらすじをセット
+    setLeftText(STORY_TEXT);
+
+    saveSession();
+
+    // 表紙を開く（回転のみ）
+    cover.classList.add('cover-opening');
+
+    // アニメーション終了後、表紙を視覚的に消す
+    setTimeout(() => {
+        cover.style.visibility = 'hidden';
+    }, COVER_OPEN_DURATION_MS);
+}
+
+const bookCover = document.getElementById('bookCover');
+
+if (bookCover) {
+    bookCover.addEventListener('click', startGame);
+
+    // キーボード操作（Enter / Space）でも開けるようにする
+    bookCover.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            startGame();
+        }
+    });
+}
+
+
+/* =========================================================
+   あらすじ → 問題へ進む
+   ========================================================= */
+
+const storyNextButton = document.getElementById('storyNextButton');
+
+function goToQuestions() {
+    if (!gameStarted || storyDone) {
+        return;
+    }
+
+    storyDone = true;
+
+    if (storyNextButton) {
+        storyNextButton.disabled = true;
+    }
+
+    saveSession();
+
+    flipPage(STORY_PAGE);
+
+    // めくり終わってから左ページ（PC）を問題1に更新
+    setTimeout(() => {
+        setLeftText(QUESTIONS[0].text);
+    }, FLIP_DURATION_MS);
+}
+
+if (storyNextButton) {
+    storyNextButton.addEventListener('click', goToQuestions);
+}
+
+
+/* =========================================================
+   セッション復元
+   ========================================================= */
+
 function restoreSession() {
     savedInputs.forEach((value, index) => {
         const input = document.querySelector(
@@ -140,12 +255,34 @@ function restoreSession() {
     document.getElementById('progressText').textContent =
         '正解数: ' + solvedCount + ' / ' + QUESTIONS.length;
 
-    if (roomUnlocked) {
-        setLeftText(
-            solvedCount === QUESTIONS.length
-                ? '🎉 全問正解！ おめでとうございます！最後のページへ進みましょう。'
-                : QUESTIONS[solvedCount].text
-        );
+    if (roomUnlocked && gameStarted) {
+        const bookFrame = document.getElementById('bookFrame');
+        const cover = document.querySelector('.flip-page.cover');
+
+        if (bookFrame) {
+            bookFrame.classList.remove('pre-start');
+            bookFrame.classList.add('started');
+        }
+
+        if (cover) {
+            cover.style.visibility = 'hidden';
+        }
+
+        if (storyDone) {
+            flipPage(STORY_PAGE);
+
+            if (storyNextButton) {
+                storyNextButton.disabled = true;
+            }
+
+            setLeftText(
+                solvedCount === QUESTIONS.length
+                    ? '🎉 全問正解！ おめでとうございます！最後のページへ進みましょう。'
+                    : QUESTIONS[solvedCount].text
+            );
+        } else {
+            setLeftText(STORY_TEXT);
+        }
     }
 
     solved.forEach(index => {
