@@ -6,6 +6,19 @@
    ========================================================= */
 
 /*
+    あらすじ（1ページ目）
+
+    PC：左ページに表示される文章
+    スマホ：1ページ目の上半分に表示される文章
+*/
+const STORY_TEXT =
+    "森にとり残されたヘンゼルとグレーテルは、" +
+    "甘い香りにさそわれて、お菓子の家にたどり着いた。" +
+    "ところが、魔女の魔法で出口の扉が閉ざされてしまう。" +
+    "なぞを解いて扉を開け、二人を助け出そう。";
+
+
+/*
     問題文と正解データ
 
     text:
@@ -50,6 +63,10 @@ const CLEAR_TEXT =
     "🎉 全問正解！ スタッフにこの画面を見せて、次の部屋へ進んでください。";
 
 
+/* あらすじページの data-page 名（めくると問題1が見える） */
+const STORY_PAGE = "story";
+
+
 /*
     問題番号（0始まり）に正解したときにめくるページの data-page 名。
     めくると、下に重なっている次のページが見えます。
@@ -89,8 +106,14 @@ let solvedCount = 0;
 
 const solved = new Set(savedSolved);
 
-/* ゲーム開始済みか（開始ボタンの二重クリック防止） */
+/* ゲーム開始済みか（表紙の二重タップ防止） */
 let gameStarted = savedSession.started === true || solved.size > 0;
+
+/* あらすじページを読み終えて問題へ進んだか */
+let storyDone = savedSession.storyDone === true || solved.size > 0;
+
+/* 初回ポップアップを確認済みか */
+let hintSeen = savedSession.hintSeen === true || gameStarted;
 
 function saveSession() {
     const inputs = Array.from(
@@ -101,6 +124,8 @@ function saveSession() {
 
     sessionStorage.setItem(SESSION_KEY, JSON.stringify({
         started: gameStarted,
+        storyDone: storyDone,
+        hintSeen: hintSeen,
         solved: Array.from(solved),
         inputs
     }));
@@ -108,10 +133,10 @@ function saveSession() {
 
 
 /* =========================================================
-   各ページの問題文をセット（スマホ用）
+   各ページの文章をセット（スマホ用）
 
-   .page-qtext の data-qtext="0|1|2" に
-   QUESTIONS[n].text を流し込みます。
+   .page-qtext の data-qtext="0|1" に QUESTIONS[n].text を、
+   data-story に STORY_TEXT を流し込みます。
    PCでは CSS で非表示なので、見た目には影響しません。
    ========================================================= */
 
@@ -126,6 +151,12 @@ function fillPageQuestions() {
             if (q) {
                 el.textContent = q.text;
             }
+        });
+
+    document
+        .querySelectorAll('[data-story]')
+        .forEach(el => {
+            el.textContent = STORY_TEXT;
         });
 }
 
@@ -167,7 +198,7 @@ function flipPage(pageName) {
 
 
 /* =========================================================
-   左ページの問題文を書き換える（PC用）
+   左ページの文章を書き換える（PC用）
    ========================================================= */
 
 function setLeftText(text) {
@@ -181,7 +212,7 @@ function setLeftText(text) {
 
 
 /* =========================================================
-   ゲーム開始
+   ゲーム開始（表紙をタップ）
    ========================================================= */
 
 function startGame() {
@@ -191,6 +222,7 @@ function startGame() {
     }
 
     gameStarted = true;
+    hintSeen = true;
 
     const bookFrame = document.getElementById('bookFrame');
     const cover = document.querySelector('.flip-page.cover');
@@ -206,8 +238,8 @@ function startGame() {
     bookFrame.classList.remove('pre-start');
     bookFrame.classList.add('started');
 
-    /* PC用：左ページに問題1をセット */
-    setLeftText(QUESTIONS[0].text);
+    /* PC用：左ページにあらすじをセット */
+    setLeftText(STORY_TEXT);
 
     saveSession();
 
@@ -222,19 +254,130 @@ function startGame() {
 
 
 /* =========================================================
-   開始ボタン
+   表紙（本）のタップ
    ========================================================= */
 
-const startButton = document.getElementById('startButton');
+const bookCover = document.getElementById('bookCover');
 
-if (startButton) {
+if (bookCover) {
 
-    startButton.addEventListener(
+    bookCover.addEventListener(
         'click',
         startGame,
         { once: true }
     );
+
+    /* キーボード操作（Enter / Space）でも開けるようにする */
+    bookCover.addEventListener('keydown', event => {
+
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            startGame();
+        }
+    });
 }
+
+
+/* =========================================================
+   あらすじ → 問題へ進む
+   ========================================================= */
+
+function goToQuestions() {
+
+    if (!gameStarted || storyDone) {
+        return;
+    }
+
+    storyDone = true;
+
+    const nextButton = document.getElementById('storyNextButton');
+
+    if (nextButton) {
+        nextButton.disabled = true;
+    }
+
+    saveSession();
+
+    flipPage(STORY_PAGE);
+
+    /* めくり終わってから左ページ（PC）を問題1に更新 */
+    setTimeout(() => {
+        setLeftText(QUESTIONS[0].text);
+    }, FLIP_DURATION_MS);
+}
+
+const storyNextButton = document.getElementById('storyNextButton');
+
+if (storyNextButton) {
+    storyNextButton.addEventListener('click', goToQuestions);
+}
+
+
+/* =========================================================
+   初回アクセス時のポップアップ
+
+   QRコードから最初に開いたとき（表紙を開く前）だけ表示する。
+   閉じたあと・ゲーム開始後・再読み込み時は表示しない。
+   ========================================================= */
+
+const hintPopup = document.getElementById('hintPopup');
+
+function closeHint() {
+
+    if (!hintPopup || hintPopup.hidden) {
+        return;
+    }
+
+    hintPopup.hidden = true;
+    hintSeen = true;
+    saveSession();
+
+    if (bookCover && !gameStarted) {
+        bookCover.focus({ preventScroll: true });
+    }
+}
+
+function showHintIfFirstVisit() {
+
+    if (!hintPopup || hintSeen || gameStarted) {
+        return;
+    }
+
+    hintPopup.hidden = false;
+
+    const closeButton = document.getElementById('hintClose');
+
+    if (closeButton) {
+        closeButton.focus({ preventScroll: true });
+    }
+}
+
+if (hintPopup) {
+
+    const closeButton = document.getElementById('hintClose');
+
+    if (closeButton) {
+        closeButton.addEventListener('click', closeHint);
+    }
+
+    /* 背景（ポップアップの外側）をタップしても閉じる */
+    hintPopup.addEventListener('click', event => {
+        if (event.target === hintPopup) {
+            closeHint();
+        }
+    });
+
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            closeHint();
+        }
+    });
+}
+
+
+/* =========================================================
+   セッション復元
+   ========================================================= */
 
 function restoreSession() {
     savedInputs.forEach((value, index) => {
@@ -265,11 +408,25 @@ function restoreSession() {
 
     document.getElementById('progressText').textContent =
         '正解数: ' + solvedCount + ' / ' + QUESTIONS.length;
-    setLeftText(
-        solvedCount === QUESTIONS.length
-            ? CLEAR_TEXT
-            : QUESTIONS[solvedCount].text
-    );
+
+    if (storyDone) {
+
+        flipPage(STORY_PAGE);
+
+        if (storyNextButton) {
+            storyNextButton.disabled = true;
+        }
+
+        setLeftText(
+            solvedCount === QUESTIONS.length
+                ? CLEAR_TEXT
+                : QUESTIONS[solvedCount].text
+        );
+
+    } else {
+
+        setLeftText(STORY_TEXT);
+    }
 
     solved.forEach(index => {
         const row = document.querySelector(
@@ -294,6 +451,7 @@ document.querySelectorAll('.question[data-index] input').forEach(input => {
 });
 
 restoreSession();
+showHintIfFirstVisit();
 
 const nextRoomLink = document.querySelector('#clearBox a.nextlink');
 let isLeavingRoom = false;

@@ -1,0 +1,282 @@
+/* /css/room1-intro.css
+   表紙画像(hansel.jpg)・初回ポップアップ・あらすじページ
+
+   index.html で room1.css / room1-hansel.css より「後」に読み込むこと。
+   （room1-hansel.css の表紙装飾を上書きするため）
+*/
+
+
+/* =========================================================
+   表紙：hansel.jpg（1417 x 2176 / 縦長）
+
+   本の枠の比率（PC：横長 / スマホ：縦長）に関わらず、
+   絵が切れないように contain で全体を表示し、
+   余白は同じ画像をぼかして敷いて自然につなぐ。
+   ========================================================= */
+
+.flip-page.cover {
+    cursor: pointer;
+    border-radius: 12px;
+    background: #2e1a0c;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.flip-page.cover:focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: -3px;
+}
+
+/* room1-hansel.css の点線枠を、ぼかし背景に置き換える */
+.flip-page.cover::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: none;
+    border-radius: 0;
+    z-index: 1;
+    background: url("../img/hansel.jpg") center / cover no-repeat;
+    filter: blur(18px) brightness(0.75);
+    transform: scale(1.15);
+}
+
+.cover-image {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+}
+
+.cover-shine {
+    z-index: 3;
+}
+
+/* room1-hansel.css の四隅のグミ装飾は表紙画像と重なるため消す */
+.cover-shine::before,
+.cover-shine::after {
+    content: none;
+}
+
+/* 「タップして開く」案内 */
+.cover-tap {
+    position: absolute;
+    left: 50%;
+    bottom: 14px;
+    z-index: 4;
+    transform: translateX(-50%);
+    padding: 6px 18px;
+    border: 2px solid var(--icing);
+    border-radius: 999px;
+    background: rgba(74, 36, 16, 0.82);
+    color: var(--icing);
+    font-size: 0.85rem;
+    font-weight: bold;
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+    pointer-events: none;
+    animation: coverTapPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes coverTapPulse {
+    0%, 100% { opacity: 1;    transform: translateX(-50%) scale(1); }
+    50%      { opacity: 0.55; transform: translateX(-50%) scale(0.96); }
+}
+
+/* 表紙を開き始めたら案内は消す */
+.flip-page.cover.cover-opening .cover-tap {
+    display: none;
+}
+
+
+/* =========================================================
+   初回ポップアップ
+   ========================================================= */
+
+.hint-popup {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(4, 11, 7, 0.72);
+    animation: hintFade 0.25s ease-out;
+}
+
+.hint-popup[hidden] {
+    display: none;
+}
+
+@keyframes hintFade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.hint-box {
+    position: relative;
+    width: min(100%, 320px);
+    padding: 26px 22px 22px;
+    text-align: center;
+    color: var(--ink);
+    background: linear-gradient(180deg, #fff6e2, #f3dcae);
+    border: 3px solid var(--ginger);
+    border-radius: 16px;
+    box-shadow:
+        0 0 0 3px var(--icing),
+        0 12px 30px rgba(0, 0, 0, 0.55);
+    animation: hintPop 0.3s cubic-bezier(0.2, 1.2, 0.4, 1);
+}
+
+@keyframes hintPop {
+    from { transform: scale(0.85); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+}
+
+/* アイシングの垂れ */
+.hint-box::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 14px;
+    border-radius: 12px 12px 0 0;
+    background:
+        radial-gradient(circle at 8px 0, var(--candy-pink) 7px, transparent 7.5px) 0 0 / 16px 14px repeat-x,
+        linear-gradient(var(--candy-pink), var(--candy-pink)) 0 0 / 100% 6px no-repeat;
+}
+
+.hint-title {
+    margin: 0 0 10px;
+    font-size: 1.05rem;
+    font-weight: bold;
+    letter-spacing: 0.15em;
+    color: var(--candy-red-dark);
+}
+
+.hint-text {
+    margin: 0 0 18px;
+    font-size: 1.05rem;
+    line-height: 1.8;
+    font-weight: bold;
+}
+
+.hint-text strong {
+    color: var(--candy-red-dark);
+    font-size: 1.2rem;
+}
+
+.hint-box button {
+    width: 100%;
+    min-height: 42px;
+    padding: 8px 14px;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: bold;
+    letter-spacing: 0.2em;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    background: repeating-linear-gradient(-45deg, var(--candy-red) 0 10px, var(--candy-red-dark) 10px 20px);
+    border: 2px solid var(--icing);
+    border-radius: 8px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+}
+
+.hint-box button:hover {
+    background: repeating-linear-gradient(-45deg, #ea4560 0 10px, var(--candy-red) 10px 20px);
+}
+
+
+/* =========================================================
+   1ページ目：あらすじ
+   ========================================================= */
+
+.story-next {
+    display: flex;
+    justify-content: center;
+}
+
+.story-next button {
+    width: min(100%, 260px);
+    min-height: 40px;
+    padding: 8px 14px;
+    font-family: inherit;
+    font-size: 0.96rem;
+    font-weight: bold;
+    letter-spacing: 0.12em;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    background: repeating-linear-gradient(-45deg, var(--candy-red) 0 10px, var(--candy-red-dark) 10px 20px);
+    border: 2px solid var(--icing);
+    border-radius: 8px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+}
+
+.story-next button:hover {
+    background: repeating-linear-gradient(-45deg, #ea4560 0 10px, var(--candy-red) 10px 20px);
+}
+
+.story-next button:disabled {
+    cursor: default;
+    opacity: 0.7;
+    background: linear-gradient(180deg, #8a7a6c, #66584c);
+    border-color: #cdbfae;
+    text-shadow: none;
+}
+
+/* ページ右下のグミ（問題ページと同じ位置・ピンク） */
+.flip-page.paper[data-page="story"]::after {
+    background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.75), transparent 36%), var(--candy-pink);
+}
+
+@media (max-width: 700px) {
+
+    /*
+        スマホ：あらすじは文字数が多いので、
+        上を広く（1fr）、下のボタンは必要な高さ（auto）にする。
+        ※ 問題ページ（1fr 1fr）には影響しない。
+    */
+    .content-page[data-page="story"] .page-inner {
+        grid-template-rows: 1fr auto;
+    }
+
+    .page-story {
+        justify-content: flex-start;
+        align-items: center;
+        font-size: clamp(0.92rem, 3.9vw, 1.05rem);
+        line-height: 1.9;
+        padding-bottom: 12px;
+    }
+
+    .story-next {
+        padding-top: 14px;
+    }
+
+    .story-next button {
+        width: 100%;
+        font-size: 16px;
+    }
+
+    .cover-tap {
+        bottom: 12px;
+        font-size: 0.8rem;
+    }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+
+    .cover-tap,
+    .hint-popup,
+    .hint-box {
+        animation: none;
+    }
+}

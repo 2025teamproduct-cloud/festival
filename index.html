@@ -8,8 +8,12 @@
 
     <title>第1の部屋 - なぞ解き脱出ゲーム</title>
 
+    <link rel="preload" as="image" href="img/hansel.jpg">
+
     <link rel="stylesheet" href="css/room1.css">
     <link rel="stylesheet" href="css/room1-hansel.css">
+    <!-- 表紙画像・初回ポップアップ・あらすじページ用（必ず最後に読み込む） -->
+    <link rel="stylesheet" href="css/room1-intro.css">
 </head>
 
 <body>
@@ -32,10 +36,12 @@
             <!--
                 本全体
 
-                PC（701px以上）：左ページに問題文、右ページに解答欄の見開き
+                構成：表紙 → 1ページ目(あらすじ) → 2ページ目(問題1) → 3ページ目(問題2) → クリア
+
+                PC（701px以上）：左ページに文章、右ページに操作欄の見開き
                 スマホ（700px以下）：右ページのみの1ページ表示。
-                    各ページの上半分に問題文(.page-qtext)、
-                    下半分に解答欄(.question)を表示する。
+                    各ページの上半分に文章(.page-qtext)、
+                    下半分に解答欄／ボタンを表示する。
             -->
             <div class="book-frame pre-start" id="bookFrame">
 
@@ -47,7 +53,7 @@
 
                     <div class="left-page-content">
                         <p class="qtext" id="leftQuestionText">
-                            開始ボタンを押すと、ここに問題が表示されます。
+                            本をタップすると、ここに物語が表示されます。
                         </p>
                     </div>
 
@@ -77,7 +83,7 @@
                     </div>
 
 
-                    <!-- 問題2 -->
+                    <!-- 3ページ目：問題2 -->
                     <div class="flip-page paper content-page" data-page="q2">
                         <div class="page-inner">
 
@@ -95,7 +101,7 @@
                     </div>
 
 
-                    <!-- 問題1：表紙をめくった後、最初に見えるページ -->
+                    <!-- 2ページ目：問題1 -->
                     <div class="flip-page paper content-page" data-page="q1">
                         <div class="page-inner">
 
@@ -112,29 +118,33 @@
                         </div>
                     </div>
 
+
+                    <!-- 1ページ目：あらすじ（表紙をめくった後、最初に見えるページ） -->
+                    <div class="flip-page paper content-page" data-page="story">
+                        <div class="page-inner">
+
+                            <p class="page-qtext page-story" data-story></p>
+
+                            <div class="story-next">
+                                <button type="button" id="storyNextButton">問題へ進む →</button>
+                            </div>
+
+                        </div>
+                    </div>
+
                 </div>
 
 
-                <!-- 表紙 -->
-                <div class="flip-page cover" data-page="cover">
+                <!-- 表紙（hansel.jpg）：本をタップすると開く -->
+                <div class="flip-page cover" id="bookCover" data-page="cover"
+                    role="button" tabindex="0" aria-label="本をタップして開く">
 
-                    <div class="cover-content">
-
-                        <img class="cover-logo" src="img/logo.png" alt="Escape from the Sweets and the Wonderland">
-
-                        <h2>ゲーム開始前の確認</h2>
-
-                        <p>
-                            開始ボタンを押すと、問題が表示されます。
-                            <br>
-                            準備ができたら開始してください。
-                        </p>
-
-                        <button id="startButton" type="button">開始する</button>
-
-                    </div>
+                    <img class="cover-image" src="img/hansel.jpg" alt="ヘンゼルとグレーテル"
+                        width="1417" height="2176" draggable="false">
 
                     <div class="cover-shine"></div>
+
+                    <span class="cover-tap">タップして開く</span>
 
                 </div>
 
@@ -142,6 +152,19 @@
 
         </div>
 
+    </div>
+
+
+    <!-- 初回アクセス時の案内ポップアップ -->
+    <div class="hint-popup" id="hintPopup" role="dialog" aria-modal="true" aria-labelledby="hintTitle" hidden>
+        <div class="hint-box">
+            <p class="hint-title" id="hintTitle">あそびかた</p>
+            <p class="hint-text">
+                <strong>本をタップ</strong>して<br>
+                進めてください。
+            </p>
+            <button type="button" id="hintClose">OK</button>
+        </div>
     </div>
 
 
