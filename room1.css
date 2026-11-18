@@ -48,6 +48,17 @@ svg {
     z-index: 10;
 }
 
+.wrap.leaving-room {
+    animation: leave-room 320ms ease-in forwards;
+}
+
+@keyframes leave-room {
+    to {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.985);
+    }
+}
+
 .header {
     text-align: center;
     margin-bottom: 20px;

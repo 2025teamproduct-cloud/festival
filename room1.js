@@ -293,6 +293,36 @@ document.querySelectorAll('.question[data-index] input').forEach(input => {
 
 restoreSession();
 
+const nextRoomLink = document.querySelector('#clearBox a.nextlink');
+let isLeavingRoom = false;
+
+if (nextRoomLink) {
+    nextRoomLink.addEventListener('click', event => {
+        if (
+            event.button !== 0 ||
+            event.metaKey ||
+            event.ctrlKey ||
+            event.shiftKey ||
+            event.altKey ||
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ) {
+            return;
+        }
+
+        event.preventDefault();
+
+        if (isLeavingRoom) {
+            return;
+        }
+
+        isLeavingRoom = true;
+        document.querySelector('.wrap').classList.add('leaving-room');
+        window.setTimeout(() => {
+            window.location.href = nextRoomLink.href;
+        }, 320);
+    });
+}
+
 
 /* =========================================================
    解答チェック
