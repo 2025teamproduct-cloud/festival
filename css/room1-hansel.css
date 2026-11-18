@@ -2,8 +2,8 @@
    第1の部屋に「ヘンゼルとグレーテル」風デコレーションを適用（CSSのみ）
 
    index.html の room1.css の「次の行」に追加してください。
-   <link rel="stylesheet" href="room1.css">
-   <link rel="stylesheet" href="room1-hansel.css">
+   <link rel="stylesheet" href="css/room1.css">
+   <link rel="stylesheet" href="css/room1-hansel.css">
 
    ※ room1 は「表紙 → 開始ボタン」構造なので、
      表紙はお菓子の家のドア風、本の縁は開始後(.started)に付きます。

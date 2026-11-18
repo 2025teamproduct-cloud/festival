@@ -2,8 +2,8 @@
    第2の部屋に「不思議の国のアリス」風デコレーションを適用（CSSのみ）
 
    room2.html の room2.css の「次の行」に追加してください。
-   <link rel="stylesheet" href="room2.css">
-   <link rel="stylesheet" href="room2-alice.css">
+   <link rel="stylesheet" href="css/room2.css">
+   <link rel="stylesheet" href="css/room2-alice.css">
 
    ※ room2 は表紙がなく「合言葉オーバーレイ」構造なので、
      合言葉カードを「トランプ＋鍵穴」風にしています。

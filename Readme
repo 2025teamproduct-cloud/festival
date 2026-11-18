@@ -2,16 +2,16 @@
 # 学園祭なぞ解き脱出ゲーム 一式
 
 ## ファイル構成
-- `index.html` / `room1.css` / `room1.js` … 第1の部屋（タイマー＋問題1〜2）
-- `room2.html` / `room2.css` / `room2.js` … 第2の部屋（合言葉オーバーレイ＋問題1〜2）
-- `complete.html` / `complete.css` / `complete.js` … クリア画面
-- `reservation.html` / `reservation.css` / `reservation.js` … 参加予約・整理番号確認
+- `index.html` / `css/room1.css` / `js/room1.js` … 第1の部屋（タイマー＋問題1〜2）
+- `room2.html` / `css/room2.css` / `js/room2.js` … 第2の部屋（合言葉オーバーレイ＋問題1〜2）
+- `complete.html` / `css/complete.css` / `js/complete.js` … クリア画面
+- `reservation.html` / `css/reservation.css` / `js/reservation.js` … 参加予約・整理番号確認
 - `api/reservations.js` … Vercel Functionsの予約API
 - `api/register.js` … Vercel FunctionsのレジデータAPI
-- `access.js` … 管理者用パスワードの認証処理
-- `staff.html` / `staff.js` … スタッフ用の確認ページ
+- `js/access.js` … 管理者用パスワードの認証処理
+- `staff.html` / `js/staff.js` … スタッフ用の確認ページ
 
-各HTMLは同名のCSSファイル・JSファイルを読み込んでいます（第1の部屋だけ入口が `index.html` です）。すべてのファイルを同じフォルダ構成のまま使ってください（リンク・CSS・JSの読み込みが相対パスのためです）。
+CSSは `css/`、JavaScriptは `js/` に配置しています。各HTMLはこのフォルダ構成に沿って読み込みます。フォルダ構成を保ったまま使ってください（リンク・CSS・JSの読み込みが相対パスのためです）。
 `index.html` をブラウザで開けば、そのままリンクをたどって最後まで遊べます。
 
 ## パスワード・合言葉一覧
@@ -19,13 +19,13 @@
 - スタッフ用ページの管理者パスワード: `festival-admin-2026`
 - 第2の部屋の合言葉: `がくえんさい`、`学園祭`、`asd`
 
-管理者用パスワードは `access.js` の `ADMIN_PASSWORDS` 配列で設定します。複数のパスワードを使う場合は、配列に値を追加してください。変更した場合は、この一覧と `access.js` の設定を一致させてください。スタッフ用ページでは整理番号を選択して代表者名を照合でき、同じ時間帯の参加者一覧から本人確認済みの組をチェックできます。チェック状態はFirestoreに保存されるため、リロードやページ遷移後も維持されます。
+管理者用パスワードは `js/access.js` の `ADMIN_PASSWORDS` 配列で設定します。複数のパスワードを使う場合は、配列に値を追加してください。変更した場合は、この一覧と `js/access.js` の設定を一致させてください。スタッフ用ページでは整理番号を選択して代表者名を照合でき、同じ時間帯の参加者一覧から本人確認済みの組をチェックできます。チェック状態はFirestoreに保存されるため、リロードやページ遷移後も維持されます。
 
 Firebaseのサービスアカウント秘密鍵や `FIREBASE_PRIVATE_KEY` の実値は、READMEやGitHubには記載しないでください。
 
 ## 問題や答えを変更する箇所
 
-問題の文章や正解を変えたいときは、次の場所を直接書き換えてください。各JSファイル（`room1.js` / `room2.js`）の中の、**「ここから設定エリア」〜「設定エリアここまで」** というコメントで囲まれた部分だけを変更すればOKです。HTML/CSSの知識がなくても編集できます。
+問題の文章や正解を変えたいときは、次の場所を直接書き換えてください。各JSファイル（`js/room1.js` / `js/room2.js`）の中の、**「ここから設定エリア」〜「設定エリアここまで」** というコメントで囲まれた部分だけを変更すればOKです。HTML/CSSの知識がなくても編集できます。
 
 ### index.html（第1の部屋）
 - `TOTAL_TIME_SEC` … 制限時間（秒）。例: 15分なら `15 * 60`
