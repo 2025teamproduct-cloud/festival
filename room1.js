@@ -38,16 +38,6 @@ const QUESTIONS = [
             "15",
             "asd"
         ]
-    },
-
-    {
-        text:
-            "問題3：これは何",
-
-        answers: [
-            "らくさ",
-            "asd"
-        ]
     }
 
 ];
@@ -64,8 +54,7 @@ const CLEAR_TEXT =
 */
 const PAGE_ORDER = [
     "q1",
-    "q2",
-    "q3"
+    "q2"
 ];
 
 
