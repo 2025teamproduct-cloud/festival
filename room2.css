@@ -68,6 +68,15 @@ svg {
     #passwordOverlay {
         animation: none;
     }
+
+    #passwordOverlay {
+        transition: none;
+    }
+
+    .lock-card.unlocked,
+    .lock-card.unlocked .icon {
+        animation: none;
+    }
 }
 
 .header {
@@ -289,6 +298,52 @@ svg {
 .lock-card .icon {
     font-size: 2.6rem;
     margin-bottom: 8px;
+}
+
+.lock-card.unlocked {
+    animation: unlock-card 650ms ease-out both;
+}
+
+.lock-card.unlocked .icon {
+    font-size: 2rem;
+    animation: unlock-key 650ms ease-in-out both;
+}
+
+.lock-card.unlocked .icon::before,
+.lock-card.unlocked .icon::after {
+    display: none;
+}
+
+@keyframes unlock-card {
+    20% {
+        transform: scale(0.97) rotate(-1deg);
+    }
+
+    55% {
+        transform: scale(1.04) rotate(1deg);
+    }
+
+    to {
+        transform: scale(1) rotate(0);
+    }
+}
+
+@keyframes unlock-key {
+    25% {
+        transform: rotate(-25deg) scale(1.08);
+    }
+
+    50% {
+        transform: rotate(25deg) scale(1.16);
+    }
+
+    75% {
+        transform: rotate(-8deg) scale(1.08);
+    }
+
+    to {
+        transform: rotate(0) scale(1);
+    }
 }
 
 .lock-card h2 {

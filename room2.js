@@ -45,6 +45,7 @@ const savedInputs = Array.isArray(savedSession.inputs)
 let roomUnlocked = savedSession.unlocked === true;
 let solvedCount = 0;
 const solved = new Set(savedSolved);
+let isUnlocking = false;
 
 function saveSession() {
     const inputs = Array.from(
@@ -68,18 +69,36 @@ function normalize(s) {
 }
 
 function checkPassword() {
+    if (roomUnlocked || isUnlocking) {
+        return;
+    }
+
     const input = document.getElementById('pwInput');
     const feedback = document.getElementById('pwFeedback');
     const val = normalize(input.value);
     const ok = PASSWORD_LIST.some(p => normalize(p) === val);
     if (ok) {
+        isUnlocking = true;
         roomUnlocked = true;
         saveSession();
         setLeftText(QUESTIONS[0].text);
-        document.getElementById('passwordOverlay').classList.add('hide');
+        const overlay = document.getElementById('passwordOverlay');
+        const lockCard = overlay.querySelector('.lock-card');
+        const icon = lockCard.querySelector('.icon');
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        icon.textContent = '🔓';
+        lockCard.classList.add('unlocked');
+        input.disabled = true;
+        overlay.querySelector('button').disabled = true;
+        feedback.textContent = '鍵が開きました！';
+
         setTimeout(() => {
-            document.getElementById('passwordOverlay').style.display = 'none';
-        }, 650);
+            overlay.classList.add('hide');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, reduceMotion ? 0 : 600);
+        }, reduceMotion ? 0 : 650);
     } else {
         feedback.textContent = '合言葉が違います。スタッフに確認してください。';
     }
