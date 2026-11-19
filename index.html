@@ -23,7 +23,7 @@
     <link rel="stylesheet" href="css/room1-hansel.css">
     <!-- 表紙画像・初回ポップアップ・あらすじページ用 -->
     <link rel="stylesheet" href="css/room1-intro.css">
-    <!-- 選択式の回答UI用（必ず最後に読み込む） -->
+    <!-- 導入ページ・選択式の回答UI用（必ず最後に読み込む） -->
     <link rel="stylesheet" href="css/room1-choice.css">
 </head>
 
@@ -47,12 +47,15 @@
             <!--
                 本全体
 
-                構成：表紙 → 1ページ目(あらすじ) → 2ページ目(問題1) → 3ページ目(問題2) → クリア
+                構成（上から順にめくる）：
+                表紙 → story(あらすじ) → n1(導入) → q1(問題1) → n2(導入)
+                     → q2(問題2) → n3(導入) → n4(導入) → clear(クリア)
+
+                ※ DOM上は「下にあるページほど先に」書く（最後に書いたものが一番上）。
+                ※ 文章は js/room1.js の PAGES に書く。ここでは枠だけ用意する。
 
                 PC（701px以上）：左ページに文章、右ページに操作欄の見開き
-                スマホ（700px以下）：右ページのみの1ページ表示。
-                    各ページの上半分に文章(.page-qtext)、
-                    下半分に選択肢／ボタンを表示する。
+                スマホ（700px以下）：右ページのみ。上半分に文章、下半分にボタン／選択肢
             -->
             <div class="book-frame pre-start" id="bookFrame">
 
@@ -94,52 +97,87 @@
                     </div>
 
 
-                    <!-- 3ページ目：問題2（パンくず） -->
+                    <!-- 8枚目：導入（アリスの世界） -->
+                    <div class="flip-page paper content-page" data-page="n4">
+                        <div class="page-inner">
+                            <p class="page-qtext page-story" data-text="n4"></p>
+                            <div class="story-next">
+                                <button type="button" class="next-btn">次へ →</button>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- 7枚目：導入（お菓子の家） -->
+                    <div class="flip-page paper content-page" data-page="n3">
+                        <div class="page-inner">
+                            <p class="page-qtext page-story" data-text="n3"></p>
+                            <div class="story-next">
+                                <button type="button" class="next-btn">次へ →</button>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- 6枚目：問題2（パンくず） -->
                     <div class="flip-page paper content-page" data-page="q2">
                         <div class="page-inner">
-
-                            <p class="page-qtext" data-qtext="1"></p>
-
-                            <div class="question" data-index="1">
+                            <p class="page-qtext" data-text="q2"></p>
+                            <div class="question" data-q="q2">
                                 <div class="choices"></div>
                                 <div class="qrow">
-                                    <button type="button" class="confirm-btn" onclick="checkAnswer(1, this)">確認</button>
+                                    <button type="button" class="confirm-btn">確認</button>
                                 </div>
                                 <div class="feedback"></div>
                             </div>
-
                         </div>
                     </div>
 
 
-                    <!-- 2ページ目：問題1（石の道） -->
+                    <!-- 5枚目：導入（パンくず） -->
+                    <div class="flip-page paper content-page" data-page="n2">
+                        <div class="page-inner">
+                            <p class="page-qtext page-story" data-text="n2"></p>
+                            <div class="story-next">
+                                <button type="button" class="next-btn">次へ →</button>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- 4枚目：問題1（分かれ道） -->
                     <div class="flip-page paper content-page" data-page="q1">
                         <div class="page-inner">
-
-                            <p class="page-qtext" data-qtext="0"></p>
-
-                            <div class="question" data-index="0">
+                            <p class="page-qtext" data-text="q1"></p>
+                            <div class="question" data-q="q1">
                                 <div class="choices"></div>
                                 <div class="qrow">
-                                    <button type="button" class="confirm-btn" onclick="checkAnswer(0, this)">確認</button>
+                                    <button type="button" class="confirm-btn">確認</button>
                                 </div>
                                 <div class="feedback"></div>
                             </div>
-
                         </div>
                     </div>
 
 
-                    <!-- 1ページ目：あらすじ（表紙をめくった後、最初に見えるページ） -->
+                    <!-- 3枚目：導入（石ころ・看板） -->
+                    <div class="flip-page paper content-page" data-page="n1">
+                        <div class="page-inner">
+                            <p class="page-qtext page-story" data-text="n1"></p>
+                            <div class="story-next">
+                                <button type="button" class="next-btn">次へ →</button>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- 2枚目：あらすじ（表紙をめくった後、最初に見えるページ） -->
                     <div class="flip-page paper content-page" data-page="story">
                         <div class="page-inner">
-
-                            <p class="page-qtext page-story" data-story></p>
-
+                            <p class="page-qtext page-story" data-text="story"></p>
                             <div class="story-next">
-                                <button type="button" id="storyNextButton">問題へ進む →</button>
+                                <button type="button" class="next-btn">次へ →</button>
                             </div>
-
                         </div>
                     </div>
 
