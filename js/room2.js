@@ -1,28 +1,101 @@
 //  /room2.js
+
+// ハリネズミは5匹から4匹を選ぶ形にしています。 会場の設定に青色のハリネズミもいるため、
+// 青は選ばない選択肢（ひっかけ）として入れました。4匹だけを並べたい場合は、choices か
+// ら青を消して、answer を [0, 1, 2, 3] にしてください（緑が3番目になります）。
+
 /* ====================== ここから設定エリア ====================== */
 
 // スタッフが伝える合言葉（複数OK。全角/半角・大文字小文字・空白は自動で吸収されます）
 const PASSWORD_LIST = ["がくえんさい", "学園祭", "asd"];
 
-// あらすじ（1ページ目）
-// PC：左ページに表示 / スマホ：1ページ目の上半分に表示
-const STORY_TEXT =
-    "ヘンゼルとグレーテルの世界をぬけ出すと、" +
-    "次に現れたのはアリスの世界だった。" +
-    "時計を持った白うさぎが、どこかであわてている。" +
-    "なぞを解いて、この不思議の国から出口を見つけよう。";
+/*
+    ページ一覧（表紙のあと、上から順にめくっていく）
 
-// 正解データ
-const QUESTIONS = [
-    { text: "問題1：これは何", answers: ["3", "3個", "三つ", "みっつ", "asd"] },
-    { text: "問題2：これは何", answers: ["D", "asd"] }
+    ・choices が無いページ ＝ 導入ページ（「次へ」ボタンでめくる）
+    ・choices があるページ ＝ 問題ページ（選択肢を選んで「確認」→ 正解でめくる）
+
+    id      : room2.html の data-page / data-text / data-q と一致させる
+    text    : PC は左ページ、スマホはページ上半分に表示。"\n" で改行できる
+    choices : 選択肢の表示文字
+    answer  : 正解
+              ・数字         … 1つ選ぶ問題。正解の選択肢の番号（0始まり）
+              ・数字の配列   … 順番に選ぶ問題。正解の順に並べた選択肢の番号（0始まり）
+*/
+const PAGES = [
+
+    /* ---------- 7ページ目：Q3 ハリネズミ（順番選択） ---------- */
+    {
+        id: "q3",
+        text:
+            "【Q3】\n" +
+            "女王様が好きな順番を、会場をよく観察し、正しい順番を導き出せ！\n\n" +
+            "ゴールさせる順に、4匹を選んでください。",
+
+        choices: [
+            "🦔 桃色のハリネズミ",   // 0
+            "🦔 黄色のハリネズミ",   // 1
+            "🦔 紫色のハリネズミ",   // 2
+            "🦔 緑色のハリネズミ",   // 3
+        ],
+
+        /* 桃 → 黄 → 紫 → 緑 */
+        answer: [0, 1, 2, 3]
+    },
+
+    /* ---------- 8ページ目：タルト事件 ---------- */
+    {
+        id: "n5",
+        text:
+            "ゴールした時、トランプ兵が慌てて会場に駆け込んできて、" +
+            "「女王様のタルトが何者かに盗まれました！」と大声で叫んだ。\n\n" +
+            "それを聞いた女王様は顔を真っ赤にして怒り、あなたに言った。\n\n" +
+            "「私のタルトを盗んだ犯人だな！ 即刻、首をはねておしまい！」\n\n" +
+            "あなたは犯人にされてしまった。"
+    },
+
+    /* ---------- 9ページ目：Q4 真犯人 ---------- */
+    {
+        id: "q4",
+        text:
+            "【Q4】\n" +
+            "無実を証明するため、嘘と真実が入り交じった証言を元に、真犯人を見つけ出せ！",
+
+        // TODO: 仮の選択肢です。実際の選択肢に変更してください（正解は「トランプ兵♠2」）
+        choices: [
+            "トランプ兵♥2",
+            "トランプ兵♠2",
+            "トランプ兵♦2",
+            "トランプ兵♣2"
+        ],
+
+        answer: 1   // トランプ兵♠2
+    },
+
+    /* ---------- 10ページ目：おまじない ---------- */
+    {
+        id: "n6",
+        text:
+            "真犯人が見つかった。ハートの女王様は、タルトを盗んだ犯人の首をはねてしまった。\n\n" +
+            "真犯人が見つかってご満悦な女王様は、あなたに言った。\n\n" +
+            "「お前、出口を探しているんだってね。アタシが帰り方を教えてやろう。」\n\n" +
+            "犯人を見つけ出してくれたお礼として、元の世界に戻れるおまじないを教えてくれた。\n\n" +
+            "「あなたたちはただのトランプで本の1部だ！」"
+    }
+
 ];
 
-// あらすじページの data-page 名（めくると問題1が見える）
-const STORY_PAGE = 'story';
 
-const PAGE_ORDER = ['q1', 'q2'];
+/* 最後のページ（11ページ目）が見えたときに、PCの左ページへ表示する文言 */
+const CLEAR_TEXT =
+    "このおまじないを唱えて、元の世界に帰ろう。\n\n" +
+    "「あなたたちはただのトランプで本の1部だ！」";
+
+
+// 正解してからページがめくれ始めるまでの時間
 const FLIP_DELAY_MS = 500;
+
+// ページがめくれる演出の時間（room2.css の .flip-page transition と合わせる）
 const FLIP_DURATION_MS = 600;
 
 // 表紙を開くアニメーション時間（room2-intro.css の coverOpenAlice と合わせる）
@@ -30,63 +103,77 @@ const COVER_OPEN_DURATION_MS = 1100;
 
 /* ====================== 設定エリアここまで ====================== */
 
-/*
-    各ページの文章をセット（スマホ用）
 
-    .page-qtext の data-qtext="0|1" に QUESTIONS[n].text を、
-    data-story に STORY_TEXT を流し込みます。
-    PCでは CSS で非表示なので、見た目には影響しません。
-*/
-function fillPageQuestions() {
-    document.querySelectorAll('[data-qtext]').forEach(el => {
-        const q = QUESTIONS[Number(el.dataset.qtext)];
-        if (q) {
-            el.textContent = q.text;
-        }
-    });
+const SESSION_KEY = 'festival-room2-progress-v2';
 
-    document.querySelectorAll('[data-story]').forEach(el => {
-        el.textContent = STORY_TEXT;
-    });
+function isQuestion(page) {
+    return Array.isArray(page.choices);
 }
-fillPageQuestions();
 
-const SESSION_KEY = 'festival-room2-progress-v1';
-const savedSession = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}') || {};
-const savedSolved = Array.isArray(savedSession.solved)
-    ? savedSession.solved.filter(index =>
-        Number.isInteger(index) && index >= 0 && index < QUESTIONS.length
-    )
-    : [];
-const savedInputs = Array.isArray(savedSession.inputs)
-    ? savedSession.inputs
-    : [];
+const QUESTION_PAGES = PAGES.filter(isQuestion);
+
+/* 順番選択の問題か（answer が配列） */
+function isOrder(q) {
+    return Array.isArray(q.answer);
+}
+
+/* 確認ボタンが押せるようになるために必要な選択数 */
+function needCount(q) {
+    return isOrder(q) ? q.answer.length : 1;
+}
+
+let savedSession = {};
+try {
+    savedSession = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}') || {};
+} catch (e) {
+    savedSession = {};
+}
+
+/* 今表示しているページの番号（PAGES の添字。全部めくり終えたら PAGES.length） */
+let pageIndex =
+    Number.isInteger(savedSession.pageIndex) &&
+    savedSession.pageIndex >= 0 &&
+    savedSession.pageIndex <= PAGES.length
+        ? savedSession.pageIndex
+        : 0;
+
+/* 各問題で選択中の選択肢番号（id → 選んだ順の配列） */
+const selections = {};
+
+QUESTION_PAGES.forEach(q => {
+
+    const saved = savedSession.selections
+        ? savedSession.selections[q.id]
+        : null;
+
+    selections[q.id] = Array.isArray(saved)
+        ? saved.filter(n => Number.isInteger(n) && n >= 0 && n < q.choices.length)
+        : [];
+});
+
 let roomUnlocked = savedSession.unlocked === true;
-let solvedCount = 0;
-const solved = new Set(savedSolved);
 let isUnlocking = false;
 
-// 表紙を開いて本を読み始めたか（二重タップ防止）
-let gameStarted = savedSession.started === true || solved.size > 0;
-
-// あらすじページを読み終えて問題へ進んだか
-let storyDone = savedSession.storyDone === true || solved.size > 0;
+/* 表紙を開いて本を読み始めたか（二重タップ防止） */
+let gameStarted = savedSession.started === true || pageIndex > 0;
 
 function saveSession() {
-    const inputs = Array.from(
-        document.querySelectorAll('.question[data-index]')
-    )
-        .sort((a, b) => Number(a.dataset.index) - Number(b.dataset.index))
-        .map(row => row.querySelector('input').value);
-
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
-        unlocked: roomUnlocked,
-        started: gameStarted,
-        storyDone: storyDone,
-        solved: Array.from(solved),
-        inputs
-    }));
+    try {
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+            unlocked: roomUnlocked,
+            started: gameStarted,
+            pageIndex: pageIndex,
+            selections: selections
+        }));
+    } catch (e) {
+        /* 保存できなくても動作は続ける */
+    }
 }
+
+
+/* =========================================================
+   ヘルパー
+   ========================================================= */
 
 function normalize(s) {
     return s.trim()
@@ -94,6 +181,49 @@ function normalize(s) {
         .replace(/\s+/g, '')
         .replace(/[Ａ-Ｚａ-ｚ０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0));
 }
+
+function pageNumber(id) {
+    return PAGES.findIndex(p => p.id === id);
+}
+
+/* 問題を解き終えたか（そのページを過ぎていれば正解済み） */
+function isSolved(id) {
+    return pageIndex > pageNumber(id);
+}
+
+function solvedCount() {
+    return QUESTION_PAGES.filter(q => isSolved(q.id)).length;
+}
+
+function updateProgress() {
+    document.getElementById('progressText').textContent =
+        '正解数: ' + solvedCount() + ' / ' + QUESTION_PAGES.length;
+}
+
+function getRow(id) {
+    return document.querySelector('.question[data-q="' + id + '"]');
+}
+
+
+/* =========================================================
+   各ページの文章をセット
+   data-text="ページid" の要素に、PAGES の text を流し込む
+   （PCでは .page-qtext は CSS で非表示）
+   ========================================================= */
+
+document.querySelectorAll('[data-text]').forEach(el => {
+
+    const page = PAGES[pageNumber(el.dataset.text)];
+
+    if (page) {
+        el.textContent = page.text;
+    }
+});
+
+
+/* =========================================================
+   合言葉
+   ========================================================= */
 
 function checkPassword() {
     if (roomUnlocked || isUnlocking) {
@@ -104,10 +234,12 @@ function checkPassword() {
     const feedback = document.getElementById('pwFeedback');
     const val = normalize(input.value);
     const ok = PASSWORD_LIST.some(p => normalize(p) === val);
+
     if (ok) {
         isUnlocking = true;
         roomUnlocked = true;
         saveSession();
+
         const overlay = document.getElementById('passwordOverlay');
         const lockCard = overlay.querySelector('.lock-card');
         const icon = lockCard.querySelector('.icon');
@@ -129,22 +261,202 @@ function checkPassword() {
         feedback.textContent = '合言葉が違います。スタッフに確認してください。';
     }
 }
+
 document.getElementById('pwInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') checkPassword();
 });
 
+
+/* =========================================================
+   左ページ（PC用）
+   ========================================================= */
+
+function setLeftText(text) {
+
+    const el = document.getElementById('leftQuestionText');
+
+    if (el) {
+        el.textContent = text;
+    }
+}
+
+/* 今のページに合わせて左ページの文章を更新 */
+function updateLeftText() {
+
+    setLeftText(
+        pageIndex < PAGES.length
+            ? PAGES[pageIndex].text
+            : CLEAR_TEXT
+    );
+}
+
+
+/* =========================================================
+   選択肢の描画・操作
+   ========================================================= */
+
+function renderQuestion(id) {
+
+    const row = getRow(id);
+
+    if (!row) {
+        return;
+    }
+
+    const q = PAGES[pageNumber(id)];
+    const sel = selections[id];
+    const solved = isSolved(id);
+    const box = row.querySelector('.choices');
+
+    box.innerHTML = '';
+
+    q.choices.forEach((label, ci) => {
+
+        const b = document.createElement('button');
+        const pos = sel.indexOf(ci);
+
+        b.type = 'button';
+        b.className = 'choice';
+        b.disabled = solved;
+
+        if (pos >= 0) {
+            b.classList.add('selected');
+        }
+
+        /* 順番選択：押した順の番号を表示 */
+        if (isOrder(q)) {
+            const badge = document.createElement('span');
+            badge.className = 'choice-order';
+            badge.textContent = pos >= 0 ? String(pos + 1) : '';
+            b.appendChild(badge);
+        }
+
+        const t = document.createElement('span');
+        t.textContent = label;
+        b.appendChild(t);
+
+        b.addEventListener('click', () => selectChoice(id, ci));
+
+        box.appendChild(b);
+    });
+
+    const confirmBtn = row.querySelector('.confirm-btn');
+
+    if (confirmBtn) {
+        confirmBtn.disabled = solved || sel.length !== needCount(q);
+    }
+
+    const resetBtn = row.querySelector('.reset-btn');
+
+    if (resetBtn) {
+        resetBtn.disabled = solved || sel.length === 0;
+    }
+}
+
+function clearFeedback(id) {
+
+    const fb = getRow(id).querySelector('.feedback');
+
+    fb.textContent = '';
+    fb.className = 'feedback';
+}
+
+function selectChoice(id, ci) {
+
+    if (isSolved(id)) {
+        return;
+    }
+
+    const q = PAGES[pageNumber(id)];
+    const sel = selections[id];
+
+    if (isOrder(q)) {
+
+        const pos = sel.indexOf(ci);
+
+        if (pos >= 0) {
+            sel.splice(pos, 1);              // 選び直し（番号は自動で詰める）
+        } else if (sel.length < needCount(q)) {
+            sel.push(ci);
+        }
+
+    } else {
+        selections[id] = [ci];
+    }
+
+    clearFeedback(id);
+    renderQuestion(id);
+    saveSession();
+}
+
+function resetSelection(id) {
+
+    if (isSolved(id)) {
+        return;
+    }
+
+    selections[id] = [];
+
+    clearFeedback(id);
+    renderQuestion(id);
+    saveSession();
+}
+
+QUESTION_PAGES.forEach(q => {
+
+    renderQuestion(q.id);
+
+    const row = getRow(q.id);
+    const confirmBtn = row && row.querySelector('.confirm-btn');
+    const resetBtn = row && row.querySelector('.reset-btn');
+
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', () => checkAnswer(q.id, confirmBtn));
+    }
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => resetSelection(q.id));
+    }
+});
+
+
+/* =========================================================
+   ページをめくる
+   ========================================================= */
+
 function flipPage(pageName) {
+
     const page = document.querySelector('.flip-page[data-page="' + pageName + '"]');
+
     if (page) {
         page.classList.add('flipped');
     }
 }
 
-function setLeftText(text) {
-    const el = document.getElementById('leftQuestionText');
-    if (el) {
-        el.textContent = text;
+/*
+    今のページを1枚めくる。
+    状態（pageIndex）はすぐ進め、見た目は delay ミリ秒後にめくる。
+*/
+function advancePage(delay) {
+
+    if (pageIndex >= PAGES.length) {
+        return;
     }
+
+    const id = PAGES[pageIndex].id;
+
+    pageIndex++;
+    saveSession();
+    updateProgress();
+
+    setTimeout(() => {
+
+        flipPage(id);
+
+        /* めくり終わってから左ページ（PC）を更新 */
+        setTimeout(updateLeftText, FLIP_DURATION_MS);
+
+    }, delay);
 }
 
 
@@ -153,7 +465,8 @@ function setLeftText(text) {
    ========================================================= */
 
 function startGame() {
-    // 合言葉で鍵を開けるまでは開かない
+
+    /* 合言葉で鍵を開けるまでは開かない */
     if (!roomUnlocked || gameStarted) {
         return;
     }
@@ -167,19 +480,19 @@ function startGame() {
         return;
     }
 
-    // 本を即座に表示してから、その上で表紙をめくる
+    /* 本を即座に表示してから、その上で表紙をめくる */
     bookFrame.classList.remove('pre-start');
     bookFrame.classList.add('started');
 
-    // PC用：左ページにあらすじをセット
-    setLeftText(STORY_TEXT);
+    /* PC用：左ページに最初のページをセット */
+    updateLeftText();
 
     saveSession();
 
-    // 表紙を開く（回転のみ）
+    /* 表紙を開く（回転のみ） */
     cover.classList.add('cover-opening');
 
-    // アニメーション終了後、表紙を視覚的に消す
+    /* アニメーション終了後、表紙を視覚的に消す */
     setTimeout(() => {
         cover.style.visibility = 'hidden';
     }, COVER_OPEN_DURATION_MS);
@@ -188,10 +501,12 @@ function startGame() {
 const bookCover = document.getElementById('bookCover');
 
 if (bookCover) {
+
     bookCover.addEventListener('click', startGame);
 
-    // キーボード操作（Enter / Space）でも開けるようにする
+    /* キーボード操作（Enter / Space）でも開けるようにする */
     bookCover.addEventListener('keydown', event => {
+
         if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
             startGame();
@@ -201,35 +516,25 @@ if (bookCover) {
 
 
 /* =========================================================
-   あらすじ → 問題へ進む
+   導入ページの「次へ」ボタン
    ========================================================= */
 
-const storyNextButton = document.getElementById('storyNextButton');
+document.querySelectorAll('.next-btn').forEach(button => {
 
-function goToQuestions() {
-    if (!gameStarted || storyDone) {
-        return;
-    }
+    button.addEventListener('click', () => {
 
-    storyDone = true;
+        const pageEl = button.closest('.flip-page');
+        const id = pageEl ? pageEl.dataset.page : '';
 
-    if (storyNextButton) {
-        storyNextButton.disabled = true;
-    }
+        /* 今表示中のページのボタンだけ有効（連打対策） */
+        if (!gameStarted || !PAGES[pageIndex] || PAGES[pageIndex].id !== id) {
+            return;
+        }
 
-    saveSession();
-
-    flipPage(STORY_PAGE);
-
-    // めくり終わってから左ページ（PC）を問題1に更新
-    setTimeout(() => {
-        setLeftText(QUESTIONS[0].text);
-    }, FLIP_DURATION_MS);
-}
-
-if (storyNextButton) {
-    storyNextButton.addEventListener('click', goToQuestions);
-}
+        button.disabled = true;
+        advancePage(0);
+    });
+});
 
 
 /* =========================================================
@@ -237,112 +542,112 @@ if (storyNextButton) {
    ========================================================= */
 
 function restoreSession() {
-    savedInputs.forEach((value, index) => {
-        const input = document.querySelector(
-            '.question[data-index="' + index + '"] input'
-        );
 
-        if (input && typeof value === 'string') {
-            input.value = value;
-        }
-    });
+    updateProgress();
 
     if (roomUnlocked) {
         document.getElementById('passwordOverlay').style.display = 'none';
     }
 
-    solvedCount = solved.size;
-    document.getElementById('progressText').textContent =
-        '正解数: ' + solvedCount + ' / ' + QUESTIONS.length;
-
-    if (roomUnlocked && gameStarted) {
-        const bookFrame = document.getElementById('bookFrame');
-        const cover = document.querySelector('.flip-page.cover');
-
-        if (bookFrame) {
-            bookFrame.classList.remove('pre-start');
-            bookFrame.classList.add('started');
-        }
-
-        if (cover) {
-            cover.style.visibility = 'hidden';
-        }
-
-        if (storyDone) {
-            flipPage(STORY_PAGE);
-
-            if (storyNextButton) {
-                storyNextButton.disabled = true;
-            }
-
-            setLeftText(
-                solvedCount === QUESTIONS.length
-                    ? '🎉 全問正解！ おめでとうございます！最後のページへ進みましょう。'
-                    : QUESTIONS[solvedCount].text
-            );
-        } else {
-            setLeftText(STORY_TEXT);
-        }
+    if (!roomUnlocked || !gameStarted) {
+        return;
     }
 
-    solved.forEach(index => {
-        const row = document.querySelector(
-            '.question[data-index="' + index + '"]'
-        );
+    const bookFrame = document.getElementById('bookFrame');
+    const cover = document.querySelector('.flip-page.cover');
 
-        if (!row) {
+    if (bookFrame) {
+        bookFrame.classList.remove('pre-start');
+        bookFrame.classList.add('started');
+    }
+
+    if (cover) {
+        cover.style.visibility = 'hidden';
+    }
+
+    /* めくり済みのページを戻す */
+    PAGES.forEach((page, i) => {
+
+        if (i >= pageIndex) {
             return;
         }
 
-        row.querySelector('input').disabled = true;
-        row.querySelector('button').disabled = true;
-        row.querySelector('.feedback').textContent = '正解！';
-        row.querySelector('.feedback').className = 'feedback ok';
-        row.classList.add('solved');
-        flipPage(PAGE_ORDER[index]);
-    });
-}
+        flipPage(page.id);
 
-document.querySelectorAll('.question[data-index] input').forEach(input => {
-    input.addEventListener('input', saveSession);
-});
+        if (isQuestion(page)) {
+
+            const row = getRow(page.id);
+            const fb = row.querySelector('.feedback');
+
+            fb.textContent = '正解！';
+            fb.className = 'feedback ok';
+            row.classList.add('solved');
+            renderQuestion(page.id);
+
+        } else {
+
+            const btn = document.querySelector(
+                '.flip-page[data-page="' + page.id + '"] .next-btn'
+            );
+
+            if (btn) {
+                btn.disabled = true;
+            }
+        }
+    });
+
+    updateLeftText();
+}
 
 restoreSession();
 
-function checkAnswer(index, btn) {
+
+/* =========================================================
+   解答チェック
+   ========================================================= */
+
+function checkAnswer(id, btn) {
+
     const row = btn.closest('.question');
-    const input = row.querySelector('input');
     const feedback = row.querySelector('.feedback');
-    const val = normalize(input.value);
-    const ok = QUESTIONS[index].answers.some(a => normalize(a) === val);
+    const q = PAGES[pageNumber(id)];
+    const sel = selections[id];
+
+    /* いま表示中の問題以外、選択数が足りない場合は何もしない */
+    if (
+        !PAGES[pageIndex] ||
+        PAGES[pageIndex].id !== id ||
+        sel.length !== needCount(q)
+    ) {
+        return;
+    }
+
+    const ok = isOrder(q)
+        ? q.answer.every((a, i) => sel[i] === a)
+        : sel[0] === q.answer;
+
+
+    /* ----- 正解 ----- */
 
     if (ok) {
+
         feedback.textContent = '正解！';
         feedback.className = 'feedback ok';
-        input.disabled = true;
-        btn.disabled = true;
         row.classList.add('solved');
-        if (!solved.has(index)) {
-            solved.add(index);
-            solvedCount++;
-            saveSession();
-            document.getElementById('progressText').textContent = '正解数: ' + solvedCount + ' / ' + QUESTIONS.length;
 
-            setTimeout(() => {
-                flipPage(PAGE_ORDER[index]);
-                setTimeout(() => {
-                    if (solvedCount === QUESTIONS.length) {
-                        setLeftText('🎉 全問正解！ おめでとうございます！最後のページへ進みましょう。');
-                        document.getElementById('clearBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    } else {
-                        setLeftText(QUESTIONS[index + 1].text);
-                    }
-                }, FLIP_DURATION_MS);
-            }, FLIP_DELAY_MS);
-        }
-    } else {
+        /* 状態を進めてから選択肢をロック（isSolved が true になる） */
+        advancePage(FLIP_DELAY_MS);
+        renderQuestion(id);
+    }
+
+
+    /* ----- 不正解 ----- */
+
+    else {
+
         feedback.textContent = '不正解…もう一度考えてみよう';
         feedback.className = 'feedback ng';
+
         row.classList.remove('shake');
         void row.offsetWidth;
         row.classList.add('shake');
