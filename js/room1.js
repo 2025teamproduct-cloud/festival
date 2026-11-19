@@ -332,9 +332,10 @@ function closeHint() {
     hintSeen = true;
     saveSession();
 
-    if (bookCover && !gameStarted) {
-        bookCover.focus({ preventScroll: true });
-    }
+    /*
+        ここで表紙に focus() を当てると、タップしただけでもフォーカス枠
+        (:focus-visible)が表紙に出てしまうため、フォーカスは移さない。
+    */
 }
 
 function showHintIfFirstVisit() {
