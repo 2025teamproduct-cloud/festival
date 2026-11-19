@@ -19,40 +19,61 @@ const STORY_TEXT =
 
 
 /*
-    問題文と正解データ
+    問題データ（すべて選択式）
 
     text:
         PC：左ページに表示される問題文
         スマホ：各ページの上半分に表示される問題文
+        "\n" で改行できます。
 
-    answers:
-        配列内のどれかに一致すればOK
-        全角/半角・大文字小文字・空白は normalize() が吸収します。
+    choices:
+        選択肢の表示文字
+
+    answer:
+        正解の選択肢の番号（0始まり）
+        例）choices の 1 番目が正解なら 0、3 番目なら 2
 */
 
 const QUESTIONS = [
 
+    /* ---------- 問題1：石の道 ---------- */
     {
         text:
-            "小石落ちてたってよ",
+            "出口を探していると地面にポツポツと霧に紛れて月明かりに照らされて光っている石ころを見つけた。" +
+            "出口の手がかりだと考えたあやたは、石ころを辿ってみることにした。\n" +
+            "石ころを辿って進むと道が別れて続いていた。分かれ道の間にひとつの看板が立てられていた。\n" +
+            "そこに書かれていたのは…\n\n" +
+            "【問題】\n" +
+            "正しい道は一つだけ\n" +
+            "隠されたヒントで正しい道を見つけろ。",
 
-        answers: [
-            "さ",
-            "サ",
-            "asd",
-            "あｓｄ"
-        ]
+        choices: [
+            "真っ暗だけど光っている石の道",
+            "月明かりに照らされているが行き止まりの道",
+            "月明かりに照らされてる石の道"
+        ],
+
+        answer: 2   // TODO: 正解の選択肢の番号（0, 1, 2）に変更してください
     },
 
+    /* ---------- 問題2：パンくず ---------- */
     {
         text:
-            "問題2：これは何",
+            "さらに霧の森を進むと今度はパンくずが道に撒かれている。" +
+            "パンくずを追ってみると森の鳥たちに食べられてしまっている。" +
+            "追い返すと、なにか書かれている跡が見つかった。\n\n" +
+            "【問題】\n" +
+            "パンくずが示す答えを導き出せ",
 
-        answers: [
-            "15",
-            "asd",
-            "あｓｄ"
-        ]
+        // TODO: 実際の選択肢に変更してください
+        choices: [
+            "選択肢A",
+            "選択肢B",
+            "選択肢C",
+            "選択肢D"
+        ],
+
+        answer: 0   // TODO: 正解の選択肢の番号に変更してください
     }
 
 ];
@@ -60,6 +81,8 @@ const QUESTIONS = [
 
 /* 全問正解したときに左ページへ表示する文言 */
 const CLEAR_TEXT =
+    "答えを導き出すと森の霧が晴れ、目の前にはお菓子の家が現れた。" +
+    "家の前にいた魔女に話しかけると、家に招き入れられた。\n\n" +
     "🎉 全問正解！ スタッフにこの画面を見せて、次の部屋へ進んでください。";
 
 
@@ -92,19 +115,35 @@ const COVER_OPEN_DURATION_MS = 1100;
    ========================================================= */
 
 
-const SESSION_KEY = 'festival-room1-progress-v1';
-const savedSession = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}') || {};
+const SESSION_KEY = 'festival-room1-progress-v3';
+
+let savedSession = {};
+try {
+    savedSession = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}') || {};
+} catch (e) {
+    savedSession = {};
+}
+
 const savedSolved = Array.isArray(savedSession.solved)
     ? savedSession.solved.filter(index =>
         Number.isInteger(index) && index >= 0 && index < QUESTIONS.length
     )
     : [];
-const savedInputs = Array.isArray(savedSession.inputs)
-    ? savedSession.inputs
-    : [];
-let solvedCount = 0;
 
+let solvedCount = 0;
 const solved = new Set(savedSolved);
+
+/* 各問題で選択中の選択肢番号（未選択は null） */
+const selections = QUESTIONS.map((q, i) => {
+
+    const saved = Array.isArray(savedSession.selections)
+        ? savedSession.selections[i]
+        : null;
+
+    return (Number.isInteger(saved) && saved >= 0 && saved < q.choices.length)
+        ? saved
+        : null;
+});
 
 /* ゲーム開始済みか（表紙の二重タップ防止） */
 let gameStarted = savedSession.started === true || solved.size > 0;
@@ -116,24 +155,22 @@ let storyDone = savedSession.storyDone === true || solved.size > 0;
 let hintSeen = savedSession.hintSeen === true || gameStarted;
 
 function saveSession() {
-    const inputs = Array.from(
-        document.querySelectorAll('.question[data-index]')
-    )
-        .sort((a, b) => Number(a.dataset.index) - Number(b.dataset.index))
-        .map(row => row.querySelector('input').value);
-
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
-        started: gameStarted,
-        storyDone: storyDone,
-        hintSeen: hintSeen,
-        solved: Array.from(solved),
-        inputs
-    }));
+    try {
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+            started: gameStarted,
+            storyDone: storyDone,
+            hintSeen: hintSeen,
+            solved: Array.from(solved),
+            selections: selections
+        }));
+    } catch (e) {
+        /* 保存できなくても動作は続ける */
+    }
 }
 
 
 /* =========================================================
-   各ページの文章をセット（スマホ用）
+   各ページの文章をセット
 
    .page-qtext の data-qtext="0|1" に QUESTIONS[n].text を、
    data-story に STORY_TEXT を流し込みます。
@@ -164,20 +201,70 @@ fillPageQuestions();
 
 
 /* =========================================================
-   入力値の正規化
+   選択肢の描画・操作
    ========================================================= */
 
-function normalize(s) {
-
-    return s
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, '')
-        .replace(
-            /[Ａ-Ｚａ-ｚ０-９]/g,
-            ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0)
-        );
+function getRow(index) {
+    return document.querySelector('.question[data-index="' + index + '"]');
 }
+
+function renderQuestion(index) {
+
+    const row = getRow(index);
+
+    if (!row) {
+        return;
+    }
+
+    const q = QUESTIONS[index];
+    const selected = selections[index];
+    const isSolved = solved.has(index);
+    const box = row.querySelector('.choices');
+
+    box.innerHTML = '';
+
+    q.choices.forEach((label, ci) => {
+
+        const b = document.createElement('button');
+
+        b.type = 'button';
+        b.className = 'choice';
+        b.textContent = label;
+        b.disabled = isSolved;
+
+        if (selected === ci) {
+            b.classList.add('selected');
+        }
+
+        b.addEventListener('click', () => selectChoice(index, ci));
+
+        box.appendChild(b);
+    });
+
+    const confirmBtn = row.querySelector('.confirm-btn');
+
+    if (confirmBtn) {
+        confirmBtn.disabled = isSolved || selected === null;
+    }
+}
+
+function selectChoice(index, ci) {
+
+    if (solved.has(index)) {
+        return;
+    }
+
+    selections[index] = ci;
+
+    const fb = getRow(index).querySelector('.feedback');
+    fb.textContent = '';
+    fb.className = 'feedback';
+
+    renderQuestion(index);
+    saveSession();
+}
+
+QUESTIONS.forEach((q, i) => renderQuestion(i));
 
 
 /* =========================================================
@@ -331,11 +418,6 @@ function closeHint() {
     hintPopup.hidden = true;
     hintSeen = true;
     saveSession();
-
-    /*
-        ここで表紙に focus() を当てると、タップしただけでもフォーカス枠
-        (:focus-visible)が表紙に出てしまうため、フォーカスは移さない。
-    */
 }
 
 function showHintIfFirstVisit() {
@@ -381,15 +463,6 @@ if (hintPopup) {
    ========================================================= */
 
 function restoreSession() {
-    savedInputs.forEach((value, index) => {
-        const input = document.querySelector(
-            '.question[data-index="' + index + '"] input'
-        );
-
-        if (input && typeof value === 'string') {
-            input.value = value;
-        }
-    });
 
     if (!gameStarted) {
         return;
@@ -430,29 +503,30 @@ function restoreSession() {
     }
 
     solved.forEach(index => {
-        const row = document.querySelector(
-            '.question[data-index="' + index + '"]'
-        );
+
+        const row = getRow(index);
 
         if (!row) {
             return;
         }
 
-        row.querySelector('input').disabled = true;
-        row.querySelector('button').disabled = true;
-        row.querySelector('.feedback').textContent = '正解！';
-        row.querySelector('.feedback').className = 'feedback ok';
+        const fb = row.querySelector('.feedback');
+        fb.textContent = '正解！';
+        fb.className = 'feedback ok';
+
         row.classList.add('solved');
+        renderQuestion(index);
         flipPage(PAGE_ORDER[index]);
     });
 }
 
-document.querySelectorAll('.question[data-index] input').forEach(input => {
-    input.addEventListener('input', saveSession);
-});
-
 restoreSession();
 showHintIfFirstVisit();
+
+
+/* =========================================================
+   次の部屋へ
+   ========================================================= */
 
 const nextRoomLink = document.querySelector('#clearBox a.nextlink');
 let isLeavingRoom = false;
@@ -492,15 +566,14 @@ if (nextRoomLink) {
 function checkAnswer(index, btn) {
 
     const row = btn.closest('.question');
-    const input = row.querySelector('input');
     const feedback = row.querySelector('.feedback');
+    const q = QUESTIONS[index];
 
-    const val = normalize(input.value);
+    if (selections[index] === null) {
+        return;
+    }
 
-    const ok =
-        QUESTIONS[index]
-            .answers
-            .some(a => normalize(a) === val);
+    const ok = selections[index] === q.answer;
 
 
     /* ----- 正解 ----- */
@@ -510,9 +583,6 @@ function checkAnswer(index, btn) {
         feedback.textContent = '正解！';
         feedback.className = 'feedback ok';
 
-        input.disabled = true;
-        btn.disabled = true;
-
         row.classList.add('solved');
 
         if (!solved.has(index)) {
@@ -520,6 +590,7 @@ function checkAnswer(index, btn) {
             solved.add(index);
             solvedCount++;
 
+            renderQuestion(index);   // 選択肢をロック
             saveSession();
 
             document.getElementById('progressText').textContent =

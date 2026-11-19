@@ -21,8 +21,10 @@
 
     <link rel="stylesheet" href="css/room1.css">
     <link rel="stylesheet" href="css/room1-hansel.css">
-    <!-- 表紙画像・初回ポップアップ・あらすじページ用（必ず最後に読み込む） -->
+    <!-- 表紙画像・初回ポップアップ・あらすじページ用 -->
     <link rel="stylesheet" href="css/room1-intro.css">
+    <!-- 選択式の回答UI用（必ず最後に読み込む） -->
+    <link rel="stylesheet" href="css/room1-choice.css">
 </head>
 
 <body>
@@ -50,7 +52,7 @@
                 PC（701px以上）：左ページに文章、右ページに操作欄の見開き
                 スマホ（700px以下）：右ページのみの1ページ表示。
                     各ページの上半分に文章(.page-qtext)、
-                    下半分に解答欄／ボタンを表示する。
+                    下半分に選択肢／ボタンを表示する。
             -->
             <div class="book-frame pre-start" id="bookFrame">
 
@@ -92,16 +94,16 @@
                     </div>
 
 
-                    <!-- 3ページ目：問題2 -->
+                    <!-- 3ページ目：問題2（パンくず） -->
                     <div class="flip-page paper content-page" data-page="q2">
                         <div class="page-inner">
 
                             <p class="page-qtext" data-qtext="1"></p>
 
                             <div class="question" data-index="1">
+                                <div class="choices"></div>
                                 <div class="qrow">
-                                    <input type="text" placeholder="こたえを入力">
-                                    <button onclick="checkAnswer(1, this)">確認</button>
+                                    <button type="button" class="confirm-btn" onclick="checkAnswer(1, this)">確認</button>
                                 </div>
                                 <div class="feedback"></div>
                             </div>
@@ -110,16 +112,16 @@
                     </div>
 
 
-                    <!-- 2ページ目：問題1 -->
+                    <!-- 2ページ目：問題1（石の道） -->
                     <div class="flip-page paper content-page" data-page="q1">
                         <div class="page-inner">
 
                             <p class="page-qtext" data-qtext="0"></p>
 
                             <div class="question" data-index="0">
+                                <div class="choices"></div>
                                 <div class="qrow">
-                                    <input type="text" placeholder="こたえを入力">
-                                    <button onclick="checkAnswer(0, this)">確認</button>
+                                    <button type="button" class="confirm-btn" onclick="checkAnswer(0, this)">確認</button>
                                 </div>
                                 <div class="feedback"></div>
                             </div>

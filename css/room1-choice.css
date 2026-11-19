@@ -1,0 +1,104 @@
+/* /css/room1-choice.css
+   選択式の回答UI。index.html で最後に読み込むこと。 */
+
+
+/* PC：左ページの問題文（長文・改行あり） */
+.left-page-content .qtext {
+    white-space: pre-line;
+    text-align: left;
+    font-size: 0.88rem;
+    line-height: 1.8;
+}
+
+
+/* 選択肢の並び */
+.choices {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.choice {
+    display: block;
+    width: 100%;
+    min-height: 42px;
+    padding: 8px 12px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: bold;
+    text-align: left;
+    color: var(--ink);
+    background: rgba(255, 250, 240, 0.85);
+    border: 2px solid var(--ginger);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.choice:hover:not(:disabled) {
+    border-color: var(--candy-red);
+}
+
+/* 選択中 */
+.choice.selected {
+    background: var(--candy-pink);
+    border-color: var(--candy-red);
+    box-shadow: 0 0 0 3px rgba(214, 48, 74, 0.22);
+}
+
+.choice:disabled {
+    cursor: default;
+}
+
+/* 正解してロックされた後 */
+.choice.selected:disabled {
+    background: rgba(233, 247, 236, 0.9);
+    border-color: #2e9e4f;
+    box-shadow: none;
+}
+
+.choice:not(.selected):disabled {
+    opacity: 0.55;
+}
+
+
+/* 確認ボタン */
+.qrow .confirm-btn {
+    width: 100%;
+}
+
+
+@media (max-width: 700px) {
+
+    /* 問題文は長いので上を広く、選択肢は必要な高さ */
+    .content-page[data-page^="q"] .page-inner {
+        grid-template-rows: minmax(0, 1fr) auto;
+        padding: clamp(12px, 4vw, 20px);
+    }
+
+    .content-page[data-page^="q"] .page-qtext {
+        white-space: pre-line;
+        justify-content: flex-start;
+        align-items: center;
+        align-items: safe center;   /* 長くて収まらないときも先頭から読めるように */
+        font-weight: 700;
+        font-size: clamp(0.8rem, 3.4vw, 0.95rem);
+        line-height: 1.7;
+        padding-bottom: 10px;
+    }
+
+    .content-page[data-page^="q"] .question {
+        padding-top: 10px;
+    }
+
+    .choices {
+        gap: 6px;
+        margin-bottom: 8px;
+    }
+
+    .choice {
+        min-height: 38px;
+        padding: 6px 10px;
+        font-size: 0.9rem;
+    }
+}
