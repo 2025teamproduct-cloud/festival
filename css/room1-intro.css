@@ -45,7 +45,11 @@
 }
 
 .flip-page.cover:focus-visible .cover-shine {
-    box-shadow: inset 0 0 0 3px var(--gold);
+    box-shadow:
+        inset 0 0 0 3px var(--gold),
+        inset 0 0 0 7px rgba(192, 160, 92, 0.92),
+        inset 0 0 0 9px rgba(78, 61, 35, 0.78),
+        inset 0 0 24px rgba(54, 40, 21, 0.42);
 }
 
 /* room1-hansel.css の点線枠を、ぼかし背景に置き換える */
@@ -86,6 +90,14 @@
 
 .cover-shine {
     z-index: 3;
+    /*
+        画像の縁に沿う落ち着いた金色の二重枠。
+        明るすぎない同系色で、絵の可読性を損ねない内側の飾りにする。
+    */
+    box-shadow:
+        inset 0 0 0 7px rgba(192, 160, 92, 0.92),
+        inset 0 0 0 9px rgba(78, 61, 35, 0.78),
+        inset 0 0 24px rgba(54, 40, 21, 0.42);
 }
 
 /* room1-hansel.css の四隅のグミ装飾は表紙画像と重なるため消す */
