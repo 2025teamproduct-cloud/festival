@@ -110,7 +110,7 @@
 
       </div>
 
-      <!-- 表紙（alice.jpg）：合言葉で鍵を開けた後、本をタップすると開く -->
+      <!-- 表紙（alice.jpg）：本をタップすると開く -->
       <div class="flip-page cover" id="bookCover" data-page="cover"
            role="button" tabindex="0" aria-label="本をタップして開く">
         <img class="cover-image" src="img/alice.jpg" alt="不思議の国のアリス" draggable="false">
@@ -119,18 +119,6 @@
       </div>
 
     </div>
-  </div>
-</div>
-
-<!-- 合言葉オーバーレイ：本体の上に重ねて表示。正解でhiddenにする -->
-<div id="passwordOverlay">
-  <div class="lock-card">
-    <div class="icon">🔒</div>
-    <h2>合言葉を入力してください</h2>
-    <p>スタッフから教えられた合言葉を入力すると、部屋が開きます。</p>
-    <input type="text" id="pwInput" placeholder="合言葉">
-    <button onclick="checkPassword()">解錠する</button>
-    <div class="lock-feedback" id="pwFeedback"></div>
   </div>
 </div>
 

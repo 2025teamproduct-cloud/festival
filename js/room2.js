@@ -6,9 +6,6 @@
 
 /* ====================== ここから設定エリア ====================== */
 
-// スタッフが伝える合言葉（複数OK。全角/半角・大文字小文字・空白は自動で吸収されます）
-const PASSWORD_LIST = ["がくえんさい", "学園祭", "asd"];
-
 /*
     ページ一覧（表紙のあと、上から順にめくっていく）
 
@@ -151,16 +148,12 @@ QUESTION_PAGES.forEach(q => {
         : [];
 });
 
-let roomUnlocked = savedSession.unlocked === true;
-let isUnlocking = false;
-
 /* 表紙を開いて本を読み始めたか（二重タップ防止） */
 let gameStarted = savedSession.started === true || pageIndex > 0;
 
 function saveSession() {
     try {
         sessionStorage.setItem(SESSION_KEY, JSON.stringify({
-            unlocked: roomUnlocked,
             started: gameStarted,
             pageIndex: pageIndex,
             selections: selections
@@ -174,13 +167,6 @@ function saveSession() {
 /* =========================================================
    ヘルパー
    ========================================================= */
-
-function normalize(s) {
-    return s.trim()
-        .toLowerCase()
-        .replace(/\s+/g, '')
-        .replace(/[Ａ-Ｚａ-ｚ０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0));
-}
 
 function pageNumber(id) {
     return PAGES.findIndex(p => p.id === id);
@@ -218,52 +204,6 @@ document.querySelectorAll('[data-text]').forEach(el => {
     if (page) {
         el.textContent = page.text;
     }
-});
-
-
-/* =========================================================
-   合言葉
-   ========================================================= */
-
-function checkPassword() {
-    if (roomUnlocked || isUnlocking) {
-        return;
-    }
-
-    const input = document.getElementById('pwInput');
-    const feedback = document.getElementById('pwFeedback');
-    const val = normalize(input.value);
-    const ok = PASSWORD_LIST.some(p => normalize(p) === val);
-
-    if (ok) {
-        isUnlocking = true;
-        roomUnlocked = true;
-        saveSession();
-
-        const overlay = document.getElementById('passwordOverlay');
-        const lockCard = overlay.querySelector('.lock-card');
-        const icon = lockCard.querySelector('.icon');
-        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-        icon.textContent = '🔓';
-        lockCard.classList.add('unlocked');
-        input.disabled = true;
-        overlay.querySelector('button').disabled = true;
-        feedback.textContent = '鍵が開きました！';
-
-        setTimeout(() => {
-            overlay.classList.add('hide');
-            setTimeout(() => {
-                overlay.style.display = 'none';
-            }, reduceMotion ? 0 : 600);
-        }, reduceMotion ? 0 : 650);
-    } else {
-        feedback.textContent = '合言葉が違います。スタッフに確認してください。';
-    }
-}
-
-document.getElementById('pwInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') checkPassword();
 });
 
 
@@ -466,8 +406,7 @@ function advancePage(delay) {
 
 function startGame() {
 
-    /* 合言葉で鍵を開けるまでは開かない */
-    if (!roomUnlocked || gameStarted) {
+    if (gameStarted) {
         return;
     }
 
@@ -545,11 +484,7 @@ function restoreSession() {
 
     updateProgress();
 
-    if (roomUnlocked) {
-        document.getElementById('passwordOverlay').style.display = 'none';
-    }
-
-    if (!roomUnlocked || !gameStarted) {
+    if (!gameStarted) {
         return;
     }
 
