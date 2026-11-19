@@ -7,6 +7,23 @@
 
 
 /* =========================================================
+   本の中の文章（あらすじ・問題文）のフォント
+
+   index.html で読み込んでいる Shippori Mincho B1 を使う。
+   読み込めない場合は、その後ろの明朝体に切り替わる。
+   ========================================================= */
+
+:root {
+    --book-font: "Shippori Mincho B1", "Yu Mincho", "Hiragino Mincho ProN", "Noto Serif JP", serif;
+}
+
+.left-page-content .qtext,
+.page-qtext {
+    font-family: var(--book-font);
+}
+
+
+/* =========================================================
    表紙：hansel.jpg（1417 x 2176 / 縦長）
 
    本の枠の比率（PC：横長 / スマホ：縦長）に関わらず、
@@ -242,6 +259,31 @@
    1ページ目：あらすじ
    ========================================================= */
 
+/*
+    PC（左ページ）のあらすじ。長文なので小さめ・左揃えにし、
+    "\n" の改行を反映する。収まらないときは左ページ内でスクロールする。
+*/
+.left-page-content {
+    overflow-y: auto;
+}
+
+.left-page-content .qtext.is-story {
+    margin-block: auto;
+    font-weight: 400;
+    font-size: 0.9rem;
+    line-height: 1.85;
+    letter-spacing: 0.02em;
+    text-align: left;
+    white-space: pre-line;
+}
+
+/* PCはあらすじが収まるよう、本を少しだけ縦に長くする */
+@media (min-width: 701px) {
+    .book-frame {
+        min-height: 560px;
+    }
+}
+
 .story-next {
     display: flex;
     justify-content: center;
@@ -295,8 +337,12 @@
     .page-story {
         justify-content: flex-start;
         align-items: center;
-        font-size: clamp(0.92rem, 3.9vw, 1.05rem);
-        line-height: 1.9;
+        align-items: safe center;   /* 長くて収まらないときも先頭から読めるように */
+        white-space: pre-line;      /* "\n" の改行を反映 */
+        font-weight: 400;
+        font-size: clamp(0.85rem, 3.6vw, 1rem);
+        line-height: 1.85;
+        letter-spacing: 0.03em;
         padding-bottom: 12px;
     }
 
