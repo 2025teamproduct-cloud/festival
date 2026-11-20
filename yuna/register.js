@@ -216,6 +216,7 @@
     if (!cart.length) return toast('商品が選ばれていません');
     const total = cartTotal();
     const paid = $('paid').value;
+    if (paid === '') return toast('お預りを入力してください');
     if (paid !== '' && num(paid) < total) return toast('お預りが不足しています');
     const now = new Date();
     const receipt = {
