@@ -1,77 +1,165 @@
-# /Readme
-# 学園祭なぞ解き脱出ゲーム 一式
+# 学園祭 なぞ解き脱出ゲーム
 
-## ファイル構成
-- `index.html` / `css/room1.css` / `js/room1.js` … 第1の部屋（タイマー＋問題1〜2）
-- `room2.html` / `css/room2.css` / `js/room2.js` … 第2の部屋（合言葉オーバーレイ＋問題1〜2）
-- `complete.html` / `css/complete.css` / `js/complete.js` … クリア画面
-- `reservation.html` / `css/reservation.css` / `js/reservation.js` … 参加予約・整理番号確認
-- `api/reservations.js` … Vercel Functionsの予約API
-- `api/register.js` … Vercel FunctionsのレジデータAPI
-- `js/access.js` … 管理者用パスワードの認証処理
-- `staff.html` / `js/staff.js` … スタッフ用の確認ページ
+文化祭向けのなぞ解き脱出ゲーム、参加予約、スタッフ用予約確認、店舗別レジ画面をまとめたプロジェクトです。
 
-CSSは `css/`、JavaScriptは `js/` に配置しています。各HTMLはこのフォルダ構成に沿って読み込みます。フォルダ構成を保ったまま使ってください（リンク・CSS・JSの読み込みが相対パスのためです）。
-`index.html` をブラウザで開けば、そのままリンクをたどって最後まで遊べます。
+## ページ一覧
 
-## パスワード・合言葉一覧
+| ページ | 概要 |
+| --- | --- |
+| `index.html` | 第1の部屋。ヘンゼルとグレーテルを題材にした導入と2問。 |
+| `room2.html` | 第2の部屋。アリスを題材にした導入と2問。 |
+| `complete.html` | 全問題クリア後の成功画面。 |
+| `reservation.html` | 参加予約画面。参加日と時間枠を選択し、整理番号を発行します。 |
+| `staff.html` | スタッフ用の予約照合・本人確認画面。 |
+| `asumin/register.html` | 店舗「asumin」のレジ・売上・レジ締め画面。 |
+| `yuna/register.html` | 店舗「yuna」のレジ・売上・レジ締め画面。 |
 
-- スタッフ用ページの管理者パスワード: `festival-admin-2026`
-- 第2の部屋の合言葉: `がくえんさい`、`学園祭`、`asd`
+静的ページはファイルを直接ブラウザで開けますが、予約とレジのFirestore連携はVercel Functions経由で動作させる必要があります。
 
-管理者用パスワードは `js/access.js` の `ADMIN_PASSWORDS` 配列で設定します。複数のパスワードを使う場合は、配列に値を追加してください。変更した場合は、この一覧と `js/access.js` の設定を一致させてください。スタッフ用ページでは整理番号を選択して代表者名を照合でき、同じ時間帯の参加者一覧から本人確認済みの組をチェックできます。チェック状態はFirestoreに保存されるため、リロードやページ遷移後も維持されます。
+## フォルダ構成
 
-Firebaseのサービスアカウント秘密鍵や `FIREBASE_PRIVATE_KEY` の実値は、READMEやGitHubには記載しないでください。
+```text
+.
+├── index.html
+├── room2.html
+├── complete.html
+├── reservation.html
+├── staff.html
+├── css/
+│   ├── room1*.css
+│   ├── room2*.css
+│   ├── reservation.css
+│   └── complete.css
+├── js/
+│   ├── room1.js
+│   ├── room2.js
+│   ├── complete.js
+│   ├── reservation.js
+│   ├── staff.js
+│   ├── access.js
+│   └── register-cloud.js
+├── api/
+│   ├── reservations.js
+│   └── register.js
+├── asumin/
+│   ├── register.html
+│   ├── register.css
+│   └── register.js
+├── yuna/
+│   ├── register.html
+│   ├── register.css
+│   └── register.js
+├── img/
+└── txt/
+```
 
-## 問題や答えを変更する箇所
+依存パッケージは次のコマンドでインストールします。
 
-問題の文章や正解を変えたいときは、次の場所を直接書き換えてください。各JSファイル（`js/room1.js` / `js/room2.js`）の中の、**「ここから設定エリア」〜「設定エリアここまで」** というコメントで囲まれた部分だけを変更すればOKです。HTML/CSSの知識がなくても編集できます。
+```bash
+npm install
+```
 
-### index.html（第1の部屋）
-- `TOTAL_TIME_SEC` … 制限時間（秒）。例: 15分なら `15 * 60`
-- `HINT_TIMES` … ヒントを出す経過時間（秒）の配列
-- `HINTS` … ヒントの本文
-- `QUESTIONS` … 各問題の正解（配列内のどれかに一致すればOK。全角/半角・大文字小文字・空白・前後スペースは自動で吸収されます）
-- 問題文そのものは `<p class="qtext">〜</p>` の部分を直接書き換えてください
+## なぞ解きの進行
 
-### room2.html
-- `PASSWORD_LIST` … スタッフが伝える合言葉（複数の表記ゆれを許可したい場合は配列に追加）
-- `QUESTIONS` … 本体側の2問の正解
-- 問題文は同様に `<p class="qtext">〜</p>` を書き換え
+1. `index.html` を開き、表紙をタップして第1の部屋を開始します。
+2. 導入ページをめくりながら、分かれ道とパンくずの問題（`q1`、`q2`）を解きます。
+3. 2問正解すると `room2.html` に進めます。
+4. 第2の部屋ではハリネズミの順番（`q3`）と真犯人（`q4`）を解きます。
+5. すべて正解すると `complete.html` のクリア画面を表示します。
 
-### complete.html
-- 見出しやメッセージのテキストを直接書き換えてください
+進行状況はタブごとの `sessionStorage` に保存します。
 
-## 予約機能を使うための設定
+- 第1の部屋: `festival-room1-progress-v4`
+- 第2の部屋: `festival-room2-progress-v2`
 
-予約データはブラウザではなく Firebase Firestore に保存します。API は Firebase Admin SDK 経由でFirestoreへ接続するため、Vercel プロジェクトに次の環境変数を登録してデプロイしてください。
+導入文、問題文、選択肢、正解は次のファイルで設定します。
 
-- `FIREBASE_PROJECT_ID`（例: `reservation-c9c37`）
+- 第1の部屋: `js/room1.js` の `PAGES`
+- 第2の部屋: `js/room2.js` の `PAGES`
+
+`PAGES` の変更時は、対応するHTML内の `data-page`、`data-text`、`data-q` も合わせて変更してください。
+
+## 管理者ページ
+
+スタッフ用ページは `staff.html` です。`js/access.js` の `ADMIN_PASSWORDS` 配列にパスワードを登録します。認証状態は同じタブの `sessionStorage` に保存され、タブを閉じると失効します。
+
+パスワードやサービスアカウント秘密鍵をソースコードやReadmeへ直接書かないでください。
+
+## 予約機能
+
+予約画面は `reservation.html`、予約データ操作は `js/reservation.js` と `api/reservations.js` です。
+
+現在の設定は次のとおりです。
+
+- 1組あたり人数: 2名
+- 1枠の定員: 5組（10名）
+- 時間枠の間隔: 10分
+- 1日目: 2026年11月21日、10:00〜17:00
+- 2日目: 2026年11月22日、10:00〜16:00
+
+設定を変更する場合は、ブラウザー側とサーバー側の両方を更新してください。
+
+- 参加日・営業時間・間隔: `js/reservation.js`
+- API側の営業時間・間隔・定員: `api/reservations.js`
+- 表示文: `reservation.html`
+
+当日の現在時刻より前の時間枠は予約画面で「受付終了」となります。整理番号と予約内容はVercel Functions経由でFirestoreに保存します。
+
+## レジ機能
+
+レジ画面は次の2店舗用に用意しています。
+
+- `asumin/register.html`
+- `yuna/register.html`
+
+Firestoreの保存先は店舗ごとに分けます。
+
+- `registers/asumin`
+- `registers/yuna`
+
+各店舗には `products`、`receipts`、`closing` のサブコレクションを使用します。ブラウザーには表示・操作用のキャッシュとして `localStorage` に保存しますが、Firestoreが主保存先です。
+
+店舗のFirestoreデータが空の場合、旧ブラウザーキャッシュを初回起動時に移行します。
+
+## Firebase / Vercel の環境変数
+
+Vercelプロジェクトに以下を登録し、再デプロイしてください。
+
+- `FIREBASE_PROJECT_ID`
 - `FIREBASE_CLIENT_EMAIL`
 - `FIREBASE_PRIVATE_KEY`
 
-Firestoreには次の2コレクションを使用します。`slots/{slotId}` は回ごとの定員と予約数、`reservations/{整理番号}` は予約情報を保存します。`slots` のドキュメントは予約時に自動作成されます。
+`FIREBASE_PRIVATE_KEY` はFirebaseのサービスアカウントから取得した秘密鍵を設定し、改行は `\n` として保持します。
 
-- `slots/10:00` など: `slotId`, `capacity`, `reservedCount`
-- `reservations/F-XXXXXXXX`: `number`, `slotId`, `name`, `partnerName`, `createdAt`, `verified`, `verifiedAt`
+APIは、クライアントから直接Firestoreへ書き込むのではなくFirebase Admin SDK経由で接続します。Firestore Rulesでクライアント側の読み書きを無効にして運用できます。
 
-レジのデータも同じFirebaseプロジェクトに保存されます。`registers/asumin` と `registers/yuna` の下に `products`（商品）、`receipts`（会計明細・金額）、`closing`（日別レジ締め）を作成します。ブラウザー内キャッシュも店舗ごとに分けて保存します。既存ブラウザーに保存されているデータは、対象店舗のFirestoreが空の場合に初回起動時に移行します。レジのページも上記と同じFirebase Admin環境変数を設定したVercel環境で利用してください。
+## データ構造
 
-Firestore Rulesは、クライアントから直接読み書きさせないため、提示された `allow read, write: if false;` のままで構いません。サービスアカウントの秘密鍵は Firebase Console の「プロジェクトの設定」→「サービス アカウント」→「新しい秘密鍵の生成」から取得し、`FIREBASE_PRIVATE_KEY` に登録します。秘密鍵内の改行はVercelの環境変数では `\n` として保持してください。
+### 予約
 
-依存パッケージは `npm install` でインストールします。予約枠は `reservation.js` と `api/reservations.js` の開始時刻・終了時刻・間隔を一致させて変更してください。現在は10:00〜15:00を10分間隔で設定しています。各回の上限はサーバー側で5組です。
+```text
+slots/{day1_10:00|day2_10:00|...}
+reservations/{整理番号}
+```
 
-管理者用パスワードは `access.js` の `ADMIN_PASSWORDS` 配列で設定します。スタッフは `staff.html` で整理番号を選択し、予約時の代表者名を入力して本人確認します。スタッフ用ページは `access.js` の認証状態がない場合、予約ページへ戻します。
+実際の枠ドキュメントはAPIが予約時に作成します。
 
-## 遊びの流れ
-1. `index.html` を開く → タイマーが動き出し、4分・6分経過でヒントが自動表示、画面が徐々に赤くなる
-2. 2問すべて正解すると「スタッフにこの画面を見せて次の部屋へ」というクリア画面が出現し、リンクで `room2.html` へ
-3. `room2.html` を開くと、まず合言葉入力画面が本体の上に重なって表示される
-   → スタッフが口頭で伝えた合言葉を入力すると、その画面が消えて本体（問題1〜2）が見える
-4. 2問すべて正解すると `complete.html`（おめでとう画面）へのリンクが出現
+- `slotId`: 時刻（例: `10:00`）
+- `capacity`: 5
+- `reservedCount`: 現在の予約組数
+- `number`: 整理番号
+- `day`: `day1` または `day2`
+- `slotId`: 選択した時間枠
+- `name`: 代表者名
+- `partnerName`: 同行者名
+- `verified`: 本人確認済みか
+- `verifiedAt`: 確認日時
 
-## 注意点
-- 第1・第2の部屋の進行状況（解答済み問題、入力途中の答え、第2の部屋の解錠状態）は、同じタブのセッション中 `sessionStorage` に保存されます。リロードしても復元されますが、タブを閉じると消去されます。
-- タイマーや正解判定はブラウザ内で完結しており、インターネット接続は不要です（当日オフラインでも動作します）。
-- 「TIME UP」表示になっても入力自体は止まりません。時間切れ時の運用（進行を止める／延長するなど）はスタッフの判断で行ってください。
-- 合言葉やヒントの内容は、印刷物や口頭案内と必ず一致させてください。
+### レジ
+
+```text
+registers/{asumin|yuna}/
+  products/{商品ID}
+  receipts/{伝票ID}
+  closing/{YYYY-MM-DD}
+```
