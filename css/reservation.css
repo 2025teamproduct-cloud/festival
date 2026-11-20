@@ -411,3 +411,33 @@ button:disabled {
         min-height: 52px;
     }
 }
+
+/* ========================================
+   空き状況・同行者入力・割り振り結果
+   ======================================== */
+
+.availability {
+    margin: 0;
+    color: var(--accent-dark);
+    font-size: .9rem;
+    font-weight: bold;
+}
+
+#companionFields[hidden] {
+    display: none;
+}
+
+.assigned-slot {
+    margin: 20px 0 14px;
+    padding: 12px 16px;
+    background: #fff;
+    border-radius: 10px;
+}
+
+.assigned-slot p {
+    margin: 4px 0;
+}
+
+.assigned-slot strong {
+    color: var(--accent-dark);
+}

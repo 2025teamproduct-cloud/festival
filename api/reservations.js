@@ -8,10 +8,14 @@ import { randomUUID } from 'node:crypto';
 // 基本設定
 // ========================================
 
-// 1枠5組は変更しない
-const MAX_TEAMS_PER_SLOT = 5;
+// 1枠の定員（人数）
+const SLOT_CAPACITY = 20;
 
-const SLOT_INTERVAL_MINUTES = 10;
+// 1回の予約の最大人数（代表者＋同行者）
+const MAX_PARTY_SIZE = 4;
+
+// 枠の間隔（分）
+const SLOT_INTERVAL_MINUTES = 30;
 
 
 // ========================================
@@ -25,17 +29,17 @@ const FESTIVAL_DATES = {
 
 
 // ========================================
-// 日ごとの営業時間
+// 日ごとの営業時間（両日 11:00〜16:00）
 // ========================================
 
 const DAY_SETTINGS = {
   day1: {
-    startTimeMinutes: 10 * 60,
-    endTimeMinutes: 17 * 60,
+    startTimeMinutes: 11 * 60,
+    endTimeMinutes: 16 * 60,
   },
 
   day2: {
-    startTimeMinutes: 10 * 60,
+    startTimeMinutes: 11 * 60,
     endTimeMinutes: 16 * 60,
   },
 };
@@ -135,15 +139,10 @@ function getJapanDateTime() {
 // 指定日の現在時刻より前の枠を除外
 // ========================================
 //
-// 例：
-// 11/21 13:25の場合
-//
-// 13:10 → 除外
-// 13:20 → 除外
-// 13:30 → 表示
-//
-// 2日目を選択している場合は
-// 11/21の現在時刻は関係ありません。
+// 例：11/21 13:25 の場合
+//   13:00 → 除外
+//   13:30 → 対象
+// 学園祭当日でない日は全枠が対象。
 // ========================================
 
 function getActiveSlots(day) {
@@ -151,8 +150,6 @@ function getActiveSlots(day) {
 
   const now = getJapanDateTime();
 
-  // まだその日ではない場合
-  // → 全枠を対象にする
   if (now.date !== FESTIVAL_DATES[day]) {
     return slots;
   }
@@ -262,19 +259,28 @@ function sortReservations(first, second) {
 
 // ========================================
 // スロットのFirestoreドキュメントID
-// ========================================
-//
-// 1日目10:00
-// → day1_10:00
-//
-// 2日目10:00
-// → day2_10:00
-//
-// これにより1日目と2日目の予約枠を完全分離。
+// 例：day1_11:00 / day2_11:30
 // ========================================
 
 function createSlotKey(day, slotId) {
   return `${day}_${slotId}`;
+}
+
+
+// ========================================
+// 予約の公開用データ
+// ========================================
+
+function toPublicReservation(reservation) {
+  return {
+    number: reservation.number,
+    day: reservation.day,
+    slotId: reservation.slotId,
+    name: reservation.name,
+    partySize: reservation.partySize,
+    partnerNames: reservation.partnerNames || [],
+    verified: reservation.verified === true,
+  };
 }
 
 
@@ -304,135 +310,67 @@ export default async function handler(req, res) {
           : 'day1';
 
 
-      // --------------------------------------
-      // 選択日の全枠
-      // --------------------------------------
-
       const slots =
         createSlots(day);
 
 
       // --------------------------------------
-      // 予約ページ用
-      //
-      // 各枠の予約数を取得
+      // 各枠の予約人数を1回のgetAllで取得
       // --------------------------------------
 
-      const slotSnapshots =
-        await Promise.all(
-          slots.map((slot) => {
-
-            const slotKey =
-              createSlotKey(day, slot.id);
-
-            return db
-              .collection('slots')
-              .doc(slotKey)
-              .get();
-          })
+      const slotRefs =
+        slots.map((slot) =>
+          db
+            .collection('slots')
+            .doc(createSlotKey(day, slot.id))
         );
 
+      const slotSnapshots =
+        await db.getAll(...slotRefs);
 
       const counts =
         Object.fromEntries(
-          slotSnapshots.map((snapshot, index) => {
+          slotSnapshots.map((snapshot, index) => [
+            slots[index].id,
 
-            const slot =
-              slots[index];
-
-            return [
-              slot.id,
-
-              snapshot.exists
-                ? snapshot.data().reservedCount || 0
-                : 0,
-            ];
-          })
+            snapshot.exists
+              ? snapshot.data().reservedPeople || 0
+              : 0,
+          ])
         );
 
 
       // --------------------------------------
-      // スタッフ画面
+      // スタッフ画面：現在時刻を過ぎていない枠のみ
       // --------------------------------------
 
       let reservations;
 
-
       if (req.query?.view === 'staff') {
-
-        /*
-         * ここが今回の重要部分。
-         *
-         * 現在時刻を過ぎた枠は、
-         * Firestoreのreservationsから
-         * そもそも取得しません。
-         *
-         * そのため、
-         * 過去の大量の予約データを毎回
-         * 全件読み込む必要がありません。
-         */
 
         const activeSlots =
           getActiveSlots(day);
 
-
         const reservationSnapshots =
           await Promise.all(
-            activeSlots.map((slot) => {
-
-              const slotKey =
-                createSlotKey(day, slot.id);
-
-              /*
-               * slotKeyは1つのフィールドにまとめているため、
-               * 単一フィールドのwhereで取得できます。
-               *
-               * 例：
-               * day1_10:00
-               */
-              return db
+            activeSlots.map((slot) =>
+              db
                 .collection('reservations')
                 .where(
                   'slotKey',
                   '==',
-                  slotKey
+                  createSlotKey(day, slot.id)
                 )
-                .get();
-            })
+                .get()
+            )
           );
-
 
         reservations =
           reservationSnapshots
-            .flatMap(
-              (snapshot) =>
-                snapshot.docs.map(
-                  (reservationSnapshot) => {
-
-                    const reservation =
-                      reservationSnapshot.data();
-
-                    return {
-                      number:
-                        reservation.number,
-
-                      day:
-                        reservation.day,
-
-                      slotId:
-                        reservation.slotId,
-
-                      name:
-                        reservation.name,
-
-                      partnerName:
-                        reservation.partnerName,
-
-                      verified:
-                        reservation.verified === true,
-                    };
-                  }
-                )
+            .flatMap((snapshot) =>
+              snapshot.docs.map((doc) =>
+                toPublicReservation(doc.data())
+              )
             )
             .sort(sortReservations);
       }
@@ -445,7 +383,10 @@ export default async function handler(req, res) {
           counts,
 
           capacity:
-            MAX_TEAMS_PER_SLOT,
+            SLOT_CAPACITY,
+
+          maxPartySize:
+            MAX_PARTY_SIZE,
 
           reservations,
         }
@@ -528,21 +469,7 @@ export default async function handler(req, res) {
         200,
         {
           reservation: {
-            number:
-              reservation.number,
-
-            day:
-              reservation.day,
-
-            slotId:
-              reservation.slotId,
-
-            name:
-              reservation.name,
-
-            partnerName:
-              reservation.partnerName,
-
+            ...toPublicReservation(reservation),
             verified: true,
           },
         }
@@ -613,37 +540,25 @@ export default async function handler(req, res) {
 
 
     // ======================================
-    // 通常予約
+    // 通常予約（枠は自動割り振り）
     // ======================================
 
     const day =
-      clean(
-        req.body?.day,
-        10
-      );
-
-    const slotId =
-      clean(
-        req.body?.slotId,
-        20
-      );
+      clean(req.body?.day, 10);
 
     const name =
-      clean(
-        req.body?.name,
-        80
-      );
+      clean(req.body?.name, 80);
 
-    const partnerName =
-      clean(
-        req.body?.partnerName,
-        80
-      );
+    const partySize =
+      Number(req.body?.partySize);
 
+    const partnerNames =
+      Array.isArray(req.body?.partnerNames)
+        ? req.body.partnerNames.map(
+            (value) => clean(value, 80)
+          )
+        : [];
 
-    // --------------------------------------
-    // 日付チェック
-    // --------------------------------------
 
     if (!isValidDay(day)) {
 
@@ -658,24 +573,10 @@ export default async function handler(req, res) {
     }
 
 
-    // --------------------------------------
-    // 枠チェック
-    // --------------------------------------
-
-    const slots =
-      createSlots(day);
-
-    const selectedSlot =
-      slots.find(
-        (slot) =>
-          slot.id === slotId
-      );
-
-
     if (
-      !selectedSlot ||
-      !name ||
-      !partnerName
+      !Number.isInteger(partySize) ||
+      partySize < 1 ||
+      partySize > MAX_PARTY_SIZE
     ) {
 
       return json(
@@ -683,122 +584,122 @@ export default async function handler(req, res) {
         400,
         {
           message:
-            '参加日、参加枠、代表者名、同行者名を入力してください。',
+            `参加人数は1〜${MAX_PARTY_SIZE}名で指定してください。`,
         }
       );
     }
 
 
-    // --------------------------------------
-    // 既に開始時刻を過ぎていないか
-    // --------------------------------------
-
-    const now =
-      getJapanDateTime();
-
-    const festivalDate =
-      FESTIVAL_DATES[day];
-
-
+    // 同行者は「人数 - 1」名、全員の名前が必要
     if (
-      now.date === festivalDate &&
-      selectedSlot.minutes < now.minutes
+      !name ||
+      partnerNames.length !== partySize - 1 ||
+      partnerNames.some((value) => !value)
     ) {
 
       return json(
         res,
-        409,
+        400,
         {
           message:
-            'この回は受付時間を過ぎています。別の回を選択してください。',
+            '代表者名と、人数分の同行者名を入力してください。',
         }
       );
     }
 
 
-    // --------------------------------------
-    // 予約情報
-    // --------------------------------------
+    const number =
+      createNumber();
 
-    const slotKey =
-      createSlotKey(
-        day,
-        slotId
-      );
-
-
-    const reservation = {
-
-      number:
-        createNumber(),
-
-      // 追加：参加日
-      day,
-
-      slotId,
-
-      // スタッフ側の効率的な取得用
-      slotKey,
-
-      name,
-
-      partnerName,
-
-      verified: false,
-
-      createdAt:
-        new Date().toISOString(),
-    };
-
-
-    // --------------------------------------
-    // Firestore参照
-    // --------------------------------------
-
-    const slotRef =
-      db
-        .collection('slots')
-        .doc(slotKey);
-
+    const createdAt =
+      new Date().toISOString();
 
     const reservationRef =
       db
         .collection('reservations')
-        .doc(reservation.number);
+        .doc(number);
 
 
     // ======================================
-    // Transaction
+    // Transaction：枠の自動割り振り＋予約作成
     // ======================================
+
+    let reservation;
 
     await db.runTransaction(
       async (transaction) => {
 
-        const slotSnapshot =
-          await transaction.get(
-            slotRef
-          );
+        // リトライ時も毎回現在時刻で再計算
+        const activeSlots =
+          getActiveSlots(day);
 
-
-        const reservedCount =
-          slotSnapshot.exists
-            ? slotSnapshot.data()
-              .reservedCount || 0
-            : 0;
-
-
-        // ----------------------------------
-        // 定員チェック
-        // ----------------------------------
-
-        if (
-          reservedCount >=
-          MAX_TEAMS_PER_SLOT
-        ) {
+        if (!activeSlots.length) {
 
           const error =
             new Error(
-              'この回は満席です。別の回を選択してください。'
+              '現在、予約できる回がありません。'
+            );
+
+          error.code = 'CLOSED';
+
+          throw error;
+        }
+
+
+        const slotRefs =
+          activeSlots.map((slot) =>
+            db
+              .collection('slots')
+              .doc(createSlotKey(day, slot.id))
+          );
+
+        // 全候補枠を同じTransaction内で読み取る
+        const slotSnapshots =
+          await transaction.getAll(...slotRefs);
+
+
+        /*
+         * 割り振りルール：
+         * 人数が収まる枠のうち、入れた後の余りが最も少ない枠
+         * （＝最も20名に近づく枠）を選ぶ。
+         * 余りが同じなら、早い時間の枠を優先する。
+         */
+        let best = null;
+
+        slotSnapshots.forEach((snapshot, index) => {
+
+          const reserved =
+            snapshot.exists
+              ? snapshot.data().reservedPeople || 0
+              : 0;
+
+          const remaining =
+            SLOT_CAPACITY - reserved;
+
+          if (remaining < partySize) {
+            return;
+          }
+
+          const leftover =
+            remaining - partySize;
+
+          // 厳密な「<」なので、同率なら先に出てきた早い枠が残る
+          if (!best || leftover < best.leftover) {
+            best = {
+              slot: activeSlots[index],
+              ref: slotRefs[index],
+              reserved,
+              leftover,
+            };
+          }
+        });
+
+
+        if (!best) {
+
+          const error =
+            new Error(
+              `${partySize}名で入れる回がありません。人数を減らすか、別の日をお試しください。`
             );
 
           error.code = 'FULL';
@@ -807,24 +708,32 @@ export default async function handler(req, res) {
         }
 
 
-        // ----------------------------------
-        // 枠の予約数を+1
-        // ----------------------------------
+        const slotKey =
+          createSlotKey(day, best.slot.id);
 
+        reservation = {
+          number,
+          day,
+          slotId: best.slot.id,
+          slotKey,
+          name,
+          partySize,
+          partnerNames,
+          verified: false,
+          createdAt,
+        };
+
+
+        // 枠の予約人数を加算
         transaction.set(
-          slotRef,
+          best.ref,
           {
             slotKey,
-
             day,
-
-            slotId,
-
-            capacity:
-              MAX_TEAMS_PER_SLOT,
-
-            reservedCount:
-              reservedCount + 1,
+            slotId: best.slot.id,
+            capacity: SLOT_CAPACITY,
+            reservedPeople:
+              best.reserved + partySize,
           },
           {
             merge: true,
@@ -832,10 +741,7 @@ export default async function handler(req, res) {
         );
 
 
-        // ----------------------------------
         // 予約を作成
-        // ----------------------------------
-
         transaction.create(
           reservationRef,
           reservation
@@ -852,7 +758,8 @@ export default async function handler(req, res) {
       res,
       201,
       {
-        reservation,
+        reservation:
+          toPublicReservation(reservation),
       }
     );
 
@@ -860,10 +767,13 @@ export default async function handler(req, res) {
   } catch (error) {
 
     // ======================================
-    // 満席
+    // 満席・受付終了
     // ======================================
 
-    if (error.code === 'FULL') {
+    if (
+      error.code === 'FULL' ||
+      error.code === 'CLOSED'
+    ) {
 
       return json(
         res,

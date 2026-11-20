@@ -1,3 +1,4 @@
+// js/register-cloud.js
 (() => {
   'use strict';
 

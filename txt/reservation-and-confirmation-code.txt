@@ -1,0 +1,2594 @@
+予約機能・予約照合機能 コード全文
+作成元: reservation.html, staff.html, js/reservation.js, js/staff.js, api/reservations.js, css/reservation.css
+注: 各ファイルは元の構成・コードを保持しています。
+
+
+========================================
+ファイル: reservation.html
+========================================
+
+<!-- /reservation.html -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>参加予約 - 学園祭なぞ解き</title>
+    <link rel="stylesheet" href="css/reservation.css">
+</head>
+<body>
+    <main class="wrap">
+        <header class="hero">
+            <p class="eyebrow">FESTIVAL PUZZLE EVENT</p>
+            <h1>なぞ解き参加予約</h1>
+            <p>2人1組で参加できます。ご希望の回を選び、代表者と同行者のお名前を入力してください。</p>
+        </header>
+
+        <section class="panel" aria-labelledby="reservation-heading">
+            <h2 id="reservation-heading">予約を申し込む</h2>
+            <p class="note">各回の定員は5組（10名）です。満員になると選択できません。</p>
+
+            <form id="reservationForm">
+
+                <!-- 追加：参加日を選択 -->
+                <label for="festivalDay">参加日</label>
+                <select id="festivalDay" required>
+                    <option value="day1">1日目（11月21日）</option>
+                    <option value="day2">2日目（11月22日）</option>
+                </select>
+
+                <label for="slotId">参加する回</label>
+                <select id="slotId" required></select>
+
+                <div class="field-grid">
+                    <label>
+                        代表者名
+                        <input
+                            id="name"
+                            type="text"
+                            maxlength="80"
+                            autocomplete="name"
+                            required
+                        >
+                    </label>
+
+                    <label>
+                        同行者名
+                        <input
+                            id="partnerName"
+                            type="text"
+                            maxlength="80"
+                            required
+                        >
+                    </label>
+                </div>
+
+                <button class="primary-button" type="submit">
+                    予約を確定する
+                </button>
+
+                <p id="formFeedback" class="feedback" role="status"></p>
+            </form>
+        </section>
+
+        <section
+            id="numberPanel"
+            class="panel result-panel"
+            hidden
+            aria-live="polite"
+        >
+            <p class="eyebrow">RESERVATION CONFIRMED</p>
+
+            <h2>予約が完了しました</h2>
+
+            <p>
+                当日はこの整理番号と、予約時に入力した代表者名で本人確認を行います。
+            </p>
+
+            <div class="reservation-names">
+                <p>代表者名：<strong id="reservationName"></strong></p>
+                <p>同行者名：<strong id="reservationPartnerName"></strong></p>
+            </div>
+
+            <div class="number-box">
+                <span>整理番号</span>
+                <strong id="reservationNumber"></strong>
+            </div>
+
+            <p class="save-warning">
+                この画面を写真に撮って担当に見せてください
+            </p>
+        </section>
+
+        <!--
+        <nav class="admin-nav" aria-label="管理者用リンク">
+            <a data-admin-link href="index.html">謎解きページへ</a>
+            <a data-admin-link href="staff.html">スタッフ用予約確認</a>
+        </nav>
+        -->
+    </main>
+
+    <script src="js/access.js"></script>
+    <script src="js/reservation.js"></script>
+</body>
+</html>
+========================================
+ファイル: staff.html
+========================================
+
+<!-- /staff.html -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>スタッフ用予約確認 - 学園祭なぞ解き</title>
+    <link rel="stylesheet" href="css/reservation.css">
+</head>
+
+<body data-admin-page>
+    <main class="wrap">
+
+        <header class="hero">
+            <p class="eyebrow">STAFF ONLY</p>
+
+            <h1>予約確認</h1>
+
+            <p>
+                整理番号と代表者名を照合し、本人確認が取れた組にチェックを入れてください。
+            </p>
+        </header>
+
+
+        <!-- ========================================
+             追加：参加日の切り替え
+             ======================================== -->
+
+        <section class="panel" aria-labelledby="day-heading">
+
+            <h2 id="day-heading">参加日</h2>
+
+            <div class="day-switch" role="group" aria-label="参加日の切り替え">
+
+                <button
+                    id="day1Button"
+                    class="secondary-button"
+                    type="button"
+                    data-day="day1"
+                >
+                    1日目
+                    <span>11月21日</span>
+                </button>
+
+                <button
+                    id="day2Button"
+                    class="secondary-button"
+                    type="button"
+                    data-day="day2"
+                >
+                    2日目
+                    <span>11月22日</span>
+                </button>
+
+            </div>
+
+            <p id="selectedDayLabel" class="note">
+                1日目（11月21日）を表示中
+            </p>
+
+        </section>
+
+
+        <!-- ========================================
+             本人確認
+             ======================================== -->
+
+        <section class="panel" aria-labelledby="verify-heading">
+
+            <h2 id="verify-heading">本人確認</h2>
+
+            <form id="verifyForm">
+
+                <label>
+                    整理番号
+                    <select id="verifyNumber" required>
+                        <option value="">
+                            読み込み中…
+                        </option>
+                    </select>
+                </label>
+
+                <label>
+                    予約時の代表者名
+                    <input
+                        id="verifyName"
+                        type="text"
+                        autocomplete="name"
+                        required
+                    >
+                </label>
+
+                <button
+                    class="secondary-button"
+                    type="submit"
+                >
+                    予約を照合する
+                </button>
+
+                <p
+                    id="verifyFeedback"
+                    class="feedback"
+                    role="status"
+                ></p>
+
+            </form>
+
+            <div
+                id="verifiedReservation"
+                class="verified-reservation"
+                hidden
+                aria-live="polite"
+            ></div>
+
+        </section>
+
+
+        <!-- ========================================
+             時間帯別参加者
+             ======================================== -->
+
+        <section
+            class="panel"
+            aria-labelledby="participants-heading"
+        >
+
+            <h2 id="participants-heading">
+                時間帯別の参加者
+            </h2>
+
+            <p class="note">
+                本人確認が取れた組にチェックを入れると、状態が保存されます。
+            </p>
+
+            <p class="note">
+                ※終了した時間帯は表示されません。
+            </p>
+
+            <div
+                id="participantList"
+                class="participant-list"
+                aria-live="polite"
+            ></div>
+
+        </section>
+
+    </main>
+
+    <script src="js/access.js"></script>
+    <script src="js/staff.js"></script>
+</body>
+</html>
+========================================
+ファイル: js/reservation.js
+========================================
+
+//  /reservation.js
+// ========================================
+// 学園祭の日付・時間設定
+// ========================================
+
+const FESTIVAL_DATES = {
+    // 2026年11月21日：1日目
+    day1: '2026-11-21',
+
+    // 2026年11月22日：2日目
+    day2: '2026-11-22',
+};
+
+const DAY_SETTINGS = {
+    day1: {
+        label: '1日目（11月21日）',
+        startTimeMinutes: 10 * 60,
+        endTimeMinutes: 17 * 60,
+    },
+
+    day2: {
+        label: '2日目（11月22日）',
+        startTimeMinutes: 10 * 60,
+        endTimeMinutes: 16 * 60,
+    },
+};
+
+const SLOT_INTERVAL_MINUTES = 10;
+
+// 1枠5組（10名）は変更しない
+const capacity = 5;
+
+
+// ========================================
+// DOM
+// ========================================
+
+const festivalDay = document.getElementById('festivalDay');
+const slotSelect = document.getElementById('slotId');
+const reservationForm = document.getElementById('reservationForm');
+
+
+// ========================================
+// 選択された日の時間枠を作成
+// ========================================
+
+function createSlots(day) {
+    const setting = DAY_SETTINGS[day];
+
+    if (!setting) {
+        return [];
+    }
+
+    return Array.from(
+        {
+            length:
+                (setting.endTimeMinutes - setting.startTimeMinutes)
+                / SLOT_INTERVAL_MINUTES
+                + 1
+        },
+        (_, index) => {
+            const totalMinutes =
+                setting.startTimeMinutes
+                + index * SLOT_INTERVAL_MINUTES;
+
+            const hours = String(
+                Math.floor(totalMinutes / 60)
+            ).padStart(2, '0');
+
+            const minutes = String(
+                totalMinutes % 60
+            ).padStart(2, '0');
+
+            return {
+                id: `${hours}:${minutes}`,
+                minutes: totalMinutes,
+                label: `${index + 1}回目　${hours}:${minutes}〜`,
+            };
+        }
+    );
+}
+
+
+// ========================================
+// フィードバック表示
+// ========================================
+
+function showFeedback(element, message, isError = true) {
+    element.textContent = message;
+    element.className = `feedback ${isError ? 'error' : 'success'}`;
+}
+
+
+// ========================================
+// 現在時刻が対象日かどうかを確認
+// ========================================
+
+function getJapanDateTime() {
+    const formatter = new Intl.DateTimeFormat('ja-JP', {
+        timeZone: 'Asia/Tokyo',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+    });
+
+    const parts = formatter.formatToParts(new Date());
+
+    const result = {};
+
+    parts.forEach((part) => {
+        if (part.type !== 'literal') {
+            result[part.type] = part.value;
+        }
+    });
+
+    return {
+        date: `${result.year}-${result.month}-${result.day}`,
+        minutes:
+            Number(result.hour) * 60
+            + Number(result.minute),
+    };
+}
+
+
+// ========================================
+// 選択した日について、現在時刻より前の
+// 枠を予約対象から除外
+// ========================================
+
+function isSlotPast(day, slotMinutes) {
+    const now = getJapanDateTime();
+    const festivalDate = FESTIVAL_DATES[day];
+
+    // 学園祭当日ではない場合
+    // （未来の日・過去の日）
+    if (now.date !== festivalDate) {
+        return false;
+    }
+
+    return slotMinutes < now.minutes;
+}
+
+
+// ========================================
+// 枠を画面に表示
+// ========================================
+
+function renderSlots(counts = {}) {
+    const day = festivalDay.value;
+    const slots = createSlots(day);
+
+    slotSelect.replaceChildren();
+    slotSelect.disabled = false;
+
+    let availableCount = 0;
+
+    slots.forEach((slot) => {
+        const count = counts[slot.id] || 0;
+
+        const option = document.createElement('option');
+
+        option.value = slot.id;
+
+        option.textContent =
+            `${slot.label}　残り${Math.max(0, capacity - count)}組`;
+
+        // 当日になっていて、開始時刻を過ぎた枠は選択不可
+        if (isSlotPast(day, slot.minutes)) {
+            option.disabled = true;
+            option.textContent =
+                `${slot.label}　受付終了`;
+        } else if (count >= capacity) {
+            option.disabled = true;
+            option.textContent =
+                `${slot.label}　満席`;
+        } else {
+            availableCount += 1;
+        }
+
+        slotSelect.appendChild(option);
+    });
+
+    // 選択可能な枠がない場合
+    if (availableCount === 0) {
+        slotSelect.disabled = true;
+
+        const now = getJapanDateTime();
+
+        if (now.date === FESTIVAL_DATES[day]) {
+            showFeedback(
+                document.getElementById('formFeedback'),
+                '現在、予約できる回がありません。',
+                true
+            );
+        } else {
+            showFeedback(
+                document.getElementById('formFeedback'),
+                '現在、すべての回が満席です。',
+                true
+            );
+        }
+    }
+}
+
+
+// ========================================
+// Firestoreから選択日の空き状況を取得
+// ========================================
+
+async function loadSlots() {
+    try {
+        const day = festivalDay.value;
+
+        const response = await fetch(
+            `/api/reservations?day=${encodeURIComponent(day)}`
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message);
+        }
+
+        renderSlots(data.counts || {});
+    } catch (error) {
+        renderSlots();
+
+        showFeedback(
+            document.getElementById('formFeedback'),
+            error.message || '空き状況を取得できませんでした。',
+            true
+        );
+    }
+}
+
+
+// ========================================
+// 日付変更時
+// ========================================
+
+festivalDay.addEventListener('change', async () => {
+    showFeedback(
+        document.getElementById('formFeedback'),
+        '',
+        false
+    );
+
+    await loadSlots();
+});
+
+
+// ========================================
+// 予約送信
+// ========================================
+
+reservationForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const feedback =
+        document.getElementById('formFeedback');
+
+    const button =
+        reservationForm.querySelector('button');
+
+    button.disabled = true;
+
+    showFeedback(
+        feedback,
+        '予約を確認しています…',
+        false
+    );
+
+    try {
+        const selectedDay = festivalDay.value;
+        const selectedSlot = slotSelect.value;
+        const name = document.getElementById('name').value;
+        const partnerName = document.getElementById('partnerName').value;
+
+        const response = await fetch('/api/reservations', {
+            method: 'POST',
+
+            headers: {
+                'Content-Type': 'application/json',
+            },
+
+            body: JSON.stringify({
+                // 追加：参加日
+                day: selectedDay,
+
+                slotId: selectedSlot,
+
+                name,
+                partnerName,
+            }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message);
+        }
+
+        // 整理番号を表示
+        document.getElementById(
+            'reservationNumber'
+        ).textContent = data.reservation.number;
+
+        document.getElementById('reservationName').textContent = name;
+        document.getElementById('reservationPartnerName').textContent =
+            partnerName;
+
+        document.getElementById(
+            'numberPanel'
+        ).hidden = false;
+
+        // フォームをリセット
+        reservationForm.reset();
+
+        // 予約成功メッセージ
+        showFeedback(
+            feedback,
+            '予約が完了しました。整理番号を保存してください。',
+            false
+        );
+
+        /*
+         * 変更点：
+         * 以前は予約成功後にloadSlots()を実行して
+         * 全時間枠をFirestoreから再取得していました。
+         *
+         * 今回はFirestoreの読み取りを抑えるため、
+         * 予約した枠だけ画面上の残り数を1減らします。
+         *
+         * 実際の定員判定はAPI側のTransactionが行うため、
+         * 同時予約による定員超過も防止できます。
+         */
+        const selectedOption =
+            [...slotSelect.options]
+                .find((option) => option.value === selectedSlot);
+
+        if (selectedOption) {
+            const match =
+                selectedOption.textContent.match(/残り(\d+)組/);
+
+            if (match) {
+                const remaining =
+                    Math.max(0, Number(match[1]) - 1);
+
+                selectedOption.textContent =
+                    `${createSlots(selectedDay)
+                        .find((slot) => slot.id === selectedSlot)
+                        ?.label || selectedSlot}　残り${remaining}組`;
+
+                if (remaining <= 0) {
+                    selectedOption.disabled = true;
+                }
+            }
+        }
+
+        document.getElementById(
+            'numberPanel'
+        ).scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+        });
+
+    } catch (error) {
+        showFeedback(
+            feedback,
+            error.message || '予約に失敗しました。',
+            true
+        );
+
+        /*
+         * 予約失敗時だけ最新の空き状況を取得します。
+         * 例えば同時に別の人が最後の1枠を取った場合などに、
+         * 正しい状態へ戻すためです。
+         */
+        await loadSlots();
+
+    } finally {
+        button.disabled = false;
+    }
+});
+
+
+// ========================================
+// 初期表示
+// ========================================
+
+loadSlots();
+========================================
+ファイル: js/staff.js
+========================================
+
+//  /staff.js
+const verifyForm = document.getElementById('verifyForm');
+const verifyNumber = document.getElementById('verifyNumber');
+const verifyName = document.getElementById('verifyName');
+const participantList = document.getElementById('participantList');
+const verifiedReservation = document.getElementById('verifiedReservation');
+
+const day1Button = document.getElementById('day1Button');
+const day2Button = document.getElementById('day2Button');
+const selectedDayLabel = document.getElementById('selectedDayLabel');
+
+let reservations = [];
+
+
+function normalizeReservationNumber(value) {
+    return value.trim().toUpperCase();
+}
+
+
+// ========================================
+// 現在選択している日
+// ========================================
+
+let selectedDay = 'day1';
+
+
+// ========================================
+// 学園祭の日付
+// ========================================
+
+const FESTIVAL_DATES = {
+    day1: '2026-11-21',
+    day2: '2026-11-22',
+};
+
+
+// ========================================
+// フィードバック
+// ========================================
+
+function showFeedback(element, message, isError = true) {
+    element.textContent = message;
+    element.className =
+        `feedback ${isError ? 'error' : 'success'}`;
+}
+
+
+// ========================================
+// 整理番号順
+// ========================================
+
+function sortReservations(first, second) {
+    return first.number.localeCompare(
+        second.number,
+        undefined,
+        {
+            numeric: true,
+            sensitivity: 'base',
+        }
+    );
+}
+
+
+// ========================================
+// 日本時間を取得
+// ========================================
+
+function getJapanDateTime() {
+    const formatter = new Intl.DateTimeFormat('ja-JP', {
+        timeZone: 'Asia/Tokyo',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+    });
+
+    const parts = formatter.formatToParts(new Date());
+
+    const result = {};
+
+    parts.forEach((part) => {
+        if (part.type !== 'literal') {
+            result[part.type] = part.value;
+        }
+    });
+
+    return {
+        date: `${result.year}-${result.month}-${result.day}`,
+
+        minutes:
+            Number(result.hour) * 60
+            + Number(result.minute),
+    };
+}
+
+
+// ========================================
+// その枠が現在時刻より前か確認
+// ========================================
+
+function isSlotPast(slotId) {
+    const now = getJapanDateTime();
+
+    const festivalDate =
+        FESTIVAL_DATES[selectedDay];
+
+    // 学園祭当日以外なら、未来/過去の日付なので
+    // 時刻による除外は行わない
+    if (now.date !== festivalDate) {
+        return false;
+    }
+
+    const [hours, minutes] =
+        slotId.split(':').map(Number);
+
+    const slotMinutes =
+        hours * 60 + minutes;
+
+    return slotMinutes < now.minutes;
+}
+
+
+// ========================================
+// 整理番号の選択肢を表示
+// ========================================
+
+function renderReservationOptions() {
+    verifyNumber.replaceChildren();
+
+    const placeholder =
+        document.createElement('option');
+
+    placeholder.value = '';
+    placeholder.textContent =
+        '整理番号を選択してください';
+
+    placeholder.disabled = true;
+    placeholder.selected = true;
+
+    verifyNumber.appendChild(placeholder);
+
+    reservations
+        .sort(sortReservations)
+        .forEach((reservation) => {
+
+            const option =
+                document.createElement('option');
+
+            option.value = reservation.number;
+
+            option.textContent =
+                reservation.number;
+
+            verifyNumber.appendChild(option);
+        });
+
+    verifyNumber.disabled =
+        reservations.length === 0;
+}
+
+
+// ========================================
+// 本人確認済み予約を表示
+// ========================================
+
+function renderVerifiedReservation(reservation) {
+    verifiedReservation.replaceChildren();
+
+    const heading =
+        document.createElement('strong');
+
+    heading.textContent =
+        '本人確認済み';
+
+    const names =
+        document.createElement('p');
+
+    names.textContent =
+        `代表者：${reservation.name}　同行者：${reservation.partnerName}`;
+
+    const day =
+        document.createElement('p');
+
+    day.textContent =
+        `参加日：${reservation.day === 'day1'
+            ? '1日目（11月21日）'
+            : '2日目（11月22日）'}`;
+
+    const slot =
+        document.createElement('p');
+
+    slot.textContent =
+        `参加枠：${reservation.slotId}`;
+
+    verifiedReservation.append(
+        heading,
+        names,
+        day,
+        slot
+    );
+
+    verifiedReservation.hidden = false;
+}
+
+
+// ========================================
+// 参加者一覧を表示
+// ========================================
+
+function renderParticipants() {
+    participantList.replaceChildren();
+
+    if (!reservations.length) {
+        participantList.textContent =
+            '現在表示できる予約はありません。';
+
+        return;
+    }
+
+    const reservationsBySlot =
+        reservations.reduce((groups, reservation) => {
+
+            const group =
+                groups.get(reservation.slotId) || [];
+
+            group.push(reservation);
+
+            groups.set(
+                reservation.slotId,
+                group
+            );
+
+            return groups;
+
+        }, new Map());
+
+
+    [
+        ...reservationsBySlot.entries()
+    ]
+        .sort(([first], [second]) =>
+            first.localeCompare(second)
+        )
+        .forEach(([slotId, slotReservations]) => {
+
+            // 念のためクライアント側でも過去枠を除外
+            if (isSlotPast(slotId)) {
+                return;
+            }
+
+            const group =
+                document.createElement('section');
+
+            group.className =
+                'participant-group';
+
+
+            const heading =
+                document.createElement('h3');
+
+            heading.textContent =
+                slotId;
+
+
+            const list =
+                document.createElement('div');
+
+            list.className =
+                'participant-items';
+
+
+            slotReservations
+                .sort(sortReservations)
+                .forEach((reservation) => {
+
+                    const label =
+                        document.createElement('label');
+
+                    label.className =
+                        'participant-item';
+
+
+                    const checkbox =
+                        document.createElement('input');
+
+                    checkbox.type =
+                        'checkbox';
+
+                    checkbox.checked =
+                        reservation.verified;
+
+                    checkbox.dataset.number =
+                        reservation.number;
+
+                    checkbox.addEventListener(
+                        'change',
+                        () =>
+                            updateVerification(
+                                reservation,
+                                checkbox
+                            )
+                    );
+
+
+                    const names =
+                        document.createElement('span');
+
+                    names.textContent =
+                        `${reservation.number}　${reservation.name} / ${reservation.partnerName}`;
+
+
+                    label.append(
+                        checkbox,
+                        names
+                    );
+
+                    list.appendChild(label);
+                });
+
+
+            group.append(
+                heading,
+                list
+            );
+
+            participantList.appendChild(group);
+        });
+}
+
+
+// ========================================
+// 確認状態を変更
+// ========================================
+
+async function updateVerification(
+    reservation,
+    checkbox
+) {
+    checkbox.disabled = true;
+
+    try {
+        const response =
+            await fetch('/api/reservations', {
+                method: 'POST',
+
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+
+                body: JSON.stringify({
+                    action: 'setVerified',
+                    number: reservation.number,
+                    verified: checkbox.checked,
+                }),
+            });
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message);
+        }
+
+        reservation.verified =
+            data.verified;
+
+    } catch (error) {
+
+        checkbox.checked =
+            reservation.verified;
+
+        showFeedback(
+            document.getElementById('verifyFeedback'),
+            error.message ||
+                '確認状態を保存できませんでした。',
+            true
+        );
+
+    } finally {
+        checkbox.disabled = false;
+    }
+}
+
+
+// ========================================
+// スタッフ用予約一覧を取得
+// ========================================
+
+async function loadReservations() {
+    /*
+     * selectedDayをAPIへ渡します。
+     *
+     * API側で、
+     * ・選択された日のみ
+     * ・現在時刻を過ぎていない枠のみ
+     *
+     * をFirestoreから取得します。
+     */
+    const response =
+        await fetch(
+            `/api/reservations?view=staff&day=${encodeURIComponent(selectedDay)}`
+        );
+
+    const data =
+        await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.message);
+    }
+
+    reservations =
+        data.reservations || [];
+
+    renderReservationOptions();
+    renderParticipants();
+}
+
+
+// ========================================
+// 日付ボタンの見た目を更新
+// ========================================
+
+function updateDayButtons() {
+    day1Button.classList.toggle(
+        'active',
+        selectedDay === 'day1'
+    );
+
+    day2Button.classList.toggle(
+        'active',
+        selectedDay === 'day2'
+    );
+
+    selectedDayLabel.textContent =
+        selectedDay === 'day1'
+            ? '1日目（11月21日）を表示中'
+            : '2日目（11月22日）を表示中';
+}
+
+
+// ========================================
+// 日付を切り替える
+// ========================================
+
+async function switchDay(day) {
+    if (day !== 'day1' && day !== 'day2') {
+        return;
+    }
+
+    selectedDay = day;
+
+    updateDayButtons();
+
+    reservations = [];
+
+    renderReservationOptions();
+    renderParticipants();
+
+    try {
+        await loadReservations();
+
+    } catch (error) {
+
+        renderReservationOptions();
+
+        showFeedback(
+            document.getElementById('verifyFeedback'),
+            error.message ||
+                '予約一覧を取得できませんでした。',
+            true
+        );
+    }
+}
+
+
+// ========================================
+// 日付ボタン
+// ========================================
+
+day1Button.addEventListener(
+    'click',
+    () => switchDay('day1')
+);
+
+day2Button.addEventListener(
+    'click',
+    () => switchDay('day2')
+);
+
+
+// ========================================
+// 本人確認
+// ========================================
+
+verifyForm.addEventListener(
+    'submit',
+    async (event) => {
+
+        event.preventDefault();
+
+        const feedback =
+            document.getElementById(
+                'verifyFeedback'
+            );
+
+        const button =
+            verifyForm.querySelector('button');
+
+        button.disabled = true;
+
+        showFeedback(
+            feedback,
+            '予約を照合しています…',
+            false
+        );
+
+        try {
+            const response =
+                await fetch('/api/reservations', {
+                    method: 'POST',
+
+                    headers: {
+                        'Content-Type':
+                            'application/json',
+                    },
+
+                    body: JSON.stringify({
+                        action: 'verify',
+
+                        number:
+                            verifyNumber.value,
+
+                        name:
+                            verifyName.value,
+                    }),
+                });
+
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message);
+            }
+
+            const reservation =
+                reservations.find(
+                    (item) =>
+                        normalizeReservationNumber(
+                            item.number
+                        ) === normalizeReservationNumber(
+                            data.reservation.number
+                        )
+                );
+
+            if (reservation) {
+                reservation.verified = true;
+            }
+
+            renderParticipants();
+
+            renderVerifiedReservation(
+                data.reservation
+            );
+
+            showFeedback(
+                feedback,
+                '本人確認できました。確認状態を保存しました。',
+                false
+            );
+
+        } catch (error) {
+
+            showFeedback(
+                feedback,
+                error.message ||
+                    '予約の照合に失敗しました。',
+                true
+            );
+
+        } finally {
+            button.disabled = false;
+        }
+    }
+);
+
+
+// ========================================
+// 初期表示
+// ========================================
+
+updateDayButtons();
+
+loadReservations().catch((error) => {
+
+    renderReservationOptions();
+
+    showFeedback(
+        document.getElementById(
+            'verifyFeedback'
+        ),
+        error.message ||
+            '予約一覧を取得できませんでした。',
+        true
+    );
+});
+========================================
+ファイル: api/reservations.js
+========================================
+
+//  /api/reservations.js
+import { cert, getApps, initializeApp } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { randomUUID } from 'node:crypto';
+
+
+// ========================================
+// 基本設定
+// ========================================
+
+// 1枠5組は変更しない
+const MAX_TEAMS_PER_SLOT = 5;
+
+const SLOT_INTERVAL_MINUTES = 10;
+
+
+// ========================================
+// 学園祭日程
+// ========================================
+
+const FESTIVAL_DATES = {
+  day1: '2026-11-21',
+  day2: '2026-11-22',
+};
+
+
+// ========================================
+// 日ごとの営業時間
+// ========================================
+
+const DAY_SETTINGS = {
+  day1: {
+    startTimeMinutes: 10 * 60,
+    endTimeMinutes: 17 * 60,
+  },
+
+  day2: {
+    startTimeMinutes: 10 * 60,
+    endTimeMinutes: 16 * 60,
+  },
+};
+
+
+// ========================================
+// 指定日の時間枠を作成
+// ========================================
+
+function createSlots(day) {
+  const setting = DAY_SETTINGS[day];
+
+  if (!setting) {
+    return [];
+  }
+
+  return Array.from(
+    {
+      length:
+        (setting.endTimeMinutes - setting.startTimeMinutes)
+        / SLOT_INTERVAL_MINUTES
+        + 1,
+    },
+    (_, index) => {
+
+      const totalMinutes =
+        setting.startTimeMinutes
+        + index * SLOT_INTERVAL_MINUTES;
+
+      const hours =
+        String(
+          Math.floor(totalMinutes / 60)
+        ).padStart(2, '0');
+
+      const minutes =
+        String(
+          totalMinutes % 60
+        ).padStart(2, '0');
+
+      return {
+        id: `${hours}:${minutes}`,
+        minutes: totalMinutes,
+      };
+    }
+  );
+}
+
+
+// ========================================
+// 日付が正しいか
+// ========================================
+
+function isValidDay(day) {
+  return day === 'day1' || day === 'day2';
+}
+
+
+// ========================================
+// 日本時間を取得
+// ========================================
+
+function getJapanDateTime() {
+  const formatter =
+    new Intl.DateTimeFormat('ja-JP', {
+      timeZone: 'Asia/Tokyo',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+
+  const parts =
+    formatter.formatToParts(new Date());
+
+  const result = {};
+
+  parts.forEach((part) => {
+    if (part.type !== 'literal') {
+      result[part.type] = part.value;
+    }
+  });
+
+  return {
+    date:
+      `${result.year}-${result.month}-${result.day}`,
+
+    minutes:
+      Number(result.hour) * 60
+      + Number(result.minute),
+  };
+}
+
+
+// ========================================
+// 指定日の現在時刻より前の枠を除外
+// ========================================
+//
+// 例：
+// 11/21 13:25の場合
+//
+// 13:10 → 除外
+// 13:20 → 除外
+// 13:30 → 表示
+//
+// 2日目を選択している場合は
+// 11/21の現在時刻は関係ありません。
+// ========================================
+
+function getActiveSlots(day) {
+  const slots = createSlots(day);
+
+  const now = getJapanDateTime();
+
+  // まだその日ではない場合
+  // → 全枠を対象にする
+  if (now.date !== FESTIVAL_DATES[day]) {
+    return slots;
+  }
+
+  return slots.filter(
+    (slot) => slot.minutes >= now.minutes
+  );
+}
+
+
+// ========================================
+// Firestore初期化
+// ========================================
+
+function getFirestoreDb() {
+  if (!getApps().length) {
+
+    const privateKey =
+      process.env.FIREBASE_PRIVATE_KEY
+        ?.replace(/\\n/g, '\n');
+
+    if (
+      !process.env.FIREBASE_PROJECT_ID ||
+      !process.env.FIREBASE_CLIENT_EMAIL ||
+      !privateKey
+    ) {
+      throw new Error(
+        'Firebase Admin environment variables are not configured'
+      );
+    }
+
+    initializeApp({
+      credential: cert({
+        projectId:
+          process.env.FIREBASE_PROJECT_ID,
+
+        clientEmail:
+          process.env.FIREBASE_CLIENT_EMAIL,
+
+        privateKey,
+      }),
+    });
+  }
+
+  return getFirestore();
+}
+
+
+// ========================================
+// JSONレスポンス
+// ========================================
+
+function json(res, status, body) {
+  return res
+    .status(status)
+    .setHeader(
+      'Content-Type',
+      'application/json'
+    )
+    .json(body);
+}
+
+
+// ========================================
+// 入力値を整理
+// ========================================
+
+function clean(value, maxLength) {
+  return typeof value === 'string'
+    ? value.trim().slice(0, maxLength)
+    : '';
+}
+
+
+function normalizeReservationNumber(value) {
+  return clean(value, 20).toUpperCase();
+}
+
+
+// ========================================
+// 整理番号作成
+// ========================================
+
+function createNumber() {
+  return `F-${randomUUID()
+    .replace(/-/g, '')
+    .slice(0, 8)
+    .toUpperCase()}`;
+}
+
+
+// ========================================
+// 整理番号順
+// ========================================
+
+function sortReservations(first, second) {
+  return first.number.localeCompare(
+    second.number,
+    undefined,
+    {
+      numeric: true,
+      sensitivity: 'base',
+    }
+  );
+}
+
+
+// ========================================
+// スロットのFirestoreドキュメントID
+// ========================================
+//
+// 1日目10:00
+// → day1_10:00
+//
+// 2日目10:00
+// → day2_10:00
+//
+// これにより1日目と2日目の予約枠を完全分離。
+// ========================================
+
+function createSlotKey(day, slotId) {
+  return `${day}_${slotId}`;
+}
+
+
+// ========================================
+// API
+// ========================================
+
+export default async function handler(req, res) {
+
+  try {
+
+    const db = getFirestoreDb();
+
+
+    // ======================================
+    // GET
+    // ======================================
+
+    if (req.method === 'GET') {
+
+      const requestedDay =
+        clean(req.query?.day, 10);
+
+      const day =
+        isValidDay(requestedDay)
+          ? requestedDay
+          : 'day1';
+
+
+      // --------------------------------------
+      // 選択日の全枠
+      // --------------------------------------
+
+      const slots =
+        createSlots(day);
+
+
+      // --------------------------------------
+      // 予約ページ用
+      //
+      // 各枠の予約数を取得
+      // --------------------------------------
+
+      const slotSnapshots =
+        await Promise.all(
+          slots.map((slot) => {
+
+            const slotKey =
+              createSlotKey(day, slot.id);
+
+            return db
+              .collection('slots')
+              .doc(slotKey)
+              .get();
+          })
+        );
+
+
+      const counts =
+        Object.fromEntries(
+          slotSnapshots.map((snapshot, index) => {
+
+            const slot =
+              slots[index];
+
+            return [
+              slot.id,
+
+              snapshot.exists
+                ? snapshot.data().reservedCount || 0
+                : 0,
+            ];
+          })
+        );
+
+
+      // --------------------------------------
+      // スタッフ画面
+      // --------------------------------------
+
+      let reservations;
+
+
+      if (req.query?.view === 'staff') {
+
+        /*
+         * ここが今回の重要部分。
+         *
+         * 現在時刻を過ぎた枠は、
+         * Firestoreのreservationsから
+         * そもそも取得しません。
+         *
+         * そのため、
+         * 過去の大量の予約データを毎回
+         * 全件読み込む必要がありません。
+         */
+
+        const activeSlots =
+          getActiveSlots(day);
+
+
+        const reservationSnapshots =
+          await Promise.all(
+            activeSlots.map((slot) => {
+
+              const slotKey =
+                createSlotKey(day, slot.id);
+
+              /*
+               * slotKeyは1つのフィールドにまとめているため、
+               * 単一フィールドのwhereで取得できます。
+               *
+               * 例：
+               * day1_10:00
+               */
+              return db
+                .collection('reservations')
+                .where(
+                  'slotKey',
+                  '==',
+                  slotKey
+                )
+                .get();
+            })
+          );
+
+
+        reservations =
+          reservationSnapshots
+            .flatMap(
+              (snapshot) =>
+                snapshot.docs.map(
+                  (reservationSnapshot) => {
+
+                    const reservation =
+                      reservationSnapshot.data();
+
+                    return {
+                      number:
+                        reservation.number,
+
+                      day:
+                        reservation.day,
+
+                      slotId:
+                        reservation.slotId,
+
+                      name:
+                        reservation.name,
+
+                      partnerName:
+                        reservation.partnerName,
+
+                      verified:
+                        reservation.verified === true,
+                    };
+                  }
+                )
+            )
+            .sort(sortReservations);
+      }
+
+
+      return json(
+        res,
+        200,
+        {
+          counts,
+
+          capacity:
+            MAX_TEAMS_PER_SLOT,
+
+          reservations,
+        }
+      );
+    }
+
+
+    // ======================================
+    // POST以外は拒否
+    // ======================================
+
+    if (req.method !== 'POST') {
+
+      return json(
+        res,
+        405,
+        {
+          message: 'Method Not Allowed',
+        }
+      );
+    }
+
+
+    // ======================================
+    // 本人確認
+    // ======================================
+
+    if (req.body?.action === 'verify') {
+
+      const number =
+        normalizeReservationNumber(
+          req.body.number
+        );
+
+      const name =
+        clean(
+          req.body.name,
+          80
+        );
+
+
+      const reservationSnapshot =
+        await db
+          .collection('reservations')
+          .doc(number)
+          .get();
+
+
+      const reservation =
+        reservationSnapshot.exists
+          ? reservationSnapshot.data()
+          : null;
+
+
+      if (
+        !reservation ||
+        reservation.name !== name
+      ) {
+
+        return json(
+          res,
+          404,
+          {
+            message:
+              '整理番号と予約時の名前が一致しません。',
+          }
+        );
+      }
+
+
+      await reservationSnapshot.ref.update({
+        verified: true,
+        verifiedAt:
+          new Date().toISOString(),
+      });
+
+
+      return json(
+        res,
+        200,
+        {
+          reservation: {
+            number:
+              reservation.number,
+
+            day:
+              reservation.day,
+
+            slotId:
+              reservation.slotId,
+
+            name:
+              reservation.name,
+
+            partnerName:
+              reservation.partnerName,
+
+            verified: true,
+          },
+        }
+      );
+    }
+
+
+    // ======================================
+    // チェック状態変更
+    // ======================================
+
+    if (
+      req.body?.action === 'setVerified'
+    ) {
+
+      const number =
+        normalizeReservationNumber(
+          req.body.number
+        );
+
+      const verified =
+        req.body.verified === true;
+
+
+      const reservationRef =
+        db
+          .collection('reservations')
+          .doc(number);
+
+
+      const reservationSnapshot =
+        await reservationRef.get();
+
+
+      if (!reservationSnapshot.exists) {
+
+        return json(
+          res,
+          404,
+          {
+            message:
+              '整理番号が見つかりません。',
+          }
+        );
+      }
+
+
+      await reservationRef.update({
+
+        verified,
+
+        verifiedAt:
+          verified
+            ? new Date().toISOString()
+            : null,
+      });
+
+
+      return json(
+        res,
+        200,
+        {
+          number,
+          verified,
+        }
+      );
+    }
+
+
+    // ======================================
+    // 通常予約
+    // ======================================
+
+    const day =
+      clean(
+        req.body?.day,
+        10
+      );
+
+    const slotId =
+      clean(
+        req.body?.slotId,
+        20
+      );
+
+    const name =
+      clean(
+        req.body?.name,
+        80
+      );
+
+    const partnerName =
+      clean(
+        req.body?.partnerName,
+        80
+      );
+
+
+    // --------------------------------------
+    // 日付チェック
+    // --------------------------------------
+
+    if (!isValidDay(day)) {
+
+      return json(
+        res,
+        400,
+        {
+          message:
+            '参加日を正しく選択してください。',
+        }
+      );
+    }
+
+
+    // --------------------------------------
+    // 枠チェック
+    // --------------------------------------
+
+    const slots =
+      createSlots(day);
+
+    const selectedSlot =
+      slots.find(
+        (slot) =>
+          slot.id === slotId
+      );
+
+
+    if (
+      !selectedSlot ||
+      !name ||
+      !partnerName
+    ) {
+
+      return json(
+        res,
+        400,
+        {
+          message:
+            '参加日、参加枠、代表者名、同行者名を入力してください。',
+        }
+      );
+    }
+
+
+    // --------------------------------------
+    // 既に開始時刻を過ぎていないか
+    // --------------------------------------
+
+    const now =
+      getJapanDateTime();
+
+    const festivalDate =
+      FESTIVAL_DATES[day];
+
+
+    if (
+      now.date === festivalDate &&
+      selectedSlot.minutes < now.minutes
+    ) {
+
+      return json(
+        res,
+        409,
+        {
+          message:
+            'この回は受付時間を過ぎています。別の回を選択してください。',
+        }
+      );
+    }
+
+
+    // --------------------------------------
+    // 予約情報
+    // --------------------------------------
+
+    const slotKey =
+      createSlotKey(
+        day,
+        slotId
+      );
+
+
+    const reservation = {
+
+      number:
+        createNumber(),
+
+      // 追加：参加日
+      day,
+
+      slotId,
+
+      // スタッフ側の効率的な取得用
+      slotKey,
+
+      name,
+
+      partnerName,
+
+      verified: false,
+
+      createdAt:
+        new Date().toISOString(),
+    };
+
+
+    // --------------------------------------
+    // Firestore参照
+    // --------------------------------------
+
+    const slotRef =
+      db
+        .collection('slots')
+        .doc(slotKey);
+
+
+    const reservationRef =
+      db
+        .collection('reservations')
+        .doc(reservation.number);
+
+
+    // ======================================
+    // Transaction
+    // ======================================
+
+    await db.runTransaction(
+      async (transaction) => {
+
+        const slotSnapshot =
+          await transaction.get(
+            slotRef
+          );
+
+
+        const reservedCount =
+          slotSnapshot.exists
+            ? slotSnapshot.data()
+              .reservedCount || 0
+            : 0;
+
+
+        // ----------------------------------
+        // 定員チェック
+        // ----------------------------------
+
+        if (
+          reservedCount >=
+          MAX_TEAMS_PER_SLOT
+        ) {
+
+          const error =
+            new Error(
+              'この回は満席です。別の回を選択してください。'
+            );
+
+          error.code = 'FULL';
+
+          throw error;
+        }
+
+
+        // ----------------------------------
+        // 枠の予約数を+1
+        // ----------------------------------
+
+        transaction.set(
+          slotRef,
+          {
+            slotKey,
+
+            day,
+
+            slotId,
+
+            capacity:
+              MAX_TEAMS_PER_SLOT,
+
+            reservedCount:
+              reservedCount + 1,
+          },
+          {
+            merge: true,
+          }
+        );
+
+
+        // ----------------------------------
+        // 予約を作成
+        // ----------------------------------
+
+        transaction.create(
+          reservationRef,
+          reservation
+        );
+      }
+    );
+
+
+    // ======================================
+    // 成功
+    // ======================================
+
+    return json(
+      res,
+      201,
+      {
+        reservation,
+      }
+    );
+
+
+  } catch (error) {
+
+    // ======================================
+    // 満席
+    // ======================================
+
+    if (error.code === 'FULL') {
+
+      return json(
+        res,
+        409,
+        {
+          message:
+            error.message,
+        }
+      );
+    }
+
+
+    // ======================================
+    // その他エラー
+    // ======================================
+
+    console.error(error);
+
+    return json(
+      res,
+      500,
+      {
+        message:
+          '予約システムに接続できません。管理者にご確認ください。',
+      }
+    );
+  }
+}
+========================================
+ファイル: css/reservation.css
+========================================
+
+/* /reservation.css */
+:root {
+    --ink: #25313a;
+    --muted: #66737b;
+    --paper: #fffdf8;
+    --line: #d7e0df;
+    --accent: #0f766e;
+    --accent-dark: #115e59;
+    --warm: #e8a317;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 28px 16px 52px;
+    color: var(--ink);
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    background: linear-gradient(
+        145deg,
+        #eef7f3 0%,
+        #fdf8ec 58%,
+        #f7e7c7 100%
+    );
+}
+
+.wrap {
+    width: min(100%, 680px);
+    margin: 0 auto;
+}
+
+.hero {
+    padding: 20px 4px 28px;
+}
+
+.eyebrow {
+    margin: 0 0 8px;
+    color: var(--accent);
+    font-size: .75rem;
+    font-weight: bold;
+    letter-spacing: .12em;
+}
+
+h1 {
+    margin: 0 0 12px;
+    font-size: clamp(1.7rem, 6vw, 2.4rem);
+    line-height: 1.2;
+}
+
+h2 {
+    margin: 0 0 10px;
+    font-size: clamp(1.2rem, 4vw, 1.5rem);
+}
+
+h3 {
+    line-height: 1.4;
+}
+
+.hero p:last-child,
+.note {
+    color: var(--muted);
+    line-height: 1.7;
+}
+
+.panel {
+    margin-bottom: 18px;
+    padding: clamp(20px, 5vw, 30px);
+    background: rgba(255, 253, 248, .92);
+    border: 1px solid rgba(37, 49, 58, .1);
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(37, 49, 58, .08);
+}
+
+.note {
+    margin: 0 0 20px;
+    font-size: .92rem;
+}
+
+form {
+    display: grid;
+    gap: 14px;
+}
+
+label {
+    display: grid;
+    gap: 7px;
+    font-weight: bold;
+    font-size: .92rem;
+}
+
+input,
+select {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    color: var(--ink);
+    background: #fff;
+    border: 2px solid var(--line);
+    border-radius: 8px;
+    font: inherit;
+}
+
+input:focus,
+select:focus {
+    outline: 3px solid rgba(15, 118, 110, .2);
+    border-color: var(--accent);
+}
+
+.field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+button {
+    min-height: 46px;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 8px;
+    font: inherit;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: wait;
+    opacity: .55;
+}
+
+.primary-button {
+    color: #fff;
+    background: var(--accent);
+}
+
+.primary-button:hover {
+    background: var(--accent-dark);
+}
+
+.secondary-button {
+    color: var(--accent-dark);
+    background: #dcefea;
+}
+
+.secondary-button:hover {
+    background: #cbe5de;
+}
+
+
+/* ========================================
+   1日目 / 2日目 切り替え
+   ======================================== */
+
+.day-switch {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin: 16px 0 12px;
+}
+
+.day-switch button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 64px;
+    padding: 10px 12px;
+    color: var(--accent-dark);
+    background: #dcefea;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    transition:
+        background-color .15s ease,
+        border-color .15s ease,
+        transform .15s ease;
+}
+
+.day-switch button span {
+    font-size: .82rem;
+    font-weight: normal;
+}
+
+.day-switch button:hover {
+    background: #cbe5de;
+}
+
+.day-switch button:active {
+    transform: scale(.98);
+}
+
+
+/* 選択中の日 */
+
+.day-switch button.active {
+    color: #fff;
+    background: var(--accent);
+    border-color: var(--accent-dark);
+    box-shadow: 0 4px 10px rgba(15, 118, 110, .18);
+}
+
+.day-switch button.active:hover {
+    background: var(--accent-dark);
+}
+
+
+/* 日付切り替え部分の説明 */
+
+#selectedDayLabel {
+    margin-bottom: 0;
+    text-align: center;
+    font-weight: bold;
+}
+
+
+/* ========================================
+   フィードバック
+   ======================================== */
+
+.feedback {
+    min-height: 1.3em;
+    margin: 0;
+    font-size: .9rem;
+    font-weight: bold;
+}
+
+.feedback.error {
+    color: #b42318;
+}
+
+.feedback.success {
+    color: var(--accent-dark);
+}
+
+
+/* ========================================
+   本人確認済み予約
+   ======================================== */
+
+.verified-reservation {
+    margin-top: 18px;
+    padding: 14px;
+    color: var(--accent-dark);
+    background: #e8f5ef;
+    border-left: 4px solid var(--accent);
+    line-height: 1.6;
+}
+
+.verified-reservation p {
+    margin: 4px 0 0;
+}
+
+
+/* ========================================
+   参加者一覧
+   ======================================== */
+
+.participant-list {
+    display: grid;
+    gap: 18px;
+}
+
+.participant-group {
+    margin: 0;
+}
+
+.participant-group h3 {
+    margin: 0 0 8px;
+    padding-bottom: 6px;
+    color: var(--accent-dark);
+    font-size: 1.05rem;
+    border-bottom: 2px solid var(--line);
+}
+
+.participant-items {
+    display: grid;
+    gap: 8px;
+}
+
+.participant-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 12px;
+    font-weight: normal;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.participant-item input {
+    width: 20px;
+    min-height: 20px;
+    margin: 0;
+    accent-color: var(--accent);
+    flex-shrink: 0;
+}
+
+
+/* ========================================
+   予約完了
+   ======================================== */
+
+.result-panel {
+    border: 2px solid var(--warm);
+}
+
+.reservation-names {
+    margin: 20px 0 14px;
+    padding: 12px 16px;
+    background: #fff;
+    border-radius: 10px;
+}
+
+.reservation-names p {
+    margin: 4px 0;
+}
+
+.number-box {
+    display: grid;
+    gap: 5px;
+    margin: 20px 0 14px;
+    padding: 16px;
+    text-align: center;
+    background: #fff8e1;
+    border-radius: 10px;
+}
+
+.number-box span {
+    color: var(--muted);
+    font-size: .85rem;
+}
+
+.number-box strong {
+    color: #8a5a00;
+    font-size: clamp(1.8rem, 9vw, 2.7rem);
+    letter-spacing: .08em;
+}
+
+.save-warning {
+    margin: 0;
+    color: #8a5a00;
+    font-weight: bold;
+    line-height: 1.7;
+}
+
+
+/* ========================================
+   管理者用リンク
+   ======================================== */
+
+.admin-nav {
+    text-align: center;
+    padding-top: 8px;
+}
+
+.admin-nav a {
+    color: var(--accent-dark);
+    font-weight: bold;
+}
+
+
+/* ========================================
+   スマートフォン
+   ======================================== */
+
+@media (max-width: 520px) {
+
+    body {
+        padding: 16px 12px 40px;
+    }
+
+    .field-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .day-switch {
+        gap: 8px;
+    }
+
+    .day-switch button {
+        min-height: 60px;
+        padding: 9px 8px;
+        font-size: .9rem;
+    }
+
+    .day-switch button span {
+        font-size: .75rem;
+    }
+
+    .participant-item {
+        align-items: flex-start;
+        line-height: 1.5;
+    }
+}
+
+
+/* ========================================
+   より小さいスマートフォン
+   ======================================== */
+
+@media (max-width: 360px) {
+
+    .day-switch {
+        grid-template-columns: 1fr;
+    }
+
+    .day-switch button {
+        min-height: 52px;
+    }
+}

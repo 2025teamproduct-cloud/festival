@@ -11,6 +11,9 @@ const selectedDayLabel = document.getElementById('selectedDayLabel');
 
 let reservations = [];
 
+// 1枠の定員（表示用）
+const SLOT_CAPACITY = 20;
+
 
 function normalizeReservationNumber(value) {
     return value.trim().toUpperCase();
@@ -106,8 +109,6 @@ function isSlotPast(slotId) {
     const festivalDate =
         FESTIVAL_DATES[selectedDay];
 
-    // 学園祭当日以外なら、未来/過去の日付なので
-    // 時刻による除外は行わない
     if (now.date !== festivalDate) {
         return false;
     }
@@ -162,6 +163,19 @@ function renderReservationOptions() {
 
 
 // ========================================
+// 同行者の表示文字列
+// ========================================
+
+function formatPartners(reservation) {
+    const partners = reservation.partnerNames || [];
+
+    return partners.length
+        ? partners.join('、')
+        : 'なし';
+}
+
+
+// ========================================
 // 本人確認済み予約を表示
 // ========================================
 
@@ -178,7 +192,13 @@ function renderVerifiedReservation(reservation) {
         document.createElement('p');
 
     names.textContent =
-        `代表者：${reservation.name}　同行者：${reservation.partnerName}`;
+        `代表者：${reservation.name}　同行者：${formatPartners(reservation)}`;
+
+    const size =
+        document.createElement('p');
+
+    size.textContent =
+        `参加人数：${reservation.partySize}名`;
 
     const day =
         document.createElement('p');
@@ -197,6 +217,7 @@ function renderVerifiedReservation(reservation) {
     verifiedReservation.append(
         heading,
         names,
+        size,
         day,
         slot
     );
@@ -250,6 +271,12 @@ function renderParticipants() {
                 return;
             }
 
+            const totalPeople =
+                slotReservations.reduce(
+                    (sum, item) => sum + (item.partySize || 0),
+                    0
+                );
+
             const group =
                 document.createElement('section');
 
@@ -261,7 +288,7 @@ function renderParticipants() {
                 document.createElement('h3');
 
             heading.textContent =
-                slotId;
+                `${slotId}（${totalPeople}/${SLOT_CAPACITY}名）`;
 
 
             const list =
@@ -308,7 +335,7 @@ function renderParticipants() {
                         document.createElement('span');
 
                     names.textContent =
-                        `${reservation.number}　${reservation.name} / ${reservation.partnerName}`;
+                        `${reservation.number}　${reservation.name}（${reservation.partySize}名）同行：${formatPartners(reservation)}`;
 
 
                     label.append(
@@ -389,15 +416,6 @@ async function updateVerification(
 // ========================================
 
 async function loadReservations() {
-    /*
-     * selectedDayをAPIへ渡します。
-     *
-     * API側で、
-     * ・選択された日のみ
-     * ・現在時刻を過ぎていない枠のみ
-     *
-     * をFirestoreから取得します。
-     */
     const response =
         await fetch(
             `/api/reservations?view=staff&day=${encodeURIComponent(selectedDay)}`

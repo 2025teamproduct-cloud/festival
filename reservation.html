@@ -12,47 +12,44 @@
         <header class="hero">
             <p class="eyebrow">FESTIVAL PUZZLE EVENT</p>
             <h1>なぞ解き参加予約</h1>
-            <p>2人1組で参加できます。ご希望の回を選び、代表者と同行者のお名前を入力してください。</p>
+            <p>1組4名まで参加できます。参加日と人数、お名前を入力してください。参加する回は自動で割り振られます。</p>
         </header>
 
         <section class="panel" aria-labelledby="reservation-heading">
             <h2 id="reservation-heading">予約を申し込む</h2>
-            <p class="note">各回の定員は5組（10名）です。満員になると選択できません。</p>
+            <p class="note">各回の定員は20名です。開催時間は11:00〜16:00（30分ごと）。参加する回は予約確定時にお知らせします。</p>
 
             <form id="reservationForm">
 
-                <!-- 追加：参加日を選択 -->
                 <label for="festivalDay">参加日</label>
                 <select id="festivalDay" required>
                     <option value="day1">1日目（11月21日）</option>
                     <option value="day2">2日目（11月22日）</option>
                 </select>
 
-                <label for="slotId">参加する回</label>
-                <select id="slotId" required></select>
+                <p id="availability" class="availability" role="status"></p>
 
-                <div class="field-grid">
-                    <label>
-                        代表者名
-                        <input
-                            id="name"
-                            type="text"
-                            maxlength="80"
-                            autocomplete="name"
-                            required
-                        >
-                    </label>
+                <label for="partySize">参加人数（代表者を含む）</label>
+                <select id="partySize" required>
+                    <option value="1">1名</option>
+                    <option value="2">2名</option>
+                    <option value="3">3名</option>
+                    <option value="4" selected>4名</option>
+                </select>
 
-                    <label>
-                        同行者名
-                        <input
-                            id="partnerName"
-                            type="text"
-                            maxlength="80"
-                            required
-                        >
-                    </label>
-                </div>
+                <label>
+                    代表者名
+                    <input
+                        id="name"
+                        type="text"
+                        maxlength="80"
+                        autocomplete="name"
+                        required
+                    >
+                </label>
+
+                <!-- 同行者の入力欄は人数に応じてJSで生成 -->
+                <div id="companionFields" class="field-grid"></div>
 
                 <button class="primary-button" type="submit">
                     予約を確定する
@@ -76,9 +73,15 @@
                 当日はこの整理番号と、予約時に入力した代表者名で本人確認を行います。
             </p>
 
+            <div class="assigned-slot">
+                <p>参加日：<strong id="reservationDay"></strong></p>
+                <p>参加する回：<strong id="reservationSlot"></strong></p>
+                <p>参加人数：<strong id="reservationPartySize"></strong></p>
+            </div>
+
             <div class="reservation-names">
                 <p>代表者名：<strong id="reservationName"></strong></p>
-                <p>同行者名：<strong id="reservationPartnerName"></strong></p>
+                <p>同行者名：<strong id="reservationPartnerNames"></strong></p>
             </div>
 
             <div class="number-box">
