@@ -245,14 +245,15 @@ function createNumber() {
 // 整理番号順
 // ========================================
 
+// ========================================
+// 並び順：参加枠の時間 → 予約を受け付けた順 → 整理番号
+// ========================================
+
 function sortReservations(first, second) {
-  return first.number.localeCompare(
-    second.number,
-    undefined,
-    {
-      numeric: true,
-      sensitivity: 'base',
-    }
+  return (
+    first.slotId.localeCompare(second.slotId) ||
+    (first.createdAt || '').localeCompare(second.createdAt || '') ||
+    first.number.localeCompare(second.number)
   );
 }
 
@@ -280,6 +281,7 @@ function toPublicReservation(reservation) {
     partySize: reservation.partySize,
     partnerNames: reservation.partnerNames || [],
     verified: reservation.verified === true,
+    createdAt: reservation.createdAt || '',
   };
 }
 
