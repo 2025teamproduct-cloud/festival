@@ -32,7 +32,7 @@ const SLOT_INTERVAL_MINUTES = 30;
 const SLOT_CAPACITY = 20;
 
 // 1回の予約の最大人数
-const MAX_PARTY_SIZE = 4;
+const MAX_PARTY_SIZE = 20;
 
 
 // ========================================
@@ -40,7 +40,7 @@ const MAX_PARTY_SIZE = 4;
 // ========================================
 
 const festivalDay = document.getElementById('festivalDay');
-const partySizeSelect = document.getElementById('partySize');
+const partySizeInput = document.getElementById('partySize');
 const companionFields = document.getElementById('companionFields');
 const availability = document.getElementById('availability');
 const reservationForm = document.getElementById('reservationForm');
@@ -159,7 +159,12 @@ function renderCompanionInputs() {
         [...companionFields.querySelectorAll('input')]
             .map((input) => input.value);
 
-    const partySize = Number(partySizeSelect.value);
+    const partySize = Number(partySizeInput.value);
+    if (!Number.isInteger(partySize) || partySize < 1) {
+        companionFields.replaceChildren();
+        companionFields.hidden = true;
+        return;
+    }
 
     companionFields.replaceChildren();
 
@@ -210,14 +215,9 @@ function renderAvailability() {
     const submitButton =
         reservationForm.querySelector('button[type="submit"]');
 
-    // 入れない人数は選べないようにする
-    [...partySizeSelect.options].forEach((option) => {
-        option.disabled = Number(option.value) > maxRemaining;
-    });
-
-    // 現在の選択が選べなくなった場合、選べる最大人数に合わせる
-    if (maxRemaining > 0 && Number(partySizeSelect.value) > maxRemaining) {
-        partySizeSelect.value = String(Math.min(MAX_PARTY_SIZE, maxRemaining));
+    // 入力人数が上限を超える場合は入れられる最大人数に合わせる
+    if (maxRemaining > 0 && Number(partySizeInput.value) > maxRemaining) {
+        partySizeInput.value = String(Math.min(MAX_PARTY_SIZE, maxRemaining));
         renderCompanionInputs();
     }
 
@@ -289,7 +289,10 @@ festivalDay.addEventListener('change', async () => {
     await loadSlots();
 });
 
-partySizeSelect.addEventListener('change', renderCompanionInputs);
+partySizeInput.addEventListener('input', () => {
+    renderCompanionInputs();
+    renderAvailability();
+});
 
 
 // ========================================
@@ -312,7 +315,7 @@ reservationForm.addEventListener('submit', async (event) => {
 
     try {
         const selectedDay = festivalDay.value;
-        const partySize = Number(partySizeSelect.value);
+        const partySize = Number(partySizeInput.value);
         const name = document.getElementById('name').value;
 
         const partnerNames =

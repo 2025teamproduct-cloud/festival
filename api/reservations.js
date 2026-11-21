@@ -12,7 +12,7 @@ import { randomUUID } from 'node:crypto';
 const SLOT_CAPACITY = 20;
 
 // 1回の予約の最大人数（代表者＋同行者）
-const MAX_PARTY_SIZE = 4;
+const MAX_PARTY_SIZE = 20;
 
 // 枠の間隔（分）
 const SLOT_INTERVAL_MINUTES = 30;
