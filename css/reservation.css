@@ -441,3 +441,24 @@ button:disabled {
 .assigned-slot strong {
     color: var(--accent-dark);
 }
+
+.danger-button {
+    margin-left: auto;
+    padding: 4px 12px;
+    border: 1px solid #c0392b;
+    border-radius: 6px;
+    background: #fff;
+    color: #c0392b;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.danger-button:hover {
+    background: #c0392b;
+    color: #fff;
+}
+
+.danger-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

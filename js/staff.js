@@ -1,4 +1,3 @@
-//  /staff.js
 const verifyForm = document.getElementById('verifyForm');
 const verifyNumber = document.getElementById('verifyNumber');
 const verifyName = document.getElementById('verifyName');
@@ -101,6 +100,7 @@ function getJapanDateTime() {
 
 // ========================================
 // その枠が現在時刻より前か確認
+// （参加者一覧の表示絞り込み専用）
 // ========================================
 
 function isSlotPast(slotId) {
@@ -125,6 +125,7 @@ function isSlotPast(slotId) {
 
 // ========================================
 // 整理番号の選択肢を表示
+// （終了した枠の予約も含めて表示する）
 // ========================================
 
 function renderReservationOptions() {
@@ -152,7 +153,7 @@ function renderReservationOptions() {
             option.value = reservation.number;
 
             option.textContent =
-                reservation.number;
+                `${reservation.number}（${reservation.slotId}）`;
 
             verifyNumber.appendChild(option);
         });
@@ -214,12 +215,25 @@ function renderVerifiedReservation(reservation) {
     slot.textContent =
         `参加枠：${reservation.slotId}`;
 
+    const deleteButton =
+        document.createElement('button');
+
+    deleteButton.type = 'button';
+    deleteButton.className = 'danger-button';
+    deleteButton.textContent = 'この予約を削除';
+
+    deleteButton.addEventListener(
+        'click',
+        () => deleteReservation(reservation, deleteButton)
+    );
+
     verifiedReservation.append(
         heading,
         names,
         size,
         day,
-        slot
+        slot,
+        deleteButton
     );
 
     verifiedReservation.hidden = false;
@@ -228,6 +242,7 @@ function renderVerifiedReservation(reservation) {
 
 // ========================================
 // 参加者一覧を表示
+// （終了した枠はここだけ非表示にする）
 // ========================================
 
 function renderParticipants() {
@@ -266,7 +281,7 @@ function renderParticipants() {
         )
         .forEach(([slotId, slotReservations]) => {
 
-            // 念のためクライアント側でも過去枠を除外
+            // 終了した枠は一覧に表示しない
             if (isSlotPast(slotId)) {
                 return;
             }
@@ -338,9 +353,30 @@ function renderParticipants() {
                         `${reservation.number}　${reservation.name}（${reservation.partySize}名）同行：${formatPartners(reservation)}`;
 
 
+                    const deleteButton =
+                        document.createElement('button');
+
+                    deleteButton.type = 'button';
+                    deleteButton.className = 'danger-button';
+                    deleteButton.textContent = '削除';
+
+                    deleteButton.addEventListener(
+                        'click',
+                        (event) => {
+                            // label内のクリックでチェックが切り替わらないようにする
+                            event.preventDefault();
+                            deleteReservation(
+                                reservation,
+                                deleteButton
+                            );
+                        }
+                    );
+
+
                     label.append(
                         checkbox,
-                        names
+                        names,
+                        deleteButton
                     );
 
                     list.appendChild(label);
@@ -354,6 +390,77 @@ function renderParticipants() {
 
             participantList.appendChild(group);
         });
+
+    // 全枠が終了済みで何も表示されなかった場合
+    if (!participantList.hasChildNodes()) {
+        participantList.textContent =
+            '現在表示できる予約はありません。';
+    }
+}
+
+
+// ========================================
+// 予約を削除
+// ========================================
+
+async function deleteReservation(reservation, button) {
+    const confirmed = window.confirm(
+        `整理番号 ${reservation.number}\n` +
+        `代表者：${reservation.name}（${reservation.partySize}名）\n\n` +
+        'この予約を削除します。元に戻せません。よろしいですか？'
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    const feedback = document.getElementById('verifyFeedback');
+
+    button.disabled = true;
+
+    try {
+        const response = await fetch('/api/reservations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'delete',
+                number: reservation.number,
+            }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message);
+        }
+
+        reservations = reservations.filter(
+            (item) => item.number !== reservation.number
+        );
+
+        verifiedReservation.hidden = true;
+        verifiedReservation.replaceChildren();
+
+        renderReservationOptions();
+        renderParticipants();
+
+        showFeedback(
+            feedback,
+            `${reservation.number} の予約を削除しました。`,
+            false
+        );
+
+    } catch (error) {
+        button.disabled = false;
+
+        showFeedback(
+            feedback,
+            error.message || '予約を削除できませんでした。',
+            true
+        );
+    }
 }
 
 
@@ -472,6 +579,9 @@ async function switchDay(day) {
     updateDayButtons();
 
     reservations = [];
+
+    verifiedReservation.hidden = true;
+    verifiedReservation.replaceChildren();
 
     renderReservationOptions();
     renderParticipants();

@@ -1,4 +1,3 @@
-//  /api/reservations.js
 import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { randomUUID } from 'node:crypto';
@@ -143,6 +142,7 @@ function getJapanDateTime() {
 //   13:00 → 除外
 //   13:30 → 対象
 // 学園祭当日でない日は全枠が対象。
+// （新規予約の受付判定に使用。スタッフ用一覧では使用しない）
 // ========================================
 
 function getActiveSlots(day) {
@@ -341,37 +341,23 @@ export default async function handler(req, res) {
 
 
       // --------------------------------------
-      // スタッフ画面：現在時刻を過ぎていない枠のみ
+      // スタッフ画面：その日の全予約を返す
+      // （終了した枠の予約も照合・削除できるようにする。
+      //   表示の絞り込みはクライアント側で行う）
       // --------------------------------------
 
       let reservations;
 
       if (req.query?.view === 'staff') {
-
-        const activeSlots =
-          getActiveSlots(day);
-
-        const reservationSnapshots =
-          await Promise.all(
-            activeSlots.map((slot) =>
-              db
-                .collection('reservations')
-                .where(
-                  'slotKey',
-                  '==',
-                  createSlotKey(day, slot.id)
-                )
-                .get()
-            )
-          );
+        const reservationSnapshot =
+          await db
+            .collection('reservations')
+            .where('day', '==', day)
+            .get();
 
         reservations =
-          reservationSnapshots
-            .flatMap((snapshot) =>
-              snapshot.docs.map((doc) =>
-                toPublicReservation(doc.data())
-              )
-            )
+          reservationSnapshot.docs
+            .map((doc) => toPublicReservation(doc.data()))
             .sort(sortReservations);
       }
 
@@ -535,6 +521,78 @@ export default async function handler(req, res) {
           number,
           verified,
         }
+      );
+    }
+
+
+    // ======================================
+    // 予約削除（枠の人数も戻す）
+    // ======================================
+
+    if (req.body?.action === 'delete') {
+
+      const number =
+        normalizeReservationNumber(
+          req.body.number
+        );
+
+      if (!number) {
+        return json(
+          res,
+          400,
+          { message: '整理番号を指定してください。' }
+        );
+      }
+
+      const reservationRef =
+        db.collection('reservations').doc(number);
+
+      await db.runTransaction(
+        async (transaction) => {
+
+          // 読み取りはすべて書き込みより先に行う
+          const reservationSnapshot =
+            await transaction.get(reservationRef);
+
+          if (!reservationSnapshot.exists) {
+            const error =
+              new Error('整理番号が見つかりません。');
+            error.code = 'NOT_FOUND';
+            throw error;
+          }
+
+          const target =
+            reservationSnapshot.data();
+
+          const slotRef =
+            db
+              .collection('slots')
+              .doc(
+                target.slotKey ||
+                createSlotKey(target.day, target.slotId)
+              );
+
+          const slotSnapshot =
+            await transaction.get(slotRef);
+
+          if (slotSnapshot.exists) {
+            const current =
+              slotSnapshot.data().reservedPeople || 0;
+
+            transaction.update(slotRef, {
+              reservedPeople:
+                Math.max(0, current - (target.partySize || 0)),
+            });
+          }
+
+          transaction.delete(reservationRef);
+        }
+      );
+
+      return json(
+        res,
+        200,
+        { number, deleted: true }
       );
     }
 
@@ -804,6 +862,23 @@ export default async function handler(req, res) {
 
 
   } catch (error) {
+
+    // ======================================
+    // 予約が見つからない
+    // ======================================
+
+    if (error.code === 'NOT_FOUND') {
+
+      return json(
+        res,
+        404,
+        {
+          message:
+            error.message,
+        }
+      );
+    }
+
 
     // ======================================
     // 満席・受付終了
