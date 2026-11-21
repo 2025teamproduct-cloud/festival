@@ -124,7 +124,7 @@ async function collectionData(collection) {
 async function handler(req, res) {
   try {
     const store = cleanString(req.method === 'GET' ? req.query?.store : req.body?.store, 20);
-    if (store !== 'asumin' && store !== 'yuna') {
+    if (store !== 'asumin' && store !== 'yuna' && store !== 'runamaru') {
       return json(res, 400, { message: '店舗を正しく指定してください。' });
     }
 

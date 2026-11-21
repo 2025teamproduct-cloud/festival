@@ -3,7 +3,7 @@
   'use strict';
 
   const store = document.body.dataset.store;
-  if (store !== 'asumin' && store !== 'yuna') {
+  if (store !== 'asumin' && store !== 'yuna' && store !== 'runamaru') {
     throw new Error('店舗を特定できません。');
   }
 

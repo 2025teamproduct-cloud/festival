@@ -13,6 +13,7 @@
 | `staff.html` | スタッフ用の予約照合・本人確認画面。 |
 | `asumin/register.html` | 店舗「asumin」のレジ・売上・レジ締め画面。 |
 | `yuna/register.html` | 店舗「yuna」のレジ・売上・レジ締め画面。 |
+| `runamaru/register.html` | 店舗「runamaru」のレジ・売上・レジ締め画面。 |
 
 静的ページはファイルを直接ブラウザで開けますが、予約とレジのFirestore連携はVercel Functions経由で動作させる必要があります。
 
@@ -46,6 +47,10 @@
 │   ├── register.css
 │   └── register.js
 ├── yuna/
+│   ├── register.html
+│   ├── register.css
+│   └── register.js
+├── runamaru/
 │   ├── register.html
 │   ├── register.css
 │   └── register.js
@@ -108,15 +113,17 @@ npm install
 
 ## レジ機能
 
-レジ画面は次の2店舗用に用意しています。
+レジ画面は次の3店舗用に用意しています。
 
 - `asumin/register.html`
 - `yuna/register.html`
+- `runamaru/register.html`
 
 Firestoreの保存先は店舗ごとに分けます。
 
 - `registers/asumin`
 - `registers/yuna`
+- `registers/runamaru`
 
 各店舗には `products`、`receipts`、`closing` のサブコレクションを使用します。ブラウザーには表示・操作用のキャッシュとして `localStorage` に保存しますが、Firestoreが主保存先です。
 
@@ -159,7 +166,7 @@ reservations/{整理番号}
 ### レジ
 
 ```text
-registers/{asumin|yuna}/
+registers/{asumin|yuna|runamaru}/
   products/{商品ID}
   receipts/{伝票ID}
   closing/{YYYY-MM-DD}
