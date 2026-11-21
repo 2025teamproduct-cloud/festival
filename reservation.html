@@ -12,12 +12,12 @@
         <header class="hero">
             <p class="eyebrow">FESTIVAL PUZZLE EVENT</p>
             <h1>なぞ解き参加予約</h1>
-            <p>1組20名まで参加できます。参加日と人数、お名前を入力してください。参加する回は自動で割り振られます。</p>
+            <p>1組20名まで参加できます。参加日と人数、お名前を入力してください。希望の回を選ぶことも、自動で割り振ることもできます。</p>
         </header>
 
         <section class="panel" aria-labelledby="reservation-heading">
             <h2 id="reservation-heading">予約を申し込む</h2>
-            <p class="note">各回の定員は20名です。開催時間は11:00〜16:00（30分ごと）。参加する回は予約確定時にお知らせします。</p>
+            <p class="note">各回の定員は20名です。開催時間は11:00〜16:00（30分ごと）。希望する回を選ぶか、自動割り振りを選択してください。</p>
 
             <form id="reservationForm">
 
@@ -28,6 +28,11 @@
                 </select>
 
                 <p id="availability" class="availability" role="status"></p>
+
+                <label for="slotChoice">参加する回</label>
+                <select id="slotChoice">
+                    <option value="">自動で割り振る（おすすめ）</option>
+                </select>
 
                 <label for="partySize">参加人数（代表者を含む）</label>
                 <input

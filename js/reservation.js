@@ -45,6 +45,7 @@ const companionFields = document.getElementById('companionFields');
 const availability = document.getElementById('availability');
 const reservationForm = document.getElementById('reservationForm');
 const formFeedback = document.getElementById('formFeedback');
+const slotChoice = document.getElementById('slotChoice');
 
 // 現在表示している日の各枠の予約人数
 let currentCounts = {};
@@ -189,60 +190,105 @@ function renderCompanionInputs() {
 
 // ========================================
 // 空き状況を画面に表示
-//
-// 枠は自動で割り振られるため、
-// 「いま入れる最大人数」だけを案内します。
 // ========================================
 
 function renderAvailability() {
     const day = festivalDay.value;
-
-    const remainingList =
-        createSlots(day)
-            .filter((slot) => !isSlotPast(day, slot.minutes))
-            .map((slot) =>
-                SLOT_CAPACITY - (currentCounts[slot.id] || 0)
-            );
-
-    const maxRemaining =
-        remainingList.length
-            ? Math.max(0, ...remainingList)
-            : 0;
-
-    const totalRemaining =
-        remainingList.reduce((sum, value) => sum + value, 0);
+    const partySize = Number(partySizeInput.value);
+    const activeSlots = createSlots(day)
+        .filter((slot) => !isSlotPast(day, slot.minutes));
+    const remainingList = activeSlots.map((slot) =>
+        SLOT_CAPACITY - (currentCounts[slot.id] || 0)
+    );
+    const maxRemaining = remainingList.length
+        ? Math.max(0, ...remainingList)
+        : 0;
+    const totalRemaining = remainingList.reduce((sum, value) => sum + value, 0);
+    const selectedSlotId = slotChoice.value;
+    const selectedRemaining = selectedSlotId
+        ? SLOT_CAPACITY - (currentCounts[selectedSlotId] || 0)
+        : maxRemaining;
 
     const submitButton =
         reservationForm.querySelector('button[type="submit"]');
 
     // 入力人数が上限を超える場合は入れられる最大人数に合わせる
-    if (maxRemaining > 0 && Number(partySizeInput.value) > maxRemaining) {
-        partySizeInput.value = String(Math.min(MAX_PARTY_SIZE, maxRemaining));
+    if (selectedRemaining > 0 && partySize > selectedRemaining) {
+        partySizeInput.value = String(Math.min(MAX_PARTY_SIZE, selectedRemaining));
         renderCompanionInputs();
     }
 
-    if (maxRemaining === 0) {
+    if (
+        maxRemaining === 0
+        || (selectedSlotId && (
+            isSlotPast(day, activeSlots.find((slot) => slot.id === selectedSlotId)?.minutes)
+            || selectedRemaining < 1
+        ))
+    ) {
         submitButton.disabled = true;
-
-        availability.textContent = '';
-
-        const now = getJapanDateTime();
-
-        showFeedback(
-            formFeedback,
-            now.date === FESTIVAL_DATES[day]
-                ? '現在、予約できる回がありません。'
-                : 'この日の予約は満員です。',
-            true
-        );
+        availability.textContent =
+            selectedSlotId
+                ? '選択した回は満席か受付終了です。'
+                : '現在、予約できる回がありません。';
     } else {
         submitButton.disabled = false;
-
-        availability.textContent =
-            `残り ${totalRemaining} 名分（1組で最大 ${Math.min(MAX_PARTY_SIZE, maxRemaining)} 名まで予約できます）`;
+        availability.textContent = selectedSlotId
+            ? `選択した回の残りは ${Math.max(0, selectedRemaining)} 名分です。`
+            : `残り ${totalRemaining} 名分（1組で最大 ${Math.min(MAX_PARTY_SIZE, maxRemaining)} 名まで予約できます）`;
     }
 }
 
+
+// ========================================
+// 時間枠の選択欄を作成
+// ========================================
+
+function renderSlotChoices() {
+    const day = festivalDay.value;
+    const partySize = Number(partySizeInput.value);
+    const previousValue = slotChoice.value;
+
+    slotChoice.replaceChildren();
+
+    const autoOption = document.createElement('option');
+    autoOption.value = '';
+    autoOption.textContent = '自動で割り振る（おすすめ）';
+    slotChoice.appendChild(autoOption);
+
+    createSlots(day).forEach((slot) => {
+        const option = document.createElement('option');
+        option.value = slot.id;
+
+        const remaining = SLOT_CAPACITY - (currentCounts[slot.id] || 0);
+
+        if (isSlotPast(day, slot.minutes)) {
+            option.textContent = `${slot.id}〜（受付終了）`;
+            option.disabled = true;
+        } else if (remaining <= 0) {
+            option.textContent = `${slot.id}〜（満席）`;
+            option.disabled = true;
+        } else if (remaining < partySize) {
+            option.textContent = `${slot.id}〜（残り${remaining}名・人数超過）`;
+            option.disabled = true;
+        } else {
+            option.textContent = `${slot.id}〜（残り${remaining}名）`;
+        }
+
+        slotChoice.appendChild(option);
+    });
+
+    const previousStillExists =
+        [...slotChoice.options].some((option) =>
+            option.value === previousValue && !option.disabled
+        );
+
+    slotChoice.value = previousStillExists ? previousValue : '';
+}
+
+
+// ========================================
+// 空き状況取得後に選択肢も更新
+// ========================================
 
 // ========================================
 // 選択日の空き状況を取得
@@ -264,6 +310,7 @@ async function loadSlots() {
 
         currentCounts = data.counts || {};
 
+        renderSlotChoices();
         renderAvailability();
     } catch (error) {
         currentCounts = {};
@@ -291,6 +338,11 @@ festivalDay.addEventListener('change', async () => {
 
 partySizeInput.addEventListener('input', () => {
     renderCompanionInputs();
+    renderSlotChoices();
+    renderAvailability();
+});
+
+slotChoice.addEventListener('change', () => {
     renderAvailability();
 });
 
@@ -331,6 +383,7 @@ reservationForm.addEventListener('submit', async (event) => {
 
             body: JSON.stringify({
                 day: selectedDay,
+                slotId: slotChoice.value || null,
                 partySize,
                 name,
                 partnerNames,
@@ -388,6 +441,7 @@ reservationForm.addEventListener('submit', async (event) => {
             (currentCounts[reservation.slotId] || 0)
             + reservation.partySize;
 
+        renderSlotChoices();
         renderAvailability();
 
         document.getElementById('numberPanel').scrollIntoView({

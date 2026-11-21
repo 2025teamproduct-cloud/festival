@@ -540,7 +540,7 @@ export default async function handler(req, res) {
 
 
     // ======================================
-    // 通常予約（枠は自動割り振り）
+    // 通常予約（希望枠の指定は任意）
     // ======================================
 
     const day =
@@ -559,15 +559,33 @@ export default async function handler(req, res) {
           )
         : [];
 
+    const requestedSlotId =
+      clean(req.body?.slotId, 5);
+
 
     if (!isValidDay(day)) {
-
       return json(
         res,
         400,
         {
           message:
             '参加日を正しく選択してください。',
+        }
+      );
+    }
+
+    if (
+      requestedSlotId &&
+      !createSlots(day).some(
+        (slot) => slot.id === requestedSlotId
+      )
+    ) {
+      return json(
+        res,
+        400,
+        {
+          message:
+            '参加する回を正しく選択してください。',
         }
       );
     }
@@ -621,7 +639,7 @@ export default async function handler(req, res) {
 
 
     // ======================================
-    // Transaction：枠の自動割り振り＋予約作成
+    // Transaction：希望枠または自動割り振り＋予約作成
     // ======================================
 
     let reservation;
@@ -646,8 +664,27 @@ export default async function handler(req, res) {
         }
 
 
+        const candidateSlots =
+          requestedSlotId
+            ? activeSlots.filter(
+                (slot) => slot.id === requestedSlotId
+              )
+            : activeSlots;
+
+        if (requestedSlotId && !candidateSlots.length) {
+          const error =
+            new Error(
+              'この回は受付時間を過ぎています。別の回を選択してください。'
+            );
+
+          error.code = 'CLOSED';
+
+          throw error;
+        }
+
+
         const slotRefs =
-          activeSlots.map((slot) =>
+          candidateSlots.map((slot) =>
             db
               .collection('slots')
               .doc(createSlotKey(day, slot.id))
@@ -686,7 +723,7 @@ export default async function handler(req, res) {
           // 厳密な「<」なので、同率なら先に出てきた早い枠が残る
           if (!best || leftover < best.leftover) {
             best = {
-              slot: activeSlots[index],
+              slot: candidateSlots[index],
               ref: slotRefs[index],
               reserved,
               leftover,
@@ -699,7 +736,9 @@ export default async function handler(req, res) {
 
           const error =
             new Error(
-              `${partySize}名で入れる回がありません。人数を減らすか、別の日をお試しください。`
+              requestedSlotId
+                ? `選択した回は${partySize}名分の空きがありません。別の回を選択するか人数を減らしてください。`
+                : `${partySize}名で入れる回がありません。人数を減らすか、別の日をお試しください。`
             );
 
           error.code = 'FULL';
